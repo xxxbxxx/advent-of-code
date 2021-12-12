@@ -76,6 +76,7 @@ pub fn build(b: *Builder) void {
         .{ .year = "2019", .day = "day03" },
         .{ .year = "2019", .day = "day02" },
         .{ .year = "2019", .day = "day01" },
+        .{ .year = "2019", .day = "alldays" }, // alldays in one exe
 
         .{ .year = "2018", .day = "day25" },
         .{ .year = "2018", .day = "day24" },
@@ -134,7 +135,9 @@ pub fn build(b: *Builder) void {
         const run_cmd = exe.run();
         run_cmd.step.dependOn(installstep);
 
-        run_step.dependOn(&run_cmd.step);
+        if (!mem.eql(u8, pb.year, "synacor")) {
+            run_step.dependOn(&run_cmd.step);
+        }
         for (runyear_step) |s, i| {
             if (mem.eql(u8, years[i], pb.year))
                 s.dependOn(&run_cmd.step);
