@@ -21,34 +21,34 @@ const Maze = struct {
     end: u8,
 };
 
-fn count_routes(maze: *const Maze, smallroom_visited_buf: []u8, cur_idx: u8, nb_smallroom_visited: u8, bonus: ?u8) @Vector(2, u32) {
-    const is_path_using_bonus_visit = bonus != null;
-    if (cur_idx == maze.end) return .{ @boolToInt(!is_path_using_bonus_visit), 1 };
+fn countRoutes(maze: *const Maze, smallroom_visit_bits: u32, cur_idx: u8, bonus_visit_used: bool) @Vector(2, u32) {
+    if (cur_idx == maze.end) return .{ @boolToInt(!bonus_visit_used), 1 };
 
     const room = &maze.rooms[cur_idx];
-    var bonus_ = bonus;
-    if (!room.is_large) {
-        if (std.mem.indexOfScalar(u8, smallroom_visited_buf[0..nb_smallroom_visited], cur_idx)) |_| {
-            if (bonus == null and cur_idx != maze.start and cur_idx != maze.end) {
-                bonus_ = cur_idx;
+
+    if (room.is_large) {
+        var total = @Vector(2, u32){ 0, 0 };
+        for (room.links[0..room.nb_links]) |ri| {
+            total += countRoutes(maze, smallroom_visit_bits, ri, bonus_visit_used);
+        }
+        return total;
+    } else {
+        const mask = @as(u32, 1) << @intCast(u5, cur_idx);
+        var bonus = bonus_visit_used;
+        if (smallroom_visit_bits & mask != 0) {
+            if (!bonus_visit_used and cur_idx != maze.start and cur_idx != maze.end) {
+                bonus = true;
             } else {
                 return .{ 0, 0 };
             }
         }
-    }
 
-    var nb_visited = nb_smallroom_visited;
-    if (!room.is_large) {
-        smallroom_visited_buf[nb_visited] = cur_idx;
-        nb_visited += 1;
+        var total = @Vector(2, u32){ 0, 0 };
+        for (room.links[0..room.nb_links]) |ri| {
+            total += countRoutes(maze, (smallroom_visit_bits | mask), ri, bonus);
+        }
+        return total;
     }
-
-    var total = @Vector(2, u32){ 0, 0 };
-    for (room.links[0..room.nb_links]) |ri| {
-        total += count_routes(maze, smallroom_visited_buf, ri, nb_visited, bonus_);
-    }
-
-    return total;
 }
 
 pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const u8 {
@@ -96,8 +96,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
         };
     };
 
-    var visited: [32]u8 = undefined;
-    const ans = count_routes(&maze, &visited, maze.start, 0, null);
+    const ans = countRoutes(&maze, 0, maze.start, false);
 
     return [_][]const u8{
         try std.fmt.allocPrint(gpa, "{}", .{ans[0]}),
