@@ -14,16 +14,19 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
     //defer arena_alloc.deinit();
     //const arena = arena_alloc.allocator();
 
+    const table_base = '@' * 256;
+    const table_count = (('Z' + 1) - '@') * 256; //  @,A,..,Z
+
     var it = std.mem.tokenize(u8, input, "\n");
     const template = it.next().?;
 
-    var rules_table: [65536]u8 = undefined;
+    var rules_table: [table_count]u8 = undefined;
     std.mem.set(u8, &rules_table, 0);
     while (it.next()) |line| {
         if (tools.match_pattern("{} -> {}", line)) |val| {
-            const pair = val[0].lit;
+            const pair = @ptrCast(*align(1) const u16, val[0].lit.ptr).*;
             const insert = val[1].lit;
-            rules_table[@ptrCast(*align(1) const u16, pair.ptr).*] = insert[0]; // little endian
+            rules_table[pair - table_base] = insert[0]; // little endian
         } else {
             std.debug.print("skipping {s}\n", .{line});
         }
@@ -32,8 +35,8 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
     const ans1 = ans: {
         // version bourrin in-extenso
         var bufs = [2][]u8{
-            try gpa.alloc(u8, 1024 * 1024),
-            try gpa.alloc(u8, 1024 * 1024),
+            try gpa.alloc(u8, 64 * 1024),
+            try gpa.alloc(u8, 64 * 1024),
         };
         defer {
             gpa.free(bufs[0]);
@@ -52,7 +55,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
                 to[len] = from[i - 1];
                 len += 1;
                 const pair = @ptrCast(*align(1) const u16, &from[i - 1]).*;
-                const insert = rules_table[pair];
+                const insert = rules_table[pair - table_base];
                 if (insert != 0) {
                     to[len] = insert;
                     len += 1;
@@ -62,7 +65,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
             len += 1;
             state[1 - gen % 2] = len;
 
-            // std.debug.print("gen{} :  {s}\n", .{gen+1, to[0..len]});
+            trace("gen{} :  {s}\n", .{ gen + 1, to[0..len] });
         }
 
         const final = bufs[gen % 2][0..state[gen % 2]];
@@ -80,43 +83,49 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
 
     const ans2 = ans: {
         // pour éviter les problèmes avec l'overlap, on considère que des paires: (dont on ne compte que la première lettre pour les stats)
-        // NNCB == "NN + NC + CB + B0"
+        // NNCB == "NN + NC + CB + B@"
         // on réécrit les règles pour marcher par paires,
         // puis on pourra facilement avoir un compte par type de paires.
 
-        var rules_pairs: [65536][2]u16 = undefined;
-        for ("ABCDEFGHIJKLMNOPQRSTUVWXYZ") |letter1| {
-            for ("ABCDEFGHIJKLMNOPQRSTUVWXYZ0") |letter2| {
-                const pair = @as(u16, letter2) << 8 | letter1;
-                const insert = rules_table[pair];
-                if (insert != 0) {
-                    rules_pairs[pair][0] = @as(u16, insert) << 8 | letter1;
-                    rules_pairs[pair][1] = @as(u16, letter2) << 8 | insert;
-                } else {
-                    rules_pairs[pair][0] = pair;
-                    rules_pairs[pair][1] = 0;
+        const all_pairs = comptime blk: {
+            var p: [26 * 27]u16 = undefined;
+            for ("ABCDEFGHIJKLMNOPQRSTUVWXYZ") |letter1, i| {
+                for ("ABCDEFGHIJKLMNOPQRSTUVWXYZ@") |letter2, j| {
+                    p[i * 27 + j] = @as(u16, letter2) << 8 | letter1;
                 }
+            }
+            break :blk p;
+        };
+
+        var rules_as_pairs: [table_count][2]u16 = undefined;
+        for (all_pairs) |pair| {
+            const insert = rules_table[pair - table_base];
+            if (insert != 0) {
+                const letter1 = @intCast(u8, pair & 0xFF);
+                const letter2 = @intCast(u8, (pair >> 8) & 0xFF);
+                rules_as_pairs[pair - table_base][0] = @as(u16, insert) << 8 | letter1;
+                rules_as_pairs[pair - table_base][1] = @as(u16, letter2) << 8 | insert;
+            } else {
+                rules_as_pairs[pair - table_base][0] = pair;
+                rules_as_pairs[pair - table_base][1] = 0;
             }
         }
 
-        var pairs_count: [65536]u64 = undefined;
+        var pairs_count: [table_count]u64 = undefined;
         std.mem.set(u64, &pairs_count, 0);
         var i: u32 = 0;
         while (i < template.len) : (i += 1) {
-            const pair = if (i < template.len - 1) @ptrCast(*align(1) const u16, &template[i]).* else @as(u16, '0') << 8 | template[i];
-            pairs_count[pair] += 1;
+            const pair = if (i < template.len - 1) @ptrCast(*align(1) const u16, &template[i]).* else (@as(u16, '@') << 8 | template[i]);
+            pairs_count[pair - table_base] += 1;
         }
 
         var gen: u32 = 0;
         while (gen < 40) : (gen += 1) {
-            var count2: [65536]u64 = undefined;
+            var count2: [table_count]u64 = undefined;
             std.mem.set(u64, &count2, 0);
-            for ("ABCDEFGHIJKLMNOPQRSTUVWXYZ") |letter1| {
-                for ("ABCDEFGHIJKLMNOPQRSTUVWXYZ0") |letter2| {
-                    const pair = @as(u16, letter2) << 8 | letter1;
-                    for (rules_pairs[pair]) |out| {
-                        if (out != 0) count2[out] += pairs_count[pair];
-                    }
+            for (all_pairs) |pair| {
+                for (rules_as_pairs[pair - table_base]) |out| {
+                    if (out != 0) count2[out - table_base] += pairs_count[pair - table_base];
                 }
             }
             std.mem.copy(u64, &pairs_count, &count2);
@@ -124,13 +133,9 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
 
         {
             var quantities = [1]u64{0} ** 128;
-            {
-                for ("ABCDEFGHIJKLMNOPQRSTUVWXYZ") |letter1| {
-                    for ("ABCDEFGHIJKLMNOPQRSTUVWXYZ0") |letter2| {
-                        const pair = @as(u16, letter2) << 8 | letter1;
-                        quantities[letter1] += pairs_count[pair];
-                    }
-                }
+            for (all_pairs) |pair| {
+                const letter1 = @intCast(u8, pair & 0xFF);
+                quantities[letter1] += pairs_count[pair - table_base];
             }
             var min: u64 = 0xFFFFFFFFFFFFFFFF;
             var max: u64 = 0;
