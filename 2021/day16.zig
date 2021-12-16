@@ -78,21 +78,25 @@ const TypeId = enum(u3) {
     eq,
 };
 
-const TreeIndex = u10;
+const TreeIndex = u16;
 const Packet = struct { // "packed"  -> zig crash  "Assertion failed at zig/src/stage1/analyze.cpp:530 in get_pointer_to_type_extra2."
     version: u3,
     type_id: TypeId,
     payload: union {
         litteral: u64,
-        subpackets: struct {
-            len: u6 = 0,
-            idx: [64]TreeIndex = undefined, // mmmeh
+        pair: struct {
+            idx: [2]TreeIndex = undefined,
+        },
+        list: struct {
+            len: u16 = 0,
+            entry_in_indexes_table: u16 = undefined,
         },
     },
 };
 
 /// returns parsed packet index in the packet_tree
-fn parse(stream: *BitStream, packet_tree: *std.ArrayList(Packet)) tools.RunError!TreeIndex {
+const ParseError = std.mem.Allocator.Error || error{ UnsupportedInput, UnexpectedEOS };
+fn parse(stream: *BitStream, packet_tree: *std.ArrayList(Packet), indexes_table: *std.ArrayList(TreeIndex)) ParseError!TreeIndex {
     const version = try stream.read3();
     const type_id = @intToEnum(TypeId, try stream.read3());
     switch (type_id) {
@@ -107,62 +111,65 @@ fn parse(stream: *BitStream, packet_tree: *std.ArrayList(Packet)) tools.RunError
             return @intCast(TreeIndex, packet_tree.items.len - 1);
         },
         else => {
-            const mode = try stream.read1();
-            if (mode == 0) {
-                // mode "len"
-                const bitlen = try stream.read15();
-                var p = Packet{ .version = version, .type_id = type_id, .payload = .{ .subpackets = .{ .len = 0 } } };
+            var children = std.BoundedArray(TreeIndex, 128).init(0) catch unreachable; // TODO: is there copy elision?
 
+            const mode = try stream.read1();
+            if (mode == 0) { // mode "len"
+                const bitlen = try stream.read15();
                 const startbit = stream.curBit();
                 while (stream.curBit() < startbit + bitlen) {
-                    const idx = try parse(stream, packet_tree);
-                    p.payload.subpackets.idx[p.payload.subpackets.len] = idx;
-                    p.payload.subpackets.len += 1;
+                    const idx = try parse(stream, packet_tree, indexes_table);
+                    children.append(idx) catch return error.UnsupportedInput;
                 }
-                try packet_tree.append(p);
-                return @intCast(TreeIndex, packet_tree.items.len - 1);
-            } else {
-                // mode "count"
+            } else { // mode "count"
                 const count = try stream.read11();
-                var p = Packet{ .version = version, .type_id = type_id, .payload = .{ .subpackets = .{ .len = @intCast(u6, count) } } };
-
-                for (p.payload.subpackets.idx[0..count]) |*subp| {
-                    subp.* = try parse(stream, packet_tree);
+                var i: u32 = 0;
+                while (i < count) : (i += 1) {
+                    const idx = try parse(stream, packet_tree, indexes_table);
+                    children.append(idx) catch return error.UnsupportedInput;
                 }
-                try packet_tree.append(p);
-                return @intCast(TreeIndex, packet_tree.items.len - 1);
             }
+
+            if (children.len == 0) return error.UnsupportedInput; // sinon les operteurs sont pas très bien définis.
+            switch (type_id) {
+                .litteral => unreachable,
+                .gt, .lt, .eq => {
+                    if (children.len != 2) return error.UnsupportedInput;
+                    try packet_tree.append(Packet{
+                        .version = version,
+                        .type_id = type_id,
+                        .payload = .{ .pair = .{ .idx = .{ children.buffer[0], children.buffer[1] } } },
+                    });
+                },
+                else => {
+                    const first = indexes_table.items.len;
+                    try indexes_table.appendSlice(children.slice());
+                    try packet_tree.append(Packet{
+                        .version = version,
+                        .type_id = type_id,
+                        .payload = .{ .list = .{ .len = @intCast(u16, children.len), .entry_in_indexes_table = @intCast(u16, first) } },
+                    });
+                },
+            }
+            return @intCast(TreeIndex, packet_tree.items.len - 1);
         },
     }
 }
 
-fn dumpPacketTree(tree: []const Packet, root: TreeIndex, indentation: u8) void {
-    const indent_spaces = "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t";
-    const p = tree[root];
-    trace("{s}ver={} type={} ", .{ indent_spaces[0..indentation], p.version, p.type_id });
-    switch (p.type_id) {
-        .litteral => {
-            trace("litteral={}\n", .{p.payload.litteral});
-        },
-        else => {
-            trace("subpackets={}\n", .{p.payload.subpackets.len});
-            for (p.payload.subpackets.idx[0..p.payload.subpackets.len]) |idx| {
-                dumpPacketTree(tree, idx, indentation + 1);
-            }
-        },
-    }
-}
+const PacketTree = struct {
+    items: []const Packet,
+    indexes_table: []const u16,
+};
 
-fn eval(tree: []const Packet, root: TreeIndex) u64 {
-    const p = tree[root];
+fn eval(tree: PacketTree, root: TreeIndex) u64 {
+    const p = tree.items[root];
     switch (p.type_id) {
         .litteral => {
             return p.payload.litteral;
         },
         .gt, .lt, .eq => {
-            assert(p.payload.subpackets.len == 2);
-            const left = eval(tree, p.payload.subpackets.idx[0]);
-            const right = eval(tree, p.payload.subpackets.idx[1]);
+            const left = eval(tree, p.payload.pair.idx[0]);
+            const right = eval(tree, p.payload.pair.idx[1]);
             return switch (p.type_id) {
                 .gt => @boolToInt(left > right),
                 .lt => @boolToInt(left < right),
@@ -171,32 +178,51 @@ fn eval(tree: []const Packet, root: TreeIndex) u64 {
             };
         },
         .sum => {
+            const list = tree.indexes_table[p.payload.list.entry_in_indexes_table .. p.payload.list.entry_in_indexes_table + p.payload.list.len];
             var v: u64 = 0;
-            for (p.payload.subpackets.idx[0..p.payload.subpackets.len]) |idx| {
-                v += eval(tree, idx);
-            }
+            for (list) |idx| v += eval(tree, idx);
             return v;
         },
         .product => {
+            const list = tree.indexes_table[p.payload.list.entry_in_indexes_table .. p.payload.list.entry_in_indexes_table + p.payload.list.len];
             var v: u64 = 1;
-            for (p.payload.subpackets.idx[0..p.payload.subpackets.len]) |idx| {
-                v *= eval(tree, idx);
-            }
+            for (list) |idx| v *= eval(tree, idx);
             return v;
         },
         .minimum => {
+            const list = tree.indexes_table[p.payload.list.entry_in_indexes_table .. p.payload.list.entry_in_indexes_table + p.payload.list.len];
             var v: u64 = 0xFFFFFFFFFFFFFFFF;
-            for (p.payload.subpackets.idx[0..p.payload.subpackets.len]) |idx| {
-                v = @minimum(v, eval(tree, idx));
-            }
+            for (list) |idx| v = @minimum(v, eval(tree, idx));
             return v;
         },
         .maximum => {
+            const list = tree.indexes_table[p.payload.list.entry_in_indexes_table .. p.payload.list.entry_in_indexes_table + p.payload.list.len];
             var v: u64 = 0;
-            for (p.payload.subpackets.idx[0..p.payload.subpackets.len]) |idx| {
-                v = @maximum(v, eval(tree, idx));
-            }
+            for (list) |idx| v = @maximum(v, eval(tree, idx));
             return v;
+        },
+    }
+}
+
+fn dumpPacketTree(tree: PacketTree, root: TreeIndex, indentation: u8) void {
+    const indent_spaces = "\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t\t";
+    const p = tree.items[root];
+    trace("{s}ver={} type={} ", .{ indent_spaces[0..indentation], p.version, p.type_id });
+    switch (p.type_id) {
+        .litteral => {
+            trace("litteral={}\n", .{p.payload.litteral});
+        },
+        .gt, .lt, .eq => {
+            trace("pair:\n", .{});
+            for (p.payload.pair.idx) |idx| {
+                dumpPacketTree(tree, idx, indentation + 1);
+            }
+        },
+        else => {
+            trace("subpackets[{}]:\n", .{p.payload.list.len});
+            for (tree.indexes_table[p.payload.list.entry_in_indexes_table .. p.payload.list.entry_in_indexes_table + p.payload.list.len]) |idx| {
+                dumpPacketTree(tree, idx, indentation + 1);
+            }
         },
     }
 }
@@ -210,18 +236,21 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
 
     var packet_tree = std.ArrayList(Packet).init(gpa);
     defer packet_tree.deinit();
+    var indexes_table = std.ArrayList(u16).init(gpa);
+    defer indexes_table.deinit();
 
-    const root = try parse(&stream, &packet_tree);
+    const root = try parse(&stream, &packet_tree, &indexes_table);
     try stream.flushTrailingZeroes();
-    dumpPacketTree(packet_tree.items, root, 0);
+    const tree = PacketTree{ .items = packet_tree.items, .indexes_table = indexes_table.items };
+    dumpPacketTree(tree, root, 0);
 
     const ans1 = ans: {
         var totalversion: u32 = 0;
-        for (packet_tree.items) |p| totalversion += p.version;
+        for (tree.items) |p| totalversion += p.version;
         break :ans totalversion;
     };
 
-    const ans2 = eval(packet_tree.items, root);
+    const ans2 = eval(tree, root);
 
     return [_][]const u8{
         try std.fmt.allocPrint(gpa, "{}", .{ans1}),

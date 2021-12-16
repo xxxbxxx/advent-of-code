@@ -9,37 +9,76 @@ const assert = std.debug.assert;
 
 pub const main = tools.defaultMain("2021/day15.txt", run);
 
-const gutter = 1;
-fn propagateRiskLevel(levels: []u32, width: usize, height: usize, ctx: anytype, comptime getIndividualLevel: fn (self: @TypeOf(ctx), x: u32, y: u32) ?u8) void {
-    assert(levels.len == (width + gutter * 2) * (height + gutter * 2));
+fn computeLowestExitLevel(alloc: std.mem.Allocator, width: usize, height: usize, ctx: anytype, comptime getIndividualLevel: fn (self: @TypeOf(ctx), x: u32, y: u32) u8) !u32 {
+    const Step = packed struct {
+        x: u16,
+        y: u16,
+        level: u16,
+        fn compare(a: @This(), b: @This()) std.math.Order {
+            // testé avec prio = level + k*((width-x)+(hight-y))  -> moins bien.  Facteur limitant = taille de la queue.
+            if (a.level < b.level) return .lt;
+            if (a.level > b.level) return .gt;
+            //if (a.x < b.x or a.y < b.y) return .gt;
+            //if (a.x > b.x or a.y > b.y) return .lt;
+            return .eq;
+        }
+    };
+    var queue = std.PriorityDequeue(Step, Step.compare).init(alloc); // dequeue way faster than queue
+    defer queue.deinit();
 
-    const stride = width + gutter * 2;
-    std.mem.set(u32, levels, 0x0FFFFFFF);
+    const acculevels = try alloc.alloc(u16, width * height);
+    defer alloc.free(acculevels);
+    std.mem.set(u16, acculevels, 0x7FFF);
+    //var best: u16 = 0x7FFF;  // useless, pas grand chose à élaguer
 
-    var dirty = true;
-    while (dirty) {
-        dirty = false;
+    // start point
+    try queue.add(Step{ .x = 0, .y = 0, .level = 0 });
+
+    while (queue.removeMinOrNull()) |step| {
+        //if (step.level >= best) continue;
+        const x = step.x;
+        const y = step.y;
+        const this = &acculevels[x + width * y];
+        if (step.level >= this.*) continue;
+        this.* = step.level;
+
+        if (x > 0) {
+            const l = step.level + getIndividualLevel(ctx, x - 1, y);
+            if (l < acculevels[(x - 1) + width * (y + 0)]) // and (l < best)
+                try queue.add(Step{ .x = (x - 1), .y = (y + 0), .level = l });
+        }
+        if (y > 0) {
+            const l = step.level + getIndividualLevel(ctx, x, y - 1);
+            if (l < acculevels[(x + 0) + width * (y - 1)]) // and (l < best)
+                try queue.add(Step{ .x = (x + 0), .y = (y - 1), .level = l });
+        }
+        if (x + 1 < width) {
+            const l = step.level + getIndividualLevel(ctx, x + 1, y);
+            if (l < acculevels[(x + 1) + width * (y + 0)]) // and (l < best)
+                try queue.add(Step{ .x = (x + 1), .y = (y + 0), .level = l });
+        }
+        if (y + 1 < height) {
+            const l = step.level + getIndividualLevel(ctx, x, y + 1);
+            if (l < acculevels[(x + 0) + width * (y + 1)]) // and (l < best)
+                try queue.add(Step{ .x = (x + 0), .y = (y + 1), .level = l });
+        }
+        // if (x == width - 1 and y == height - 1) {
+        //     best = step.level;
+        // }
+    }
+
+    if (false) {
         var y: u32 = 0;
         while (y < height) : (y += 1) {
             var x: u32 = 0;
             while (x < width) : (x += 1) {
-                const this = &levels[((x + gutter) + 0) + stride * ((y + gutter) + 0)];
-                if (getIndividualLevel(ctx, x, y)) |entry_cost| {
-                    const r1 = levels[((x + gutter) + 0) + stride * ((y + gutter) - 1)];
-                    const r2 = levels[((x + gutter) + 0) + stride * ((y + gutter) + 1)];
-                    const r3 = levels[((x + gutter) - 1) + stride * ((y + gutter) + 0)];
-                    const r4 = levels[((x + gutter) + 1) + stride * ((y + gutter) + 0)];
-                    const r = @minimum(@minimum(r1, r2), @minimum(r3, r4));
-                    if (this.* > r + entry_cost) {
-                        this.* = r + entry_cost;
-                        dirty = true;
-                    }
-                } else {
-                    this.* = 0;
-                }
+                trace("{d:2} ", .{@minimum(99, acculevels[x + width * y])});
             }
+            trace("\n", .{});
         }
     }
+
+    return acculevels[width * height - 1];
 }
 
 pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const u8 {
@@ -53,49 +92,27 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
     trace("input: {}x{}\n", .{ width, height });
 
     const ans1 = ans: {
-        const levels_stride = (width + 2);
-        var levels = try gpa.alloc(u32, (height + 2) * levels_stride);
-        defer gpa.free(levels);
-
         const context: struct {
             risk: []const u8,
             stride: usize,
 
-            fn entryRisk(ctx: *const @This(), x: u32, y: u32) ?u8 {
-                if (x == 0 and y == 0) return null;
+            fn entryRisk(ctx: *const @This(), x: u32, y: u32) u8 {
                 return ctx.risk[x + y * ctx.stride] - '0';
             }
         } = .{ .risk = input, .stride = stride_in };
 
-        propagateRiskLevel(levels, width, height, &context, @TypeOf(context).entryRisk); // context.entryRisk == "BoundFn"?  comment ça s'utilise?
-
-        if (with_trace) {
-            var y: u32 = 0;
-            while (y < height) : (y += 1) {
-                var x: u32 = 0;
-                while (x < width) : (x += 1) {
-                    trace("{d:2} ", .{@minimum(99, levels[((x + gutter) + 0) + levels_stride * ((y + gutter) + 0)])});
-                }
-                trace("\n", .{});
-            }
-        }
-
-        break :ans levels[(width - 1 + gutter) + levels_stride * (height - 1 + gutter)];
+        break :ans computeLowestExitLevel(gpa, width, height, &context, @TypeOf(context).entryRisk); // context.entryRisk == "BoundFn"?  comment ça s'utilise?
     };
 
     const ans2 = ans: {
-        const levels_stride = (5 * width + 2);
-        var levels = try gpa.alloc(u32, (5 * height + 2) * levels_stride);
-        defer gpa.free(levels);
-
         const context: struct {
             risk: []const u8,
             stride: usize,
             w: usize,
             h: usize,
 
-            fn entryRisk(ctx: *const @This(), x: u32, y: u32) ?u8 {
-                if (x == 0 and y == 0) return null;
+            fn entryRisk(ctx: *const @This(), x: u32, y: u32) u8 {
+                // nb: hardcoder w,h = 100x100  ne gagne pas tant que ça (15%)
                 const x0 = x % ctx.w;
                 const y0 = y % ctx.h;
                 const dist = (x / ctx.w) + (y / ctx.h);
@@ -104,9 +121,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
             }
         } = .{ .risk = input, .w = width, .h = height, .stride = stride_in };
 
-        propagateRiskLevel(levels, 5 * width, 5 * height, &context, @TypeOf(context).entryRisk); // context.entryRisk == "BoundFn"?  comment ça s'utilise?
-
-        break :ans levels[(5 * width) + levels_stride * (5 * height)];
+        break :ans computeLowestExitLevel(gpa, 5 * width, 5 * height, &context, @TypeOf(context).entryRisk); // context.entryRisk == "BoundFn"?  comment ça s'utilise?
     };
 
     return [_][]const u8{
