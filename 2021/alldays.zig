@@ -22,6 +22,7 @@ const alldays = [_]struct { runFn: RunFn, input: []const u8 }{
     .{ .runFn = @import("day13.zig").run, .input = @embedFile("day13.txt") },
     .{ .runFn = @import("day14.zig").run, .input = @embedFile("day14.txt") },
     .{ .runFn = @import("day15.zig").run, .input = @embedFile("day15.txt") },
+    .{ .runFn = @import("day16.zig").run, .input = @embedFile("day16.txt") },
 };
 
 test {
@@ -40,6 +41,7 @@ test {
     _ = @import("day13.zig");
     _ = @import("day14.zig");
     _ = @import("day15.zig");
+    _ = @import("day16.zig");
 }
 
 pub fn main() !void {

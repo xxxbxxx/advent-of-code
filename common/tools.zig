@@ -2,7 +2,7 @@ const std = @import("std");
 const assert = std.debug.assert;
 const print = std.debug.print;
 
-pub const RunError = std.mem.Allocator.Error || std.fmt.ParseIntError || error{ UnsupportedInput, InvalidEnumName };
+pub const RunError = std.mem.Allocator.Error || std.fmt.ParseIntError || error{ UnsupportedInput, InvalidEnumName, UnexpectedEOS };
 const MainError = RunError || std.fs.File.OpenError || std.os.ReadError || std.os.SeekError || std.os.WriteError;
 
 pub fn defaultMain(comptime input_fname: []const u8, comptime runFn: fn (input: []const u8, allocator: std.mem.Allocator) RunError![2][]const u8) fn () MainError!void {
@@ -254,7 +254,7 @@ pub fn Map(comptime TileType: type, width: usize, height: usize, allow_negative_
             map.bbox.min = Vec2.min(p, map.bbox.min);
             map.bbox.max = Vec2.max(p, map.bbox.max);
 
-            // (marchait sans ça avant, mais je vois pas comment.)
+            // marchait sans ça avant, mais je vois pas comment.
             if (prev.isEmpty()) {
                 map.fill(map.default_tile, map.bbox);
             } else {
