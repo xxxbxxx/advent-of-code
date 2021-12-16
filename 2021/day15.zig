@@ -38,29 +38,38 @@ fn computeLowestExitLevel(alloc: std.mem.Allocator, width: usize, height: usize,
         //if (step.level >= best) continue;
         const x = step.x;
         const y = step.y;
-        const this = &acculevels[x + width * y];
+        const index = x + width * y;
+        const this = &acculevels[index];
         if (step.level >= this.*) continue;
         this.* = step.level;
 
         if (x > 0) {
             const l = step.level + getIndividualLevel(ctx, x - 1, y);
-            if (l < acculevels[(x - 1) + width * (y + 0)]) // and (l < best)
+            if (l < acculevels[index - 1]) { // and (l < best)
+                acculevels[index - 1] = l + 1; // (+1 to make sure than when the step is popped from the queue it is not ignored)
                 try queue.add(Step{ .x = (x - 1), .y = (y + 0), .level = l });
+            }
         }
         if (y > 0) {
             const l = step.level + getIndividualLevel(ctx, x, y - 1);
-            if (l < acculevels[(x + 0) + width * (y - 1)]) // and (l < best)
+            if (l < acculevels[index - width]) { // and (l < best)
+                acculevels[index - width] = l + 1;
                 try queue.add(Step{ .x = (x + 0), .y = (y - 1), .level = l });
+            }
         }
         if (x + 1 < width) {
             const l = step.level + getIndividualLevel(ctx, x + 1, y);
-            if (l < acculevels[(x + 1) + width * (y + 0)]) // and (l < best)
+            if (l < acculevels[index + 1]) { // and (l < best)
+                acculevels[index + 1] = l + 1;
                 try queue.add(Step{ .x = (x + 1), .y = (y + 0), .level = l });
+            }
         }
         if (y + 1 < height) {
             const l = step.level + getIndividualLevel(ctx, x, y + 1);
-            if (l < acculevels[(x + 0) + width * (y + 1)]) // and (l < best)
+            if (l < acculevels[index + width]) { // and (l < best)
+                acculevels[index + width] = l + 1;
                 try queue.add(Step{ .x = (x + 0), .y = (y + 1), .level = l });
+            }
         }
         // if (x == width - 1 and y == height - 1) {
         //     best = step.level;
