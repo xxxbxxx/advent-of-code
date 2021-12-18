@@ -15,6 +15,8 @@ fn computeLowestExitLevel(alloc: std.mem.Allocator, width: usize, height: usize,
         y: u16,
         level: u16,
         fn compare(a: @This(), b: @This()) std.math.Order {
+            //return std.math.order(a.level, b.level);  plus lent. bizarre
+
             // testé avec prio = level + k*((width-x)+(hight-y))  -> moins bien.  Facteur limitant = taille de la queue.
             if (a.level < b.level) return .lt;
             if (a.level > b.level) return .gt;
@@ -71,9 +73,12 @@ fn computeLowestExitLevel(alloc: std.mem.Allocator, width: usize, height: usize,
                 try queue.add(Step{ .x = (x + 0), .y = (y + 1), .level = l });
             }
         }
-        // if (x == width - 1 and y == height - 1) {
-        //     best = step.level;
-        // }
+
+        //if (index == width * height - 1) {
+        //    // En fait vu qu'on a prio == level, on fait un best-first-search, et donc on sait que tous les levels suivants seront >= best.
+        //    // Mais ça ne compense pas le test en plus
+        //    break;
+        //}
     }
 
     if (false) {

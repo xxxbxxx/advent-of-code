@@ -557,7 +557,7 @@ pub fn BestFirstSearch(comptime State: type, comptime Trace: type) type {
         };
 
         const Self = @This();
-        const Agenda = std.PriorityQueue(*Node, compare_steps);
+        const Agenda = std.PriorityDequeue(*Node, compare_steps);
         const VisitedNodes = if (State == []const u8) std.StringHashMap(*const Node) else std.AutoHashMap(State, *const Node);
 
         arena: std.heap.ArenaAllocator,
@@ -610,7 +610,7 @@ pub fn BestFirstSearch(comptime State: type, comptime Trace: type) type {
             }
         }
         pub fn pop(s: *Self) ?Node {
-            if (s.agenda.removeOrNull()) |n| {
+            if (s.agenda.removeMinOrNull()) |n| {
                 // s.recyclebin = n;  non! car le ptr est aussi dans s.visited
                 return n.*;
             } else {

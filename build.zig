@@ -1,9 +1,17 @@
 const Builder = @import("std").build.Builder;
 const Step = @import("std").build.Step;
 const mem = @import("std").mem;
+const fs = @import("std").fs;
+const debug = @import("std").debug;
 
 pub fn build(b: *Builder) void {
     const mode = b.standardReleaseOptions();
+
+    const tracy = b.option([]const u8, "tracy", "Enable Tracy integration. Supply path to Tracy source");
+    const exe_options = b.addOptions();
+    exe_options.addOption(bool, "enable_tracy", tracy != null);
+    if (tracy != null) debug.print("BUG: need to manually edit common/tracy.zig to enable", .{});
+    exe_options.addOption(bool, "enable_tracy", tracy != null);
 
     const Problem = struct {
         year: []const u8,
@@ -26,6 +34,8 @@ pub fn build(b: *Builder) void {
         .{ .year = "2021", .day = "day14" },
         .{ .year = "2021", .day = "day15" },
         .{ .year = "2021", .day = "day16" },
+        .{ .year = "2021", .day = "day17" },
+        .{ .year = "2021", .day = "day18" },
         .{ .year = "2021", .day = "alldays" }, // alldays in one exe
 
         .{ .year = "2020", .day = "day25" },
@@ -121,17 +131,26 @@ pub fn build(b: *Builder) void {
     for (problems) |pb| {
         const path = b.fmt("{s}/{s}.zig", .{ pb.year, pb.day });
 
-        const fmt = b.addFmt(&[_][]const u8{path});
-
         const exe = b.addExecutable(pb.day, path);
+        exe.setBuildMode(mode);
+        exe.addPackagePath("tracy", "common/tracy.zig");
+        exe.addOptions("build_options", exe_options); // XXX Does not apply to package 'tracy'.  no idea how to make it work
+
         if (mem.eql(u8, pb.year, "2021")) {
             exe.addPackagePath("tools", "common/tools_v2.zig");
         } else {
             exe.addPackagePath("tools", "common/tools.zig");
         }
 
-        exe.step.dependOn(&fmt.step);
-        exe.setBuildMode(mode);
+        if (tracy) |tracy_path| {
+            const client_cpp = fs.path.join(
+                b.allocator,
+                &[_][]const u8{ tracy_path, "TracyClient.cpp" },
+            ) catch unreachable;
+            exe.addIncludeDir(tracy_path);
+            exe.addCSourceFile(client_cpp, &[_][]const u8{ "-DTRACY_ENABLE=1", "-fno-sanitize=undefined" });
+            exe.linkLibCpp();
+        }
 
         //exe.install();
         const installstep = &b.addInstallArtifact(exe).step;

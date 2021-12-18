@@ -1,6 +1,7 @@
 const std = @import("std");
 const assert = std.debug.assert;
 const tools = @import("tools");
+const tracy = @import("tracy");
 
 const RunFn = fn (input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]const u8;
 
@@ -23,6 +24,8 @@ const alldays = [_]struct { runFn: RunFn, input: []const u8 }{
     .{ .runFn = @import("day14.zig").run, .input = @embedFile("day14.txt") },
     .{ .runFn = @import("day15.zig").run, .input = @embedFile("day15.txt") },
     .{ .runFn = @import("day16.zig").run, .input = @embedFile("day16.txt") },
+    .{ .runFn = @import("day17.zig").run, .input = @embedFile("day17.txt") },
+    .{ .runFn = @import("day18.zig").run, .input = @embedFile("day18.txt") },
 };
 
 test {
@@ -42,6 +45,8 @@ test {
     _ = @import("day14.zig");
     _ = @import("day15.zig");
     _ = @import("day16.zig");
+    _ = @import("day17.zig");
+    _ = @import("day18.zig");
 }
 
 pub fn main() !void {
@@ -52,11 +57,16 @@ pub fn main() !void {
     const allocator = gpa.allocator();
 
     for (alldays) |it, day| {
+        var buf: [50]u8 = undefined;
+        const day_name = try std.fmt.bufPrintZ(&buf, "Day {d:0>2}", .{day + 1});
+        const zone = tracy.traceEx(@src(), .{ .name = day_name });
+        defer zone.end();
+
         const answer = try it.runFn(it.input, allocator);
         defer allocator.free(answer[0]);
         defer allocator.free(answer[1]);
 
-        try stdout.print("Day {d:0>2}:\n", .{day + 1});
+        try stdout.print("{s}:\n", .{day_name});
         for (answer) |ans, i| {
             const multiline = (std.mem.indexOfScalar(u8, ans, '\n') != null);
             if (multiline) {
