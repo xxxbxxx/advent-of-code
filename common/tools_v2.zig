@@ -5,6 +5,7 @@ const tools_v1 = @import("tools.zig");
 const assert = std.debug.assert;
 const print = std.debug.print;
 
+pub const tracy = @import("tracy.zig");
 pub const RunError = tools_v1.RunError;
 pub const defaultMain = tools_v1.defaultMain;
 pub const BestFirstSearch = tools_v1.BestFirstSearch;

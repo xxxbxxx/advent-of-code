@@ -108,7 +108,7 @@ fn equal(a: SnailfishNumber, b: SnailfishNumber) bool {
         if (a[i] != b[i]) return false;
         if (d == PAIR_MARK) len += 2;
     }
-    return true;
+    unreachable;
 }
 
 fn explode(a: SnailfishNumber) SnailfishNumber {

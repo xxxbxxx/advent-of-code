@@ -1,7 +1,7 @@
 const std = @import("std");
 const assert = std.debug.assert;
 const tools = @import("tools");
-const tracy = @import("tracy");
+const tracy = tools.tracy;
 
 const RunFn = fn (input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]const u8;
 
@@ -26,6 +26,7 @@ const alldays = [_]struct { runFn: RunFn, input: []const u8 }{
     .{ .runFn = @import("day16.zig").run, .input = @embedFile("day16.txt") },
     .{ .runFn = @import("day17.zig").run, .input = @embedFile("day17.txt") },
     .{ .runFn = @import("day18.zig").run, .input = @embedFile("day18.txt") },
+    .{ .runFn = @import("day19.zig").run, .input = @embedFile("day19.txt") },
 };
 
 test {
@@ -47,6 +48,7 @@ test {
     _ = @import("day16.zig");
     _ = @import("day17.zig");
     _ = @import("day18.zig");
+    _ = @import("day19.zig");
 }
 
 pub fn main() !void {
