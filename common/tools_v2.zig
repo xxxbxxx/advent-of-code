@@ -376,7 +376,7 @@ pub fn Map(comptime TileType: type, width: usize, height: usize, allow_negative_
                     .up_left = n8[4],
                     .up = n4[3],
                     .up_right = n8[5],
-                    .left = n4[2],
+                    .left = n4[1],
                     .right = n4[0],
                     .down_left = n8[6],
                     .down = n4[2],
