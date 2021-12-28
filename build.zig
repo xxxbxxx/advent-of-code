@@ -9,8 +9,8 @@ pub fn build(b: *Builder) void {
 
     const tracy = b.option([]const u8, "tracy", "Enable Tracy integration. Supply path to Tracy source");
     const exe_options = b.addOptions();
-    exe_options.addOption(bool, "enable_tracy", tracy != null);
-    if (tracy != null) debug.print("BUG: need to manually edit common/tracy.zig to enable", .{});
+
+    if (tracy != null) debug.print("BUG: need to manually edit common/tracy.zig to enable the instrumentation\n", .{});
     exe_options.addOption(bool, "enable_tracy", tracy != null);
 
     const Problem = struct {
@@ -36,6 +36,11 @@ pub fn build(b: *Builder) void {
         .{ .year = "2021", .day = "day16" },
         .{ .year = "2021", .day = "day17" },
         .{ .year = "2021", .day = "day18" },
+        .{ .year = "2021", .day = "day19" },
+        .{ .year = "2021", .day = "day20" },
+        .{ .year = "2021", .day = "day21" },
+        .{ .year = "2021", .day = "day22" },
+        .{ .year = "2021", .day = "day25" },
         .{ .year = "2021", .day = "alldays" }, // alldays in one exe
 
         .{ .year = "2020", .day = "day25" },
@@ -133,8 +138,7 @@ pub fn build(b: *Builder) void {
 
         const exe = b.addExecutable(pb.day, path);
         exe.setBuildMode(mode);
-        exe.addPackagePath("tracy", "common/tracy.zig");
-        exe.addOptions("build_options", exe_options); // XXX Does not apply to package 'tracy'.  no idea how to make it work
+        exe.addOptions("build_options", exe_options); // XXX Does not apply to package tools / 'tracy'.  no idea how to make it work
 
         if (mem.eql(u8, pb.year, "2021")) {
             exe.addPackagePath("tools", "common/tools_v2.zig");

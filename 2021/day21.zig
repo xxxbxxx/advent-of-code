@@ -42,7 +42,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
 
     const ans2 = ans: {
         const victory_score = 21;
-        const cardinal = try gpa.create([42][victory_score+10][victory_score+10][10][10]u64);
+        const cardinal = try gpa.create([42][victory_score + 10][victory_score + 10][10][10]u64);
         defer gpa.destroy(cardinal);
         //var cardinal = std.mem.zeroes([42][victory_score+10][victory_score+10][10][10]u64);
         @memset(@ptrCast([*]u8, cardinal), 0, @sizeOf(@TypeOf(cardinal.*)));
@@ -63,27 +63,27 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
             for ([_]u8{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }) |pos1| {
                 for ([_]u8{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9 }) |pos2| {
                     var score1: u32 = 0;
-                    while (score1 <= victory_score+9) : (score1 += 1) {
+                    while (score1 <= victory_score + 9) : (score1 += 1) {
                         var score2: u32 = 0;
-                        while (score2 <= victory_score+9) : (score2 += 1) {
+                        while (score2 <= victory_score + 9) : (score2 += 1) {
                             for (rolls) |roll| {
                                 const prevpos1 = (pos1 + 10 - roll.score) % 10;
                                 const prevpos2 = (pos2 + 10 - roll.score) % 10;
                                 if (score1 >= (pos1 + 1) and (turn % 2 == 1)) {
                                     const prevscore1 = score1 - (pos1 + 1);
-                                    if (prevscore1<victory_score and score2<victory_score) 
-                                    cardinal[turn][score1][score2][pos1][pos2] +=
-                                        cardinal[turn - 1][prevscore1][score2][prevpos1][pos2] * roll.nb;
+                                    if (prevscore1 < victory_score and score2 < victory_score)
+                                        cardinal[turn][score1][score2][pos1][pos2] +=
+                                            cardinal[turn - 1][prevscore1][score2][prevpos1][pos2] * roll.nb;
                                 }
                                 if (score2 >= (pos2 + 1) and (turn % 2 == 0)) {
                                     const prevscore2 = score2 - (pos2 + 1);
-                                    if (prevscore2<victory_score and score1<victory_score) 
-                                    cardinal[turn][score1][score2][pos1][pos2] +=
-                                        cardinal[turn - 1][score1][prevscore2][pos1][prevpos2] * roll.nb;
+                                    if (prevscore2 < victory_score and score1 < victory_score)
+                                        cardinal[turn][score1][score2][pos1][pos2] +=
+                                            cardinal[turn - 1][score1][prevscore2][pos1][prevpos2] * roll.nb;
                                 }
                             }
-                            if (cardinal[turn][score1][score2][pos1][pos2] > 0) 
-                                trace("card[turn: {d}][score1: {d}][score2: {d}][p1: {d}][p2: {d}]={d}\n", .{turn, score1, score2, pos1, pos2, cardinal[turn][score1][score2][pos1][pos2]});
+                            if (cardinal[turn][score1][score2][pos1][pos2] > 0)
+                                trace("card[turn: {d}][score1: {d}][score2: {d}][p1: {d}][p2: {d}]={d}\n", .{ turn, score1, score2, pos1, pos2, cardinal[turn][score1][score2][pos1][pos2] });
                             wins1 += @boolToInt(score1 >= victory_score and score2 < victory_score) * cardinal[turn][score1][score2][pos1][pos2];
                             wins2 += @boolToInt(score1 < victory_score and score2 >= victory_score) * cardinal[turn][score1][score2][pos1][pos2];
                         }

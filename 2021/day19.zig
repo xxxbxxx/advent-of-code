@@ -16,6 +16,8 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
 
     const Scan = struct {
         points: []const Vec3,
+        pair_dists: []const u32 = undefined, // distance entre les paires de points du scan.
+
         positionned: bool = false,
         rotation: Mat3 = undefined,
         translation: Vec3 = undefined,
@@ -42,6 +44,19 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
             }
         }
         try scans.append(Scan{ .points = points.items });
+
+        for (scans.items) |*scan| {
+            var dists = std.ArrayList(u32).init(arena);
+            for (scan.points) |p0, idx0| {
+                for (scan.points[idx0 + 1 ..]) |p1| {
+                    const d = norm1(p1 - p0);
+                    try dists.append(d);
+                }
+            }
+            std.sort.sort(u32, dists.items, {}, comptime std.sort.asc(u32));
+            scan.pair_dists = dists.items;
+        }
+
         trace("read {} scans.\n", .{scans.items.len});
         break :blk scans.items;
     };
@@ -59,56 +74,90 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
         }
 
         var nb_positionned_scans: u32 = 1;
-        var ref_point_index: u32 = 0;   // maybe the first point is a "new" one that doesn't match any from the current set. -> try other points.
         while (true) {
             nextscan: for (scans) |*scan, scan_idx| {
                 if (scan.positionned) continue;
                 trace("try to match scan{}...\n", .{scan_idx});
 
+                // on regarde si on a un scan qui matche parmis ceux déjà positionnés
+                //var maybe_match = maybe_match: {
+                //for (scans) |s,other_idx| {
+                //    if (!s.positionned) continue;
+                //
+                //    var i: u32 = 0;
+                //    var j: u32 = 0;
+                //    var nb_matches: u32 = 0;
+                //    while (i < scan.pair_dists.len and j < s.pair_dists.len) {
+                //        const d1 = scan.pair_dists[i];
+                //        const d2 = s.pair_dists[j];
+                //        if (d1 == d2) {
+                //            nb_matches += 1;
+                //            // mmm on a perdu l'index de la pair qui matche, faudrait le garder pour gagner du temps.
+                //            i += 1;
+                //            j += 1;
+                //        } else if (d1 < d2) {
+                //            i += 1;
+                //        } else {
+                //            j += 1;
+                //        }
+                //    }
+                //    if (nb_matches >= (11*12)/2) {
+                //        trace("maybe match with {} ({} nb_matches)...\n", .{other_idx, nb_matches});
+                //        break :maybe_match  true;
+                //    }
+                //}
+                //else
+                //        break :maybe_match  false;
+                //
+                //};
+                //if (!maybe_match)
+                //    continue :nextscan;
+
                 for (rotations) |r| {
-                    const p0 = mul(r, scan.points[ref_point_index% scan.points]);    //  peu de chance qu'il y ait besoin de reprendre à zero, mais ça doit être possible de construire un exemple...
-                    var it = point_set.iterator();
-                    while (it.next()) |ref_point| {
-                        const ref = ref_point.key_ptr.*;
-                        const t = ref - p0;
+                    for (scan.points) |_, ref_point_index| {
+                        const p0 = mul(r, scan.points[ref_point_index]);
+                        var it = point_set.iterator();
+                        while (it.next()) |ref_point| {
+                            const ref = ref_point.key_ptr.*;
+                            const t = ref - p0;
 
-                        var match_count: u32 = 0;
-                        for (scan.points) |orig| {
-                            const p = mul(r, orig) + t;
-                            match_count += @boolToInt(point_set.get(p) != null);
-                        }
-                        assert(match_count > 0);
-
-                        if (match_count >= 12) {
-                            scan.rotation = r;
-                            scan.translation = t;
-                            scan.positionned = true;
+                            var match_count: u32 = 0;
                             for (scan.points) |orig| {
-                                try point_set.put(mul(r, orig) + t, {});
+                                const p = mul(r, orig) + t;
+                                match_count += @boolToInt(point_set.get(p) != null);
                             }
-                            trace("Found match for scan{}: t={}, r={any} unique points={}\n", .{ scan_idx, t, r, point_set.count() });
+                            assert(match_count > 0);
 
-                            nb_positionned_scans += 1;
-                            if (nb_positionned_scans == scans.len) break :ans point_set.count();
-                            continue :nextscan;
+                            if (match_count >= 12) {
+                                scan.rotation = r;
+                                scan.translation = t;
+                                scan.positionned = true;
+                                for (scan.points) |orig| {
+                                    try point_set.put(mul(r, orig) + t, {});
+                                }
+                                trace("Found match for scan{}: t={}, r={any} unique points={}\n", .{ scan_idx, t, r, point_set.count() });
+
+                                nb_positionned_scans += 1;
+                                if (nb_positionned_scans == scans.len) break :ans point_set.count();
+                                continue :nextscan;
+                            }
                         }
                     }
                 }
                 trace("no match for scan{} so far, unique points={}\n", .{ scan_idx, point_set.count() });
             }
-            ref_point_index += 1;
         }
         unreachable;
     };
 
     const ans2 = ans: {
-        var max_dist:i32 = 0;
+        var max_dist: i32 = 0;
         for (scans) |scan1| {
-        for (scans) |scan2| {
-            const signed_dist = (scan1.translation - scan2.translation);
-            const dist = @maximum(signed_dist, -signed_dist);
-            max_dist = @maximum(max_dist, @reduce(.Add, dist));
-        }
+            for (scans) |scan2| {
+                const signed_dist = (scan1.translation - scan2.translation);
+                const dist = @maximum(signed_dist, -signed_dist);
+                max_dist = @maximum(max_dist, @reduce(.Add, dist));
+            }
         }
 
         break :ans max_dist;
@@ -119,7 +168,6 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
         try std.fmt.allocPrint(gpa, "{}", .{ans2}),
     };
 }
-
 
 // -----------------------------------------------------
 // matrix math
@@ -138,6 +186,10 @@ fn cross(a: Vec3, b: Vec3) Vec3 {
 
 fn dot(a: Vec3, b: Vec3) i32 {
     return @reduce(.Add, a * b);
+}
+
+fn norm1(a: Vec3) u32 {
+    return @intCast(u32, @reduce(.Add, @maximum(a, -a)));
 }
 
 fn mul(m: Mat3, v: Vec3) Vec3 {
