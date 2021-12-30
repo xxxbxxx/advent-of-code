@@ -40,6 +40,8 @@ pub fn build(b: *Builder) void {
         .{ .year = "2021", .day = "day20" },
         .{ .year = "2021", .day = "day21" },
         .{ .year = "2021", .day = "day22" },
+        .{ .year = "2021", .day = "day23" },
+        .{ .year = "2021", .day = "day24" },
         .{ .year = "2021", .day = "day25" },
         .{ .year = "2021", .day = "alldays" }, // alldays in one exe
 
