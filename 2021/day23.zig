@@ -231,6 +231,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
 
                         var new = n;
                         new.state.amphipods[i][j] = to;
+                        std.sort.sort(Position, &new.state.amphipods[i], {}, comptime std.sort.asc(Position));   // pour éviter de multiplier les états différents mais équivalents
                         new.steps = new_energy;
                         new.rating = @intCast(i32, new_energy + new.state.distanceToTarget());
                         if (new.rating > best_energy) continue;
@@ -347,6 +348,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
 
                         var new = n;
                         new.state.amphipods[i][j] = to;
+                        std.sort.sort(Position, &new.state.amphipods[i], {}, comptime std.sort.asc(Position));   // pour éviter de multiplier les états différents mais équivalents
                         new.steps = new_energy;
                         new.rating = @intCast(i32, new_energy + new.state.distanceToTarget());
                         if (with_trace)
@@ -368,7 +370,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
 }
 
 test {
-    if (false) {
+    {
         const res = try run(
             \\#############
             \\#...........#
@@ -379,9 +381,9 @@ test {
         defer std.testing.allocator.free(res[0]);
         defer std.testing.allocator.free(res[1]);
         try std.testing.expectEqualStrings("0", res[0]);
-        try std.testing.expectEqualStrings("0", res[1]);
+        try std.testing.expectEqualStrings("28188", res[1]);
     }
-    if (false) {
+    {
         const res = try run(
             \\#############
             \\#...........#
@@ -392,7 +394,7 @@ test {
         defer std.testing.allocator.free(res[0]);
         defer std.testing.allocator.free(res[1]);
         try std.testing.expectEqualStrings("46", res[0]);
-        try std.testing.expectEqualStrings("0", res[1]);
+        try std.testing.expectEqualStrings("28220", res[1]);
     }
     {
         const res = try run(

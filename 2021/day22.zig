@@ -1,7 +1,7 @@
 const std = @import("std");
 const tools = @import("tools");
 
-const with_trace = true;
+const with_trace = false;
 fn trace(comptime fmt: []const u8, args: anytype) void {
     if (with_trace) std.debug.print(fmt, args);
 }
