@@ -203,24 +203,24 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
 
         try bfs.insert(BestFirstSearch.Node{
             .rating = 0,
-            .steps = 0,
+            .cost = 0,
             .state = indexAA,
             .trace = {},
         });
 
         var best: u32 = 999999;
         while (bfs.pop()) |node| {
-            if (node.steps >= best)
+            if (node.cost >= best)
                 continue;
 
-            trace("at {} ({}):\n", .{ node.state, node.steps });
+            trace("at {} ({}):\n", .{ node.state, node.cost });
 
             //walk:
             var i: u8 = 0;
             while (i < portal_count) : (i += 1) {
                 const d = dist_table[node.state * portal_count + i];
                 if (d == 0) continue;
-                const steps = node.steps + d;
+                const steps = node.cost + d;
                 if (steps >= best) continue;
                 if (i == indexZZ) { // exit found
                     trace("  exit: ...{} -{}-> OUT  ({})\n", .{ node.state, d, steps });
@@ -230,7 +230,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
                 trace("  walk: ...{} -{}-> {}  ({})\n", .{ node.state, d, i, steps });
                 try bfs.insert(BestFirstSearch.Node{
                     .rating = @intCast(i32, steps),
-                    .steps = steps,
+                    .cost = steps,
                     .state = i,
                     .trace = {},
                 });
@@ -239,11 +239,11 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
             //teleport:
             if (node.state != indexAA and node.state != indexZZ) {
                 const index = node.state ^ 1;
-                const steps = node.steps + 1;
+                const steps = node.cost + 1;
                 trace("  tele: ...{} -1-> {}  ({})\n", .{ node.state, index, steps });
                 try bfs.insert(BestFirstSearch.Node{
                     .rating = @intCast(i32, steps),
-                    .steps = steps,
+                    .cost = steps,
                     .state = index,
                     .trace = {},
                 });
@@ -259,24 +259,24 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
 
         try bfs.insert(BestFirstSearch.Node{
             .rating = 0,
-            .steps = 0,
+            .cost = 0,
             .state = .{ .tp = indexAA, .level = 0 },
             .trace = {},
         });
 
         var best: u32 = 999999;
         while (bfs.pop()) |node| {
-            if (node.steps >= best)
+            if (node.cost >= best)
                 continue;
 
-            trace("at {} ({}):\n", .{ node.state, node.steps });
+            trace("at {} ({}):\n", .{ node.state, node.cost });
 
             //walk:
             var i: u8 = 0;
             while (i < portal_count) : (i += 1) {
                 const d = dist_table[node.state.tp * portal_count + i];
                 if (d == 0) continue;
-                const steps = node.steps + d;
+                const steps = node.cost + d;
                 if (steps >= best) continue;
                 if (i == indexZZ and node.state.level == 0) { // exit found
                     trace("  exit: ...{} -{}-> OUT  ({})\n", .{ node.state, d, steps });
@@ -286,7 +286,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
                 trace("  walk: ...{} -{}-> {}  ({})\n", .{ node.state, d, i, steps });
                 try bfs.insert(BestFirstSearch.Node{
                     .rating = @intCast(i32, steps + 8 * @as(u32, node.state.level)),
-                    .steps = steps,
+                    .cost = steps,
                     .state = .{ .tp = i, .level = node.state.level },
                     .trace = {},
                 });
@@ -297,11 +297,11 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
                 const is_outer = (node.state.tp & 1) == 1;
                 if (!is_outer or node.state.level > 0) {
                     const index = node.state.tp ^ 1;
-                    const steps = node.steps + 1;
+                    const steps = node.cost + 1;
                     trace("  tele: ...{} -1-> {}  ({})\n", .{ node.state, index, steps });
                     try bfs.insert(BestFirstSearch.Node{
                         .rating = @intCast(i32, steps + 8 * @as(u32, node.state.level)),
-                        .steps = steps,
+                        .cost = steps,
                         .state = .{ .tp = index, .level = if (is_outer) node.state.level - 1 else node.state.level + 1 },
                         .trace = {},
                     });

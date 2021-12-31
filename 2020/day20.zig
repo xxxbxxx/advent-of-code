@@ -236,20 +236,20 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
             break :blk s;
         };
 
-        try bfs.insert(BFS.Node{ .state = initial_state, .trace = {}, .rating = @intCast(i32, param.maps.len), .steps = 0 });
+        try bfs.insert(BFS.Node{ .state = initial_state, .trace = {}, .rating = @intCast(i32, param.maps.len), .cost = 0 });
 
         final_state = result: while (bfs.pop()) |n| {
-            //print("agenda: {}, steps:{}\n", .{ bfs.agenda.count(), n.steps });
+            //print("agenda: {}, steps:{}\n", .{ bfs.agenda.count(), n.cost });
             var next_candidate = n.state.placed;
             while (next_candidate < param.maps.len) : (next_candidate += 1) {
                 var next = n;
-                next.steps = n.steps + 1;
+                next.cost = n.cost + 1;
                 next.rating = n.rating - 1;
                 next.state.list[n.state.placed] = n.state.list[next_candidate];
                 next.state.list[next_candidate] = n.state.list[n.state.placed];
                 next.state.placed = n.state.placed + 1;
                 for (Vec2.all_tranfos) |t| {
-                    if (n.steps == 0 and t != .r0) continue; // pas la peine d'explorer les 8 sytémetries et trouver 8 resultats..
+                    if (n.cost == 0 and t != .r0) continue; // pas la peine d'explorer les 8 sytémetries et trouver 8 resultats..
                     next.state.list[n.state.placed].t = t;
                     if (!checkValid(next.state, param.maps)) continue;
                     if (next.state.placed == param.maps.len) break :result next.state; // bingo!

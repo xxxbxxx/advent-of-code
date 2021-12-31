@@ -23,7 +23,7 @@ const Box = struct {
         //  if (a.max[2] > b.max[2]) return false;
         return false; // eq.
     }
-    fn compareOrder(a: @This(), b: @This()) std.math.Order {
+    fn compareOrder(_: void, a: @This(), b: @This()) std.math.Order {
         return std.math.order(b.order, a.order);
     }
 };
@@ -51,7 +51,7 @@ fn countNbLit(allocator: std.mem.Allocator, min: Vec3, max: Vec3, sorted_list: [
     var cursublist2 = std.ArrayList(Box).init(allocator);
     defer cursublist2.deinit();
 
-    var stack = std.PriorityQueue(Box, Box.compareOrder).init(allocator);
+    var stack = std.PriorityQueue(Box, void, Box.compareOrder).init(allocator, {});
     defer stack.deinit();
 
     var nb_lit: u64 = 0;

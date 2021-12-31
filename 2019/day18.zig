@@ -249,7 +249,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
 
         try searcher.insert(.{
             .rating = 0,
-            .steps = 0,
+            .cost = 0,
             .state = init_state,
             .trace = Trace{
                 .poi_list = undefined,
@@ -261,7 +261,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         var trace_visited: usize = 0;
         var best: u32 = 10000;
         while (searcher.pop()) |node| {
-            if (node.steps >= best)
+            if (node.cost >= best)
                 continue;
 
             if (with_trace) {
@@ -269,7 +269,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                 if (history.len > trace_dep or searcher.visited.count() > trace_visited + 50000) {
                     trace_dep = history.len;
                     trace_visited = searcher.visited.count();
-                    trace("so far... steps={}, agendalen={}, visited={}, trace[{}]={}\n", .{ node.steps, searcher.agenda.items.len, searcher.visited.count(), history.len, history });
+                    trace("so far... steps={}, agendalen={}, visited={}, trace[{}]={}\n", .{ node.cost, searcher.agenda.items.len, searcher.visited.count(), history.len, history });
                 }
             }
 
@@ -291,7 +291,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                     if (is_locked_door) continue;
 
                     var next = node;
-                    next.steps = node.steps + l.dist;
+                    next.cost = node.cost + l.dist;
                     if (is_key) next.state.keys[p - 'a'] = 1;
                     if (part == 1) {
                         next.state.cur = p;
@@ -314,13 +314,13 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                     for (next.state.keys) |k| {
                         key_count += k;
                     }
-                    next.rating = @intCast(i32, next.steps) - 100 * @intCast(i32, key_count);
+                    next.rating = @intCast(i32, next.cost) - 100 * @intCast(i32, key_count);
 
-                    if (next.steps >= best)
+                    if (next.cost >= best)
                         continue;
-                    if (std.mem.eql(u1, &next.state.keys, &all_keys) and next.steps < best) {
-                        trace("Solution: steps={}, agendalen={}, visited={}, trace={}\n", .{ next.steps, searcher.agenda.items.len, searcher.visited.count(), next.trace.poi_list[0..next.trace.poi_len] });
-                        best = next.steps;
+                    if (std.mem.eql(u1, &next.state.keys, &all_keys) and next.cost < best) {
+                        trace("Solution: steps={}, agendalen={}, visited={}, trace={}\n", .{ next.cost, searcher.agenda.items.len, searcher.visited.count(), next.trace.poi_list[0..next.trace.poi_len] });
+                        best = next.cost;
                         continue;
                     }
 

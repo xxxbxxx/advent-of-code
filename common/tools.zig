@@ -551,13 +551,13 @@ pub fn BestFirstSearch(comptime State: type, comptime Trace: type) type {
     return struct {
         pub const Node = struct {
             rating: i32, // explore les noeuds avec le plus petit rating en premier
-            steps: u32,
+            cost: u32,
             state: State,
             trace: Trace,
         };
 
         const Self = @This();
-        const Agenda = std.PriorityDequeue(*Node, compare_steps);
+        const Agenda = std.PriorityDequeue(*Node, void, compare_ratings);
         const VisitedNodes = if (State == []const u8) std.StringHashMap(*const Node) else std.AutoHashMap(State, *const Node);
 
         arena: std.heap.ArenaAllocator,
@@ -565,14 +565,14 @@ pub fn BestFirstSearch(comptime State: type, comptime Trace: type) type {
         recyclebin: ?*Node,
         visited: VisitedNodes,
 
-        fn compare_steps(a: *const Node, b: *const Node) std.math.Order {
+        fn compare_ratings(_: void, a: *const Node, b: *const Node) std.math.Order {
             return std.math.order(a.rating, b.rating);
         }
 
         pub fn init(allocator: std.mem.Allocator) Self {
             return Self{
                 .arena = std.heap.ArenaAllocator.init(allocator),
-                .agenda = Self.Agenda.init(allocator),
+                .agenda = Self.Agenda.init(allocator, {}),
                 .recyclebin = null,
                 .visited = Self.VisitedNodes.init(allocator),
             };
@@ -584,7 +584,7 @@ pub fn BestFirstSearch(comptime State: type, comptime Trace: type) type {
         }
         pub fn insert(s: *Self, node: Node) !void {
             if (s.visited.get(node.state)) |v| {
-                if (v.steps <= node.steps) {
+                if (v.cost <= node.cost) {
                     return;
                 }
             }
@@ -595,7 +595,7 @@ pub fn BestFirstSearch(comptime State: type, comptime Trace: type) type {
 
             try s.agenda.add(poolelem);
 
-            if (try s.visited.fetchPut(node.state, poolelem)) |kv| { // overwriten state with better steps?
+            if (try s.visited.fetchPut(node.state, poolelem)) |kv| { // overwriten state with better cost?
                 assert(kv.value != poolelem);
                 var it = s.agenda.iterator();
                 var i: usize = 0;

@@ -14,7 +14,7 @@ fn computeLowestExitLevel(alloc: std.mem.Allocator, width: usize, height: usize,
         x: u16,
         y: u16,
         level: u16,
-        fn compare(a: @This(), b: @This()) std.math.Order {
+        fn compare(_: void, a: @This(), b: @This()) std.math.Order {
             //return std.math.order(a.level, b.level);  plus lent. bizarre
 
             // testé avec prio = level + k*((width-x)+(hight-y))  -> moins bien.  Facteur limitant = taille de la queue.
@@ -25,7 +25,7 @@ fn computeLowestExitLevel(alloc: std.mem.Allocator, width: usize, height: usize,
             return .eq;
         }
     };
-    var queue = std.PriorityDequeue(Step, Step.compare).init(alloc); // dequeue way faster than queue
+    var queue = std.PriorityDequeue(Step, void, Step.compare).init(alloc, {}); // dequeue way faster than queue
     defer queue.deinit();
 
     const acculevels = try alloc.alloc(u16, width * height);

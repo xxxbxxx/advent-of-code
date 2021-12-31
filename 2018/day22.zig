@@ -62,19 +62,19 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         defer bfs.deinit();
 
         const init_state = State{ .p = Vec2{ .x = 0, .y = 0 }, .tool = .torch };
-        try bfs.insert(BFS.Node{ .state = init_state, .steps = 0, .rating = 0, .trace = {} });
+        try bfs.insert(BFS.Node{ .state = init_state, .cost = 0, .rating = 0, .trace = {} });
 
         var best_steps: u32 = 2000;
         while (bfs.pop()) |cur| {
             if (Vec2.eq(cur.state.p, param.target) and cur.state.tool == .torch) { // goal!
-                if (best_steps >= cur.steps) {
-                    // std.debug.print("new best: {}, agendalen:{}\n", .{ cur.steps, bfs.agenda.count() });
-                    best_steps = cur.steps;
+                if (best_steps >= cur.cost) {
+                    // std.debug.print("new best: {}, agendalen:{}\n", .{ cur.cost, bfs.agenda.count() });
+                    best_steps = cur.cost;
                 }
                 continue;
             }
 
-            if (cur.steps + 7 < best_steps) {
+            if (cur.cost + 7 < best_steps) {
                 var next = cur;
                 const region = map.at(cur.state.p) % 3;
                 const allowed_tools = switch (region) {
@@ -90,14 +90,14 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
                     if (tool != cur.state.tool) {
                         next.state.tool = tool;
                         next.state.p = cur.state.p;
-                        next.steps = cur.steps + 7;
-                        next.rating = @intCast(i32, Vec2.dist(next.state.p, param.target) * 1 + next.steps);
+                        next.cost = cur.cost + 7;
+                        next.rating = @intCast(i32, Vec2.dist(next.state.p, param.target) * 1 + next.cost);
                         try bfs.insert(next);
                     }
                 }
             }
 
-            if (cur.steps + 1 < best_steps) {
+            if (cur.cost + 1 < best_steps) {
                 var next = cur;
                 for (Vec2.cardinal_dirs) |dir| {
                     const next_p = cur.state.p.add(dir);
@@ -115,8 +115,8 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
                     if (std.mem.indexOfScalar(Tool, allowed_tools, cur.state.tool) == null) continue;
                     next.state.tool = cur.state.tool;
                     next.state.p = next_p;
-                    next.steps = cur.steps + 1;
-                    next.rating = @intCast(i32, Vec2.dist(next.state.p, param.target) * 1 + next.steps);
+                    next.cost = cur.cost + 1;
+                    next.rating = @intCast(i32, Vec2.dist(next.state.p, param.target) * 1 + next.cost);
                     try bfs.insert(next);
                 }
             }

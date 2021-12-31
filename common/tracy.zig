@@ -22,6 +22,13 @@ extern fn ___tracy_emit_zone_begin_alloc(srcloc: u64, active: c_int) ___tracy_c_
 
 extern fn ___tracy_emit_zone_end(ctx: ___tracy_c_zone_context) void;
 
+extern fn ___tracy_startup_profiler() void;
+extern fn ___tracy_shutdown_profiler() void;
+
+fn empty() void {}
+pub const startup_profiler = if (enable) ___tracy_startup_profiler else empty;
+pub const shutdown_profiler = if (enable) ___tracy_shutdown_profiler else empty;
+
 pub const ___tracy_source_location_data = extern struct {
     name: ?[*:0]const u8,
     function: [*:0]const u8,

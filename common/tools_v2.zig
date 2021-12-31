@@ -299,7 +299,7 @@ pub fn Map(comptime TileType: type, width: usize, height: usize, allow_negative_
         pub fn setLine(map: *Self, p: Vec2, t: []const Tile) void {
             if (allow_negative_pos) {
                 assert(p[0] <= Self.stride / 2 and -p[0] <= Self.stride / 2);
-                assert(p[0] + @intCast(i32, t.len - 1) <= Self.stride / 2 and -p[0] + @intCast(i32, t.len - 1) <= Self.stride / 2);
+                assert(p[0] + @intCast(i32, t.len - 1) <= Self.stride / 2);
             } else {
                 assert(p[0] >= 0 and p[1] >= 0);
             }
