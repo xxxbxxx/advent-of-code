@@ -15,7 +15,7 @@ older years not included in the build script.  (and may not even compile with la
 	 `zig run 2018/day10.zig  --pkg-begin "tools" "common/tools.zig" --pkg-end`
 
 * make an exe with all days and input embeded:\
-  - `zig build-exe 2021/alldays.zig  --pkg-begin "tools" "common/tools_v2.zig" --pkg-end -OReleaseFast` (runtime ~750ms)
+  - `zig build-exe 2021/alldays.zig  --pkg-begin "tools" "common/tools_v2.zig" --pkg-end -OReleaseFast` (runtime < 0.5s)
   - `zig build-exe 2020/alldays.zig  --pkg-begin "tools" "common/tools.zig" --pkg-end -OReleaseFast`  (runtime < 1 second)
   - `zig build-exe 2019/alldays.zig  --pkg-begin "tools" "common/tools.zig" --pkg-end -OReleaseFast`  (runtime < 5 second)
 
