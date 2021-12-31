@@ -1,0 +1,54 @@
+take tablet
+doorway
+north
+north
+bridge
+continue
+down
+east
+take empty lantern
+west
+west
+passage
+ladder
+west
+south
+north
+take can
+west
+use can
+ladder
+darkness
+use lantern
+continue
+west
+west
+west
+west
+north
+north
+west
+up
+take shiny coin
+down
+east
+east
+down
+take corroded coin
+up
+take concave coin
+west
+south
+south
+east
+east
+east
+east
+east
+continue
+use corroded coin
+west
+west
+west
+use corroded coin
+east

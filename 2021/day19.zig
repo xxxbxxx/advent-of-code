@@ -107,7 +107,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
                             if (d1 == d2) {
                                 nb_matches += 1;
                                 if (nb_matches >= (13 * 12) / 2) {
-                                    trace("maybe match with {}...\n", .{ other_idx });
+                                    trace("maybe match with {}...\n", .{other_idx});
 
                                     maybe_ref_point_idx = scan.pair_dists[i].idx1;
                                     maybe_ref_point_positionned[0] = mul(s.rotation, s.points[s.pair_dists[j].idx1]) + s.translation;

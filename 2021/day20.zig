@@ -32,7 +32,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
 
     const ans = ans: {
         if (with_trace) {
-            var buf: [250]u8 = undefined;
+            var buf: [15000]u8 = undefined;
             trace("gen {}:\n{s}", .{ 0, map.printToBuf(&buf, .{}) });
         }
 
@@ -79,7 +79,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
                 // undef, infinite.
             }
             if (with_trace) {
-                var buf: [250]u8 = undefined;
+                var buf: [100000]u8 = undefined;
                 trace("gen {}:\n{s}", .{ gen + 1, next.printToBuf(&buf, .{}) });
             }
         }

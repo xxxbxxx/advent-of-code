@@ -69,7 +69,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
     defer bfs.deinit();
 
     try bfs.insert(BFS.Node{
-        .steps = 0,
+        .cost = 0,
         .rating = 0,
         .state = State{
             .room_index = 0,
@@ -338,7 +338,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
                             continue;
 
                         var new = BFS.Node{
-                            .steps = node.steps + 1,
+                            .cost = node.cost + 1,
                             .rating = node.rating + 1,
                             .state = State{
                                 .room_index = room_index.?,
@@ -354,7 +354,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
                         for (room.items[0..room.items_count]) |itemidx| {
                             if (itemidx < items_firstvalid)
                                 continue;
-                            new.steps = node.steps + 1 + 1;
+                            new.cost = node.cost + 1 + 1;
                             new.rating = node.rating + 1 + 10;
                             new.trace.len = node.trace.len;
                             new.state.inventory |= (@as(u64, 1) << @intCast(u6, itemidx));

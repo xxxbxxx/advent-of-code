@@ -38,7 +38,7 @@ const Cell = struct {
     corner: Vec3,
     population: u32,
 
-    fn betterThan(a: @This(), b: @This()) std.math.Order {
+    fn betterThan(_: void, a: @This(), b: @This()) std.math.Order {
         if (a.population > b.population) return .lt;
         if (a.population < b.population) return .gt;
         if (a.size < b.size) return .lt;
@@ -91,7 +91,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
     const ans2 = ans: {
         //nb cet algo ne marche pas (bien du tout) si les sphres sont reparties de façon homogène (vu ue du coup il faut tout explorer en parallèle...)
         const global_size = 1024 * 1024 * 256; // à la louche, on pourrait examiner les données pour avoir la bbox précise
-        var workqueue = std.PriorityQueue(Cell, Cell.betterThan).init(allocator);
+        var workqueue = std.PriorityQueue(Cell, void, Cell.betterThan).init(allocator, {});
         defer workqueue.deinit();
 
         {

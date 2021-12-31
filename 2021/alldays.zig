@@ -66,6 +66,8 @@ test {
 pub fn main() !void {
     const stdout = std.io.getStdOut().writer();
 
+    tracy.startup_profiler(); // DTRACY_MANUAL_LIFETIME + DTRACY_DELAYED_INIT because apparently c++ static inits are not called.
+
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
@@ -90,4 +92,6 @@ pub fn main() !void {
             }
         }
     }
+
+    tracy.shutdown_profiler();
 }

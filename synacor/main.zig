@@ -380,7 +380,7 @@ fn maybeQueueNewRoomToExplore(vms: *VM.State, node: BFS.Node, t: TraceStep, room
     trace[node.trace.len] = t;
 
     try agenda.insert(BFS.Node{
-        .steps = node.steps + 1,
+        .cost = node.cost + 1,
         .rating = node.rating + switch (t) {
             .go => @as(i8, 1),
             .use => @as(i8, 1),
@@ -561,7 +561,7 @@ pub fn main() !void {
         defer agenda.deinit();
 
         try agenda.insert(BFS.Node{
-            .steps = 0,
+            .cost = 0,
             .rating = 0,
             .state = .{ .vm = vm_state, .room = init_room_id, .dir = .north },
             .trace = &[0]TraceStep{},
