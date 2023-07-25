@@ -86,7 +86,7 @@ fn computeLowestExitLevel(alloc: std.mem.Allocator, width: usize, height: usize,
         while (y < height) : (y += 1) {
             var x: u32 = 0;
             while (x < width) : (x += 1) {
-                trace("{d:2} ", .{@minimum(99, acculevels[x + width * y])});
+                trace("{d:2} ", .{@min(99, acculevels[x + width * y])});
             }
             trace("\n", .{});
         }
@@ -115,7 +115,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
             }
         } = .{ .risk = input, .stride = stride_in };
 
-        break :ans computeLowestExitLevel(gpa, width, height, &context, @TypeOf(context).entryRisk); // context.entryRisk == "BoundFn"?  comment ça s'utilise?
+        break :ans try computeLowestExitLevel(gpa, width, height, &context, @TypeOf(context).entryRisk); // context.entryRisk == "BoundFn"?  comment ça s'utilise?
     };
 
     const ans2 = ans: {
@@ -135,7 +135,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
             }
         } = .{ .risk = input, .w = width, .h = height, .stride = stride_in };
 
-        break :ans computeLowestExitLevel(gpa, 5 * width, 5 * height, &context, @TypeOf(context).entryRisk); // context.entryRisk == "BoundFn"?  comment ça s'utilise?
+        break :ans try computeLowestExitLevel(gpa, 5 * width, 5 * height, &context, @TypeOf(context).entryRisk); // context.entryRisk == "BoundFn"?  comment ça s'utilise?
     };
 
     return [_][]const u8{

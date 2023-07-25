@@ -67,7 +67,7 @@ fn computeTransormedBorders(in: *Map) void {
 
     var canon: [4]Border = undefined;
     for (canon) |*it, i| {
-        it.* = if (borders[0][i] < @bitReverse(Border, borders[0][i])) borders[0][i] else @bitReverse(Border, borders[0][i]);
+        it.* = if (borders[0][i] < @bitReverse(borders[0][i])) borders[0][i] else @bitReverse(borders[0][i]);
     }
 
     const b = borders[0];

@@ -91,7 +91,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
                 }
             }
         }
-        break :ans @maximum(wins1, wins2);
+        break :ans @max(wins1, wins2);
     };
 
     return [_][]const u8{

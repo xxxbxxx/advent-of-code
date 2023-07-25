@@ -192,13 +192,13 @@ fn eval(tree: PacketTree, root: TreeIndex) u64 {
         .minimum => {
             const list = tree.indexes_table[p.payload.list.entry_in_indexes_table .. p.payload.list.entry_in_indexes_table + p.payload.list.len];
             var v: u64 = 0xFFFFFFFFFFFFFFFF;
-            for (list) |idx| v = @minimum(v, eval(tree, idx));
+            for (list) |idx| v = @min(v, eval(tree, idx));
             return v;
         },
         .maximum => {
             const list = tree.indexes_table[p.payload.list.entry_in_indexes_table .. p.payload.list.entry_in_indexes_table + p.payload.list.len];
             var v: u64 = 0;
-            for (list) |idx| v = @maximum(v, eval(tree, idx));
+            for (list) |idx| v = @max(v, eval(tree, idx));
             return v;
         },
     }

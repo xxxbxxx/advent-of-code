@@ -5,6 +5,7 @@ const tools = @import("tools");
 pub const main = tools.defaultMain("2021/day05.txt", run);
 
 const Tile = @Vector(2, u2); // [0] only axis aligned, [1] all
+//const Tile = @Vector(2, u8); // 'u2' fails with stage2.
 const Map = tools.Map(Tile, 1000, 1000, false);
 const Vec2 = tools.Vec2;
 

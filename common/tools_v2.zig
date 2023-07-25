@@ -27,13 +27,13 @@ pub const Vec2 = @Vector(2, i32);
 
 pub const Vec = struct {
     pub fn clamp(v: Vec2, mini: Vec2, maxi: Vec2) Vec2 {
-        return @minimum(@maximum(v, mini), maxi);
+        return @min(@max(v, mini), maxi);
     }
     pub fn min(a: Vec2, b: Vec2) Vec2 {
-        return @minimum(a, b);
+        return @min(a, b);
     }
     pub fn max(a: Vec2, b: Vec2) Vec2 {
-        return @maximum(a, b);
+        return @max(a, b);
     }
 
     pub fn dist(a: Vec2, b: Vec2) u32 {
@@ -148,7 +148,7 @@ pub const BBox = struct {
     pub const empty = BBox{ .min = Vec2{ 999999, 999999 }, .max = Vec2{ -999999, -999999 } };
 };
 
-pub fn Map(comptime TileType: type, width: usize, height: usize, allow_negative_pos: bool) type {
+pub fn Map(comptime TileType: type, comptime width: usize, comptime height: usize, comptime allow_negative_pos: bool) type {
     return struct {
         pub const stride = width;
         pub const Tile = TileType;
@@ -172,7 +172,11 @@ pub fn Map(comptime TileType: type, width: usize, height: usize, allow_negative_
                 return t;
             unreachable;
         }
-        pub fn printToBuf(map: *const Self, buf: []u8, opt: struct { pos: ?Vec2 = null, clip: ?BBox = null, tileToCharFn: fn (m: Tile) u8 = defaultTileToChar }) []const u8 {
+        const printToBufOpt = if (@import("builtin").zig_backend == .stage1)
+            struct { pos: ?Vec2 = null, clip: ?BBox = null, tileToCharFn: fn (m: Tile) u8 = defaultTileToChar }
+        else
+            struct { pos: ?Vec2 = null, clip: ?BBox = null, comptime tileToCharFn: fn (m: Tile) u8 = defaultTileToChar };
+        pub fn printToBuf(map: *const Self, buf: []u8, opt: printToBufOpt) []const u8 {
             var i: usize = 0;
             const b = if (opt.clip) |box|
                 BBox{

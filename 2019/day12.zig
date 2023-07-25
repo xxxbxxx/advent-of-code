@@ -94,7 +94,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                 .pos = .{ initial_state[0].pos[a], initial_state[1].pos[a], initial_state[2].pos[a], initial_state[3].pos[a] },
                 .vel = .{ initial_state[0].vel[a], initial_state[1].vel[a], initial_state[2].vel[a], initial_state[3].vel[a] },
             };
-            _ = try tables[a].put(axis, .{});
+            _ = try tables[a].put(axis, {});
         }
     }
     var axis_repeat = [3]?u32{ null, null, null };
@@ -133,7 +133,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                 .pos = .{ next[0].pos[a], next[1].pos[a], next[2].pos[a], next[3].pos[a] },
                 .vel = .{ next[0].vel[a], next[1].vel[a], next[2].vel[a], next[3].vel[a] },
             };
-            if (try tables[a].fetchPut(axis, .{})) |_| {
+            if (try tables[a].fetchPut(axis, {})) |_| {
                 axr.* = step;
                 trace("REPEAT{} step n°{}  {},{},{},{}\n", .{ a, step, next[0].pos[a], next[1].pos[a], next[2].pos[a], next[3].pos[a] }); // next[0]
             }

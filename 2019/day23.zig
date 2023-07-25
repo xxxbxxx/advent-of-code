@@ -129,8 +129,8 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
     }
 
     return [_][]const u8{
-        try std.fmt.allocPrint(allocator, "{}", .{ans1}),
-        try std.fmt.allocPrint(allocator, "{}", .{ans2}),
+        try std.fmt.allocPrint(allocator, "{?}", .{ans1}),
+        try std.fmt.allocPrint(allocator, "{?}", .{ans2}),
     };
 }
 

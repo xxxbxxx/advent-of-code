@@ -75,8 +75,8 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
         var max: u32 = 0;
         for (quantities) |q| {
             if (q == 0) continue;
-            min = @minimum(min, q);
-            max = @maximum(max, q);
+            min = @min(min, q);
+            max = @max(max, q);
         }
         break :ans max - min;
     };
@@ -141,8 +141,8 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
             var max: u64 = 0;
             for (quantities) |q| {
                 if (q == 0) continue;
-                min = @minimum(min, q);
-                max = @maximum(max, q);
+                min = @min(min, q);
+                max = @max(max, q);
             }
             break :ans max - min;
         }

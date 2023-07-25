@@ -163,7 +163,7 @@ pub const BBox = struct {
     pub const empty = BBox{ .min = Vec2{ .x = 999999, .y = 999999 }, .max = Vec2{ .x = -999999, .y = -999999 } };
 };
 
-pub fn Map(comptime TileType: type, width: usize, height: usize, allow_negative_pos: bool) type {
+pub fn Map(comptime TileType: type, comptime width: usize, comptime height: usize, comptime allow_negative_pos: bool) type {
     return struct {
         pub const stride = width;
         pub const Tile = TileType;

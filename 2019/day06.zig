@@ -89,7 +89,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
 
     return [_][]const u8{
         try std.fmt.allocPrint(allocator, "{}", .{solution1}),
-        try std.fmt.allocPrint(allocator, "{}", .{solution2}),
+        try std.fmt.allocPrint(allocator, "{?}", .{solution2}),
     };
 }
 

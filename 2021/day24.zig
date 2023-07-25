@@ -172,8 +172,8 @@ fn dumpAsZigCode(prg: []const Inst, allocator: std.mem.Allocator) ![]u8 {
     var len: usize = 0;
     var in_idx: u32 = 0;
     for (prg) |inst| {
-        const a = std.meta.tagName(inst.a);
-        const b = if (inst.b == .reg) std.meta.tagName(inst.b.reg) else std.fmt.bufPrintIntToSlice(&num_buf, inst.b.imm, 10, .lower, .{});
+        const a = @tagName(inst.a);
+        const b = if (inst.b == .reg) @tagName(inst.b.reg) else std.fmt.bufPrintIntToSlice(&num_buf, inst.b.imm, 10, .lower, .{});
         switch (inst.op) {
             .inp => {
                 len += (try std.fmt.bufPrint(buf[len..], "{s} = in[{d}];\n", .{ a, in_idx })).len;
@@ -200,7 +200,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
     var it = std.mem.tokenize(u8, input, "\n");
     while (it.next()) |line| {
         inline for ([_]OpCode{ .inp, .add, .mul, .div, .mod, .eql }) |op| {
-            if (tools.match_pattern(std.meta.tagName(op) ++ " {} {}", line)) |val| {
+            if (tools.match_pattern(@tagName(op) ++ " {} {}", line)) |val| {
                 if (val[1] == .imm) {
                     try prg.append(Inst{
                         .op = op,
@@ -214,7 +214,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
                         .b = .{ .reg = parseReg(val[1].lit) },
                     });
                 }
-            } else if (tools.match_pattern(std.meta.tagName(op) ++ " {}", line)) |val| {
+            } else if (tools.match_pattern(@tagName(op) ++ " {}", line)) |val| {
                 try prg.append(Inst{ .op = op, .a = parseReg(val[0].lit), .b = .{ .imm = 0 } });
             }
         }

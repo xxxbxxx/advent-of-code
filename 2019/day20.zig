@@ -15,8 +15,9 @@ const PortalContext = struct {
         _ = self;
         return a;
     }
-    pub fn eql(self: @This(), a: u10, b: u10) bool {
+    pub fn eql(self: @This(), a: u10, b: u10, b_index: usize) bool {
         _ = self;
+        _ = b_index;
         return a == b;
     }
 };

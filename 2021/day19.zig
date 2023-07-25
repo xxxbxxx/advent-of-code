@@ -198,8 +198,8 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
         for (scans) |scan1| {
             for (scans) |scan2| {
                 const signed_dist = (scan1.translation - scan2.translation);
-                const dist = @maximum(signed_dist, -signed_dist);
-                max_dist = @maximum(max_dist, @reduce(.Add, dist));
+                const dist = @max(signed_dist, -signed_dist);
+                max_dist = @max(max_dist, @reduce(.Add, dist));
             }
         }
 
@@ -232,7 +232,7 @@ fn dot(a: Vec3, b: Vec3) i32 {
 }
 
 fn norm1(a: Vec3) u32 {
-    return @intCast(u32, @reduce(.Add, @maximum(a, -a)));
+    return @intCast(u32, @reduce(.Add, @max(a, -a)));
 }
 
 fn mul(m: Mat3, v: Vec3) Vec3 {

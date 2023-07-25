@@ -13,7 +13,7 @@ const BBox = tools.BBox;
 pub const main = tools.defaultMain("2021/day17.txt", run);
 
 fn saturate(x: i32) i32 {
-    return @minimum(1, @maximum(-1, x));
+    return @min(1, @max(-1, x));
 }
 
 fn hitsTarget(target: BBox, v_: Vec2) bool {
@@ -24,7 +24,7 @@ fn hitsTarget(target: BBox, v_: Vec2) bool {
         if (target.includes(p)) return true;
 
         p += v;
-        const accel = Vec2{ @maximum(-1, -v[0]), -1 };
+        const accel = Vec2{ @max(-1, -v[0]), -1 };
         v += accel;
     }
     return false;
@@ -71,7 +71,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
             while (v[1] <= -target.min[1]) : (v[1] += 1) {
                 const hits = @boolToInt(hitsTarget(target, v));
                 hit_count += hits;
-                best_apex = @maximum(best_apex, hits * computeApex(v));
+                best_apex = @max(best_apex, hits * computeApex(v));
             }
         }
 

@@ -140,7 +140,7 @@ pub fn run(_: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]cons
                 var i: u32 = 0;
                 while (i < 25) : (i += 1) {
                     //const count = @reduce(.Add, @as(@Vector(25, u4), cur & neibourgh_masks[i]));        // pfff.  TODO u25 + popcount...
-                    const count = @popCount(u25, cur.mask & neibourgh_masks[i].mask);
+                    const count = @popCount(cur.mask & neibourgh_masks[i].mask);
                     if (cur.isSet(i)) {
                         new.setValue(i, (count == 1));
                     } else {
@@ -175,9 +175,9 @@ pub fn run(_: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]cons
                     var i: u32 = 0;
                     while (i < 25) : (i += 1) {
                         const count = 0 //
-                        + @popCount(u25, world[(idx + 1) - 1].mask & masks[i][0].mask) //
-                        + @popCount(u25, world[(idx + 1) + 0].mask & masks[i][1].mask) //
-                        + @popCount(u25, world[(idx + 1) + 1].mask & masks[i][2].mask);
+                        + @popCount(world[(idx + 1) - 1].mask & masks[i][0].mask) //
+                        + @popCount(world[(idx + 1) + 0].mask & masks[i][1].mask) //
+                        + @popCount(world[(idx + 1) + 1].mask & masks[i][2].mask);
 
                         if (world[(idx + 1) + 0].isSet(i)) {
                             layer.setValue(i, (count == 1));
@@ -197,7 +197,7 @@ pub fn run(_: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]cons
         var total: usize = 0;
         for (world) |layer| {
             // if (layer.mask != 0) trace_grid("layer :\n", layer);
-            total += @popCount(u25, layer.mask);
+            total += @popCount(layer.mask);
         }
         break :ans total;
     };

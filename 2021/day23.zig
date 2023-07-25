@@ -78,7 +78,7 @@ const paths_matrix = blk: {
     break :blk paths;
 };
 
-fn State(room_sz: u32) type {
+fn State(comptime room_sz: u32) type {
     return struct {
         amphipods: [4][room_sz]Position,
         fn distanceToTarget(s: @This()) u32 {
@@ -104,6 +104,9 @@ fn State(room_sz: u32) type {
 }
 
 fn searchLowestEnergySolution(allocator: std.mem.Allocator, comptime StateType: type, initial_state: StateType, all_positions: []const Position) !u32 {
+    const tracy_zone = tools.tracy.trace(@src());
+    defer tracy_zone.end();
+
     var arena_alloc = std.heap.ArenaAllocator.init(allocator);
     defer arena_alloc.deinit();
     const arena = arena_alloc.allocator(); // for traces

@@ -188,23 +188,23 @@ const Octree = struct {
             newnode2.node.childs[0b111] = cur;
             return newnode1;
         } else {
-            const min_000 = @maximum(min, Vec3{ min[0], min[1], min[2] });
-            const min_001 = @maximum(min, Vec3{ min[0], min[1], cur.node.p[2] });
-            const min_010 = @maximum(min, Vec3{ min[0], cur.node.p[1], min[2] });
-            const min_011 = @maximum(min, Vec3{ min[0], cur.node.p[1], cur.node.p[2] });
-            const min_100 = @maximum(min, Vec3{ cur.node.p[0], min[1], min[2] });
-            const min_101 = @maximum(min, Vec3{ cur.node.p[0], min[1], cur.node.p[2] });
-            const min_110 = @maximum(min, Vec3{ cur.node.p[0], cur.node.p[1], min[2] });
-            const min_111 = @maximum(min, Vec3{ cur.node.p[0], cur.node.p[1], cur.node.p[2] });
+            const min_000 = @max(min, Vec3{ min[0], min[1], min[2] });
+            const min_001 = @max(min, Vec3{ min[0], min[1], cur.node.p[2] });
+            const min_010 = @max(min, Vec3{ min[0], cur.node.p[1], min[2] });
+            const min_011 = @max(min, Vec3{ min[0], cur.node.p[1], cur.node.p[2] });
+            const min_100 = @max(min, Vec3{ cur.node.p[0], min[1], min[2] });
+            const min_101 = @max(min, Vec3{ cur.node.p[0], min[1], cur.node.p[2] });
+            const min_110 = @max(min, Vec3{ cur.node.p[0], cur.node.p[1], min[2] });
+            const min_111 = @max(min, Vec3{ cur.node.p[0], cur.node.p[1], cur.node.p[2] });
 
-            const max_000 = @minimum(max, Vec3{ cur.node.p[0], cur.node.p[1], cur.node.p[2] });
-            const max_001 = @minimum(max, Vec3{ cur.node.p[0], cur.node.p[1], max[2] });
-            const max_010 = @minimum(max, Vec3{ cur.node.p[0], max[1], cur.node.p[2] });
-            const max_011 = @minimum(max, Vec3{ cur.node.p[0], max[1], max[2] });
-            const max_100 = @minimum(max, Vec3{ max[0], cur.node.p[1], cur.node.p[2] });
-            const max_101 = @minimum(max, Vec3{ max[0], cur.node.p[1], max[2] });
-            const max_110 = @minimum(max, Vec3{ max[0], max[1], cur.node.p[2] });
-            const max_111 = @minimum(max, Vec3{ max[0], max[1], max[2] });
+            const max_000 = @min(max, Vec3{ cur.node.p[0], cur.node.p[1], cur.node.p[2] });
+            const max_001 = @min(max, Vec3{ cur.node.p[0], cur.node.p[1], max[2] });
+            const max_010 = @min(max, Vec3{ cur.node.p[0], max[1], cur.node.p[2] });
+            const max_011 = @min(max, Vec3{ cur.node.p[0], max[1], max[2] });
+            const max_100 = @min(max, Vec3{ max[0], cur.node.p[1], cur.node.p[2] });
+            const max_101 = @min(max, Vec3{ max[0], cur.node.p[1], max[2] });
+            const max_110 = @min(max, Vec3{ max[0], max[1], cur.node.p[2] });
+            const max_111 = @min(max, Vec3{ max[0], max[1], max[2] });
 
             cur.node.childs[0b000] = try addBoxRecurse(self, min_000, max_000, is_lit, cur.node.childs[0b000]);
             cur.node.childs[0b001] = try addBoxRecurse(self, min_001, max_001, is_lit, cur.node.childs[0b001]);
@@ -255,14 +255,14 @@ const Octree = struct {
                 return @boolToInt(on == is_lit) * @reduce(.Mul, @intCast(@Vector(3, u64), max - min));
             },
             .node => |n| {
-                const vol000 = computeVolumeRecurse(self, is_lit, @maximum(min, Vec3{ min[0], min[1], min[2] }), @minimum(max, Vec3{ n.p[0], n.p[1], n.p[2] }), n.childs[0b000]);
-                const vol001 = computeVolumeRecurse(self, is_lit, @maximum(min, Vec3{ min[0], min[1], n.p[2] }), @minimum(max, Vec3{ n.p[0], n.p[1], max[2] }), n.childs[0b001]);
-                const vol010 = computeVolumeRecurse(self, is_lit, @maximum(min, Vec3{ min[0], n.p[1], min[2] }), @minimum(max, Vec3{ n.p[0], max[1], n.p[2] }), n.childs[0b010]);
-                const vol011 = computeVolumeRecurse(self, is_lit, @maximum(min, Vec3{ min[0], n.p[1], n.p[2] }), @minimum(max, Vec3{ n.p[0], max[1], max[2] }), n.childs[0b011]);
-                const vol100 = computeVolumeRecurse(self, is_lit, @maximum(min, Vec3{ n.p[0], min[1], min[2] }), @minimum(max, Vec3{ max[0], n.p[1], n.p[2] }), n.childs[0b100]);
-                const vol101 = computeVolumeRecurse(self, is_lit, @maximum(min, Vec3{ n.p[0], min[1], n.p[2] }), @minimum(max, Vec3{ max[0], n.p[1], max[2] }), n.childs[0b101]);
-                const vol110 = computeVolumeRecurse(self, is_lit, @maximum(min, Vec3{ n.p[0], n.p[1], min[2] }), @minimum(max, Vec3{ max[0], max[1], n.p[2] }), n.childs[0b110]);
-                const vol111 = computeVolumeRecurse(self, is_lit, @maximum(min, Vec3{ n.p[0], n.p[1], n.p[2] }), @minimum(max, Vec3{ max[0], max[1], max[2] }), n.childs[0b111]);
+                const vol000 = computeVolumeRecurse(self, is_lit, @max(min, Vec3{ min[0], min[1], min[2] }), @min(max, Vec3{ n.p[0], n.p[1], n.p[2] }), n.childs[0b000]);
+                const vol001 = computeVolumeRecurse(self, is_lit, @max(min, Vec3{ min[0], min[1], n.p[2] }), @min(max, Vec3{ n.p[0], n.p[1], max[2] }), n.childs[0b001]);
+                const vol010 = computeVolumeRecurse(self, is_lit, @max(min, Vec3{ min[0], n.p[1], min[2] }), @min(max, Vec3{ n.p[0], max[1], n.p[2] }), n.childs[0b010]);
+                const vol011 = computeVolumeRecurse(self, is_lit, @max(min, Vec3{ min[0], n.p[1], n.p[2] }), @min(max, Vec3{ n.p[0], max[1], max[2] }), n.childs[0b011]);
+                const vol100 = computeVolumeRecurse(self, is_lit, @max(min, Vec3{ n.p[0], min[1], min[2] }), @min(max, Vec3{ max[0], n.p[1], n.p[2] }), n.childs[0b100]);
+                const vol101 = computeVolumeRecurse(self, is_lit, @max(min, Vec3{ n.p[0], min[1], n.p[2] }), @min(max, Vec3{ max[0], n.p[1], max[2] }), n.childs[0b101]);
+                const vol110 = computeVolumeRecurse(self, is_lit, @max(min, Vec3{ n.p[0], n.p[1], min[2] }), @min(max, Vec3{ max[0], max[1], n.p[2] }), n.childs[0b110]);
+                const vol111 = computeVolumeRecurse(self, is_lit, @max(min, Vec3{ n.p[0], n.p[1], n.p[2] }), @min(max, Vec3{ max[0], max[1], max[2] }), n.childs[0b111]);
                 return vol000 + vol001 + vol010 + vol011 + vol100 + vol101 + vol110 + vol111;
             },
         }

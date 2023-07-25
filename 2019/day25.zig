@@ -62,6 +62,10 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
     };
     defer allocator.free(cpu.memory);
 
+    var arena_alloc = std.heap.ArenaAllocator.init(allocator);
+    defer arena_alloc.deinit();
+    const arena = arena_alloc.allocator();
+
     var map = Map{ .default_tile = '#' };
     map.set(Vec2{ .x = 0, .y = 0 }, ' ');
 
@@ -203,7 +207,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
                             switch (sec) {
                                 .title => {
                                     if (std.mem.eql(u8, line[0..3], "== ")) {
-                                        room.name = line[3 .. line.len - 3]; //try allocator.dupe(u8, line[3 .. line.len - 3]);
+                                        room.name = line[3 .. line.len - 3]; //try arena.dupe(u8, line[3 .. line.len - 3]);
                                         sec = .desc;
                                     } else {
                                         trace("Skipping: {s}\n", .{line});
@@ -216,7 +220,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
                                         sec = .doors;
                                     } else {
                                         assert(room.desc.len == 0);
-                                        room.desc = line; //try allocator.dupe(u8, line);
+                                        room.desc = line; //try arena.dupe(u8, line);
                                     }
                                 },
                                 .doors => {
@@ -254,7 +258,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
                                                 if (std.mem.eql(u8, item, existing))
                                                     break :itemblk i;
                                             }
-                                            try items.append(try allocator.dupe(u8, item));
+                                            try items.append(try arena.dupe(u8, item));
                                             break :itemblk items.items.len - 1;
                                         };
                                         room.items[room.items_count] = item_num;
@@ -289,8 +293,8 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
 
                     const newroom = try rooms.addOne();
                     newroom.* = room;
-                    newroom.name = try allocator.dupe(u8, room.name);
-                    newroom.desc = try allocator.dupe(u8, room.desc);
+                    newroom.name = try arena.dupe(u8, room.name);
+                    newroom.desc = try arena.dupe(u8, room.desc);
                     break :blk rooms.items.len - 1;
                 };
 

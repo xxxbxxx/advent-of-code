@@ -26,8 +26,8 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                 group_union = group_union | person_letters_mask;
                 group_intersection = group_intersection & person_letters_mask;
             }
-            ans1 += @popCount(u26, group_union);
-            ans2 += @popCount(u26, group_intersection);
+            ans1 += @popCount(group_union);
+            ans2 += @popCount(group_intersection);
         }
     }
 

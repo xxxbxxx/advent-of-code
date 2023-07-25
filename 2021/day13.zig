@@ -71,7 +71,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
         const dots = sortAndremoveDups(dot_list.items);
         const max = max: {
             var m = Vec2{ 0, 0 };
-            for (dots) |v| m = @maximum(m, v);
+            for (dots) |v| m = @max(m, v);
             break :max m;
         };
 

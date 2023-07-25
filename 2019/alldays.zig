@@ -2,36 +2,36 @@ const std = @import("std");
 const assert = std.debug.assert;
 const tools = @import("tools");
 
-const RunFn = fn (input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]const u8;
+const RunFn = *const fn (input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]const u8;
 
 // it.runFn = @import(name);  -> marche pas. doit être un string litteral
 
 const alldays = [_]struct { runFn: RunFn, input: []const u8 }{
-    .{ .runFn = @import("day01.zig").run, .input = @embedFile("day01.txt") },
-    .{ .runFn = @import("day02.zig").run, .input = @embedFile("day02.txt") },
-    .{ .runFn = @import("day03.zig").run, .input = @embedFile("day03.txt") },
-    .{ .runFn = @import("day04.zig").run, .input = "" },
-    .{ .runFn = @import("day05.zig").run, .input = @embedFile("day05.txt") },
-    .{ .runFn = @import("day06.zig").run, .input = @embedFile("day06.txt") },
-    //async    .{ .runFn = @import("day07.zig").run, .input = @embedFile("day07.txt") },
-    .{ .runFn = @import("day08.zig").run, .input = @embedFile("day08.txt") },
-    //async    .{ .runFn = @import("day09.zig").run, .input = @embedFile("day09.txt") },
-    .{ .runFn = @import("day10.zig").run, .input = @embedFile("day10.txt") },
-    //async    .{ .runFn = @import("day11.zig").run, .input = @embedFile("day11.txt") },
-    .{ .runFn = @import("day12.zig").run, .input = "" },
-    //async    .{ .runFn = @import("day13.zig").run, .input = @embedFile("day13.txt") },
-    .{ .runFn = @import("day14.zig").run, .input = @embedFile("day14.txt") },
-    //async     .runFn = @import("day15.zig").run, .input = @embedFile("day15.txt") },
-    .{ .runFn = @import("day16.zig").run, .input = @embedFile("day16.txt") },
-    //async    .{ .runFn = @import("day17.zig").run, .input = @embedFile("day17.txt") },
-    .{ .runFn = @import("day18.zig").run, .input = @embedFile("day18.txt") },
-    //async    .{ .runFn = @import("day19.zig").run, .input = @embedFile("day19.txt") },
-    .{ .runFn = @import("day20.zig").run, .input = @embedFile("day20.txt") },
-    //async    .{ .runFn = @import("day21.zig").run, .input = @embedFile("day21.txt") },
-    .{ .runFn = @import("day22.zig").run, .input = @embedFile("day22.txt") },
-    //async    .{ .runFn = @import("day23.zig").run, .input = @embedFile("day23.txt") },
-    .{ .runFn = @import("day24.zig").run, .input = "" },
-    //async    .{ .runFn = @import("day25.zig").run, .input = @embedFile("day25.txt") },
+    .{ .runFn = &@import("day01.zig").run, .input = @embedFile("day01.txt") },
+    .{ .runFn = &@import("day02.zig").run, .input = @embedFile("day02.txt") },
+    .{ .runFn = &@import("day03.zig").run, .input = @embedFile("day03.txt") },
+    .{ .runFn = &@import("day04.zig").run, .input = "" },
+    .{ .runFn = &@import("day05.zig").run, .input = @embedFile("day05.txt") },
+    .{ .runFn = &@import("day06.zig").run, .input = @embedFile("day06.txt") },
+    //async    .{ .runFn = &@import("day07.zig").run, .input = @embedFile("day07.txt") },
+    .{ .runFn = &@import("day08.zig").run, .input = @embedFile("day08.txt") },
+    //async    .{ .runFn = &@import("day09.zig").run, .input = @embedFile("day09.txt") },
+    .{ .runFn = &@import("day10.zig").run, .input = @embedFile("day10.txt") },
+    //async    .{ .runFn = &@import("day11.zig").run, .input = @embedFile("day11.txt") },
+    .{ .runFn = &@import("day12.zig").run, .input = "" },
+    //async    .{ .runFn = &@import("day13.zig").run, .input = @embedFile("day13.txt") },
+    .{ .runFn = &@import("day14.zig").run, .input = @embedFile("day14.txt") },
+    //async    .{ .runFn = &@import("day15.zig").run, .input = @embedFile("day15.txt") },
+    .{ .runFn = &@import("day16.zig").run, .input = @embedFile("day16.txt") },
+    //async    .{ .runFn = &@import("day17.zig").run, .input = @embedFile("day17.txt") },
+    .{ .runFn = &@import("day18.zig").run, .input = @embedFile("day18.txt") },
+    //async    .{ .runFn = &@import("day19.zig").run, .input = @embedFile("day19.txt") },
+    .{ .runFn = &@import("day20.zig").run, .input = @embedFile("day20.txt") },
+    //async   .{ .runFn = &@import("day21.zig").run, .input = @embedFile("day21.txt") },
+    .{ .runFn = &@import("day22.zig").run, .input = @embedFile("day22.txt") },
+    //async    .{ .runFn = &@import("day23.zig").run, .input = @embedFile("day23.txt") },
+    .{ .runFn = &@import("day24.zig").run, .input = "" },
+    //async    .{ .runFn = &@import("day25.zig").run, .input = @embedFile("day25.txt") },
 };
 
 pub fn main() !void {
@@ -42,7 +42,11 @@ pub fn main() !void {
     const allocator = gpa.allocator();
 
     for (alldays) |it, day| {
-        const answer = try it.runFn(it.input, allocator);
+        const func = switch (@import("builtin").zig_backend) {
+            .stage1 => it.runFn.*,
+            else => it.runFn,
+        };
+        const answer = try func(it.input, allocator);
         defer allocator.free(answer[0]);
         defer allocator.free(answer[1]);
 

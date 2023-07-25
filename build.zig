@@ -139,6 +139,7 @@ pub fn build(b: *Builder) void {
         const path = b.fmt("{s}/{s}.zig", .{ pb.year, pb.day });
 
         const exe = b.addExecutable(pb.day, path);
+        exe.use_stage1 = true;
         exe.setBuildMode(mode);
         exe.addOptions("build_options", exe_options); // XXX Does not apply to package tools / 'tracy'.  no idea how to make it work
 
@@ -153,7 +154,7 @@ pub fn build(b: *Builder) void {
                 b.allocator,
                 &[_][]const u8{ tracy_path, "TracyClient.cpp" },
             ) catch unreachable;
-            exe.addIncludeDir(tracy_path);
+            exe.addIncludePath(tracy_path);
             exe.addCSourceFile(client_cpp, &[_][]const u8{ "-DTRACY_ENABLE=1", "-fno-sanitize=undefined" });
             exe.linkLibCpp();
         }

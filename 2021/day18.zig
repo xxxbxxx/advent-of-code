@@ -260,6 +260,9 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
     }
 
     const ans1 = ans: {
+        const zone = tools.tracy.traceEx(@src(), .{ .name = "part1" });
+        defer zone.end();
+
         var snail_sum = input_list.items[0];
         for (input_list.items[1..]) |snail| {
             snail_sum = reduce(add(snail_sum, snail));
@@ -269,11 +272,14 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
     };
 
     const ans2 = ans: {
+        const zone = tools.tracy.traceEx(@src(), .{ .name = "part2" });
+        defer zone.end();
+
         var max: u32 = 0;
         for (input_list.items) |a, i| {
             for (input_list.items) |b, j| {
                 if (i == j) continue;
-                max = @maximum(max, magnitude(reduce(add(a, b))));
+                max = @max(max, magnitude(reduce(add(a, b))));
             }
         }
 

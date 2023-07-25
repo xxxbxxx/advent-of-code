@@ -46,16 +46,16 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
     const allocator = arena.allocator();
 
     var number_list: []u16 = undefined;
-    var digits_list: []@Vector(16, u1) = undefined; // msb
+    var digits_list: []@Vector(16, u8) = undefined; // msb
     {
         const line_count = std.mem.count(u8, input, "\n") + 1;
         const nums = try allocator.alloc(u16, line_count);
-        const digs = try allocator.alloc(@Vector(16, u1), line_count);
+        const digs = try allocator.alloc(@Vector(16, u8), line_count);
 
         var it = std.mem.tokenize(u8, input, "\n\r");
         var l: u32 = 0;
         while (it.next()) |line| : (l += 1) {
-            var val = @splat(16, @as(u1, 0));
+            var val = @splat(16, @as(u8, 0));
             var num: u16 = 0;
             for (line) |c, i| {
                 val[i] = @boolToInt(c == '1');
@@ -80,7 +80,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
 
         //std.debug.print("line_count={}, counts={}\n", .{ digits_list.len, counters });
 
-        const ones = counters > @splat(16, digits_list.len / 2);
+        const ones = counters > @splat(16, @intCast(u16, digits_list.len / 2));
         const width = @reduce(.Add, @as(@Vector(16, u16), @bitCast(@Vector(16, u1), counters > zero)));
         //std.debug.print("width={}, ones={}\n", .{ width, ones });
 
