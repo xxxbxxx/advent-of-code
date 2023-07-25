@@ -61,7 +61,7 @@ fn print(buf: []u8, snail: SnailfishNumber) []u8 {
     var b = buf;
     var s: []const Digit = snail[0..];
     print_recurse(&b, &s);
-    return buf[0 .. @ptrToInt(b.ptr) - @ptrToInt(buf.ptr)];
+    return buf[0 .. @intFromPtr(b.ptr) - @intFromPtr(buf.ptr)];
 }
 
 fn magnitude_recurse(snail: SnailfishNumber, cur_digit: *u32) u32 {
@@ -87,13 +87,13 @@ fn add(a: SnailfishNumber, b: SnailfishNumber) SnailfishNumber {
     r.append(PAIR_MARK);
 
     var len: u32 = 1;
-    for (a) |d, i| {
+    for (a, 0..) |d, i| {
         if (i >= len) break;
         if (d == PAIR_MARK) len += 2;
         r.append(d);
     }
     len = 1;
-    for (b) |d, i| {
+    for (b, 0..) |d, i| {
         if (i >= len) break;
         if (d == PAIR_MARK) len += 2;
         r.append(d);
@@ -103,7 +103,7 @@ fn add(a: SnailfishNumber, b: SnailfishNumber) SnailfishNumber {
 
 fn equal(a: SnailfishNumber, b: SnailfishNumber) bool {
     var len: u32 = 1;
-    for (a) |d, i| {
+    for (a, 0..) |d, i| {
         if (i >= len) return true;
         if (a[i] != b[i]) return false;
         if (d == PAIR_MARK) len += 2;
@@ -161,7 +161,7 @@ fn split(a: SnailfishNumber) SnailfishNumber {
     var has_split = false;
 
     var len: u32 = 1;
-    for (a) |d, i| {
+    for (a, 0..) |d, i| {
         if (i >= len) break;
         switch (d) {
             PAIR_MARK => {
@@ -276,8 +276,8 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
         defer zone.end();
 
         var max: u32 = 0;
-        for (input_list.items) |a, i| {
-            for (input_list.items) |b, j| {
+        for (input_list.items, 0..) |a, i| {
+            for (input_list.items, 0..) |b, j| {
                 if (i == j) continue;
                 max = @max(max, magnitude(reduce(add(a, b))));
             }

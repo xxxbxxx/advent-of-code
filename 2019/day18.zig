@@ -85,13 +85,13 @@ fn compute_dists_list(map: *const Map, from: u8, buf: []PoiDist) []PoiDist {
     }
 
     var i: u32 = 0;
-    for (poi_dist) |d, p| {
+    for (poi_dist, 0..) |d, p| {
         if (d == 65535 or d == 0)
             continue;
         if (p <= 'z' - 'a') {
-            buf[i] = .{ .dist = d, .poi = @intCast(u7, p + 'a') };
+            buf[i] = .{ .dist = d, .poi = @intCast(p + 'a') };
         } else {
-            buf[i] = .{ .dist = d, .poi = @intCast(u7, p - ('z' - 'a' + 1) + 'A') };
+            buf[i] = .{ .dist = d, .poi = @intCast(p - ('z' - 'a' + 1) + 'A') };
         }
         i += 1;
     }
@@ -107,7 +107,7 @@ fn recurse_updatedists(from: u7, keys: []const u1, graph: []const MapNode, steps
         if (is_locked_door)
             continue;
 
-        const dist = @intCast(u16, steps + l.dist);
+        const dist: u16 = @intCast(steps + l.dist);
         if (dist >= dists[p])
             continue;
         dists[p] = dist;
@@ -136,7 +136,7 @@ fn enumerate_capturables(from: u7, keys: []const u1, graph: []const MapNode, poo
         if (!is_new_key)
             continue;
 
-        pool[len] = PoiDist{ .poi = @intCast(u7, k), .dist = d };
+        pool[len] = PoiDist{ .poi = @intCast(k), .dist = d };
         len += 1;
     }
     return pool[0..len];
@@ -314,7 +314,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                     for (next.state.keys) |k| {
                         key_count += k;
                     }
-                    next.rating = @intCast(i32, next.cost) - 100 * @intCast(i32, key_count);
+                    next.rating = @as(i32, @intCast(next.cost)) - 100 * @as(i32, @intCast(key_count));
 
                     if (next.cost >= best)
                         continue;

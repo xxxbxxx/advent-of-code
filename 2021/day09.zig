@@ -37,9 +37,9 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
         var it = std.mem.tokenize(u8, input, "\n");
         var y: u32 = 0;
         while (it.next()) |line| : (y += 1) {
-            for (line) |c, x| {
+            for (line, 0..) |c, x| {
                 switch (c) {
-                    '0'...'9' => map.set(Vec2{ @intCast(i32, x), @intCast(i32, y) }, c - '0'),
+                    '0'...'9' => map.set(Vec2{ @as(i32, @intCast(x)), @as(i32, @intCast(y)) }, c - '0'),
                     else => {},
                 }
             }
@@ -55,7 +55,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
             var count: i32 = 0;
             for (t.neib4) |n| {
                 if (n) |t1| {
-                    count += @boolToInt(t.t.* < t1);
+                    count += @intFromBool(t.t.* < t1);
                 } else {
                     count += 1;
                 }

@@ -96,7 +96,7 @@ pub fn main() anyerror!void {
             var wsr: [16]u32 = undefined;
             var ws0: [16]u32 = undefined;
             var unbalanced = false;
-            for (n.childs[0..n.len]) |child, i| {
+            for (n.childs[0..n.len], 0..) |child, i| {
                 find_unbalanced(_nodes, child);
 
                 const c = _nodes.get(child) orelse unreachable;
@@ -109,7 +109,7 @@ pub fn main() anyerror!void {
 
             if (unbalanced) {
                 trace("name:{},  ", .{name});
-                for (wsr[0..n.len]) |w, i| {
+                for (wsr[0..n.len], 0..) |w, i| {
                     trace("{} ({}+...), ", .{ w, ws0[i] });
                 }
                 trace("\n", .{});

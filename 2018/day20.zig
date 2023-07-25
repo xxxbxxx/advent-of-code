@@ -6,8 +6,8 @@ const Vec2 = tools.Vec2;
 const Map = tools.Map(u16, 1000, 1000, true);
 
 fn tileToChar(t: u16) u8 {
-    if (t < 10) return '0' + @intCast(u8, t);
-    if (t < 36) return @intCast(u8, t - 10) + 'A';
+    if (t < 10) return '0' + @as(u8, @intCast(t));
+    if (t < 36) return @as(u8, @intCast(t - 10)) + 'A';
     if (t == 65535) return '.';
     return '?';
 }

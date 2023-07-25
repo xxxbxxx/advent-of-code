@@ -69,9 +69,9 @@ pub fn main() anyerror!void {
     var regs = [2]u64{ 1, 0 };
     var pc: i32 = 0;
     while (true) {
-        if (pc < 0 or @intCast(u32, pc) >= program_size)
+        if (pc < 0 or @as(u32, @intCast(pc)) >= program_size)
             break;
-        const insn = program[@intCast(usize, pc)];
+        const insn = program[@as(usize, @intCast(pc))];
         //  trace("  [{}] (a={}, b={}) \t{}\n", pc, regs[0], regs[1], insn);
         switch (insn.op) {
             .hlf => {

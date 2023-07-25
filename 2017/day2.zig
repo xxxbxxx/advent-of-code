@@ -37,8 +37,8 @@ pub fn main() anyerror!void {
         if (max != null and min != null)
             sum1 += (max.? - min.?);
         sum2 += blk: {
-            for (linevals[0..len]) |v1, i| {
-                for (linevals[0..len]) |v2, j| {
+            for (linevals[0..len], 0..) |v1, i| {
+                for (linevals[0..len], 0..) |v2, j| {
                     if (i != j and v2 % v1 == 0)
                         break :blk v2 / v1;
                 }

@@ -42,11 +42,11 @@ const move_energy_cost = [4]u32{ 1, 10, 100, 1000 };
 const paths_matrix = blk: {
     @setEvalBranchQuota(80000);
     var paths: [all_positions_2.len][all_positions_2.len][]const Position = undefined;
-    for (all_positions_2) |from, i| {
+    for (all_positions_2, 0..) |from, i| {
         assert(from == i + 'a');
         const from_is_rooom = (from >= 'l');
 
-        for (all_positions_2) |to, j| {
+        for (all_positions_2, 0..) |to, j| {
             const to_is_rooom = (to >= 'l');
 
             paths[i][j] = &[0]Position{};
@@ -83,9 +83,9 @@ fn State(comptime room_sz: u32) type {
         amphipods: [4][room_sz]Position,
         fn distanceToTarget(s: @This()) u32 {
             var distance: u32 = 0;
-            for (s.amphipods) |pair, i| {
-                for (pair) |pos, j| {
-                    const d = @intCast(u32, paths_matrix[target_zone[i][j] - 'a'][pos - 'a'].len);
+            for (s.amphipods, 0..) |pair, i| {
+                for (pair, 0..) |pos, j| {
+                    const d: u32 = @intCast(paths_matrix[target_zone[i][j] - 'a'][pos - 'a'].len);
                     distance += move_energy_cost[i] * d;
                 }
             }
@@ -95,7 +95,7 @@ fn State(comptime room_sz: u32) type {
             var occupied: u32 = 0;
             for (s.amphipods) |pair| {
                 for (pair) |pos| {
-                    occupied += @boolToInt(pos == p);
+                    occupied += @intFromBool(pos == p);
                 }
             }
             return occupied == 0;
@@ -142,8 +142,8 @@ fn searchLowestEnergySolution(allocator: std.mem.Allocator, comptime StateType: 
             trace("best so far...: d={}, e={} {s}\n", .{ d, n.cost, n.trace });
         }
 
-        for (n.state.amphipods) |pair, i| {
-            for (pair) |from, j| {
+        for (n.state.amphipods, 0..) |pair, i| {
+            for (pair, 0..) |from, j| {
                 for (all_positions) |to| {
                     const to_is_room = (to >= 'l');
 
@@ -153,9 +153,9 @@ fn searchLowestEnergySolution(allocator: std.mem.Allocator, comptime StateType: 
                     if (to_is_room) {
                         // "never move from the hallway into a room unless that room is their destination room..."
                         // "... and that room contains no amphipods which do not also have that room as their own destination"
-                        const ok = good_room: for (target_zone[i][0..room_sz]) |zone, room_idx| {
+                        const ok = good_room: for (target_zone[i][0..room_sz], 0..) |zone, room_idx| {
                             if (zone == to) {
-                                for (target_zone[i][0..room_sz]) |zone2, room_idx2| {
+                                for (target_zone[i][0..room_sz], 0..) |zone2, room_idx2| {
                                     if (room_idx2 <= room_idx) {
                                         if (!n.state.isFree(zone2)) break :good_room false;
                                     } else {
@@ -178,18 +178,18 @@ fn searchLowestEnergySolution(allocator: std.mem.Allocator, comptime StateType: 
                     } else true;
                     if (!is_free) continue;
 
-                    const new_energy = n.cost + @intCast(u32, path.len * move_energy_cost[i]);
+                    const new_energy = n.cost + @as(u32, @intCast(path.len * move_energy_cost[i]));
                     if (new_energy >= best_energy) continue;
 
                     var new = n;
                     new.state.amphipods[i][j] = to;
-                    std.sort.sort(Position, &new.state.amphipods[i], {}, comptime std.sort.asc(Position)); // pour éviter de multiplier les états différents mais équivalents
+                    std.mem.sort(Position, &new.state.amphipods[i], {}, comptime std.sort.asc(Position)); // pour éviter de multiplier les états différents mais équivalents
 
                     new.cost = new_energy;
                     const minimum_energy_to_target = new_energy + new.state.distanceToTarget();
-                    new.rating = @intCast(i32, minimum_energy_to_target);
+                    new.rating = @intCast(minimum_energy_to_target);
                     if (with_trace)
-                        new.trace = try std.fmt.allocPrint(arena, "{s},{c}:{c}->{c}", .{ n.trace, @intCast(u8, i + 'A'), from, to });
+                        new.trace = try std.fmt.allocPrint(arena, "{s},{c}:{c}->{c}", .{ n.trace, @as(u8, @intCast(i + 'A')), from, to });
                     if (new.rating > best_energy) continue;
 
                     try bfs.insert(new);
@@ -243,7 +243,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
     const initial_state_2 = blk: {
         var state: State_2 = undefined;
 
-        for (initial_state_1.amphipods) |pair, i| {
+        for (initial_state_1.amphipods, 0..) |pair, i| {
             state.amphipods[i][0] = if (pair[0] < 'p') pair[0] else pair[0] + ('x' - 'p');
             state.amphipods[i][1] = if (pair[1] < 'p') pair[1] else pair[1] + ('x' - 'p');
         }

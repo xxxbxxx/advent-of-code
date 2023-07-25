@@ -53,10 +53,10 @@ pub fn main() anyerror!void {
                 }
             }
 
-            std.sort.sort(LetterFreq, &letters, LetterFreq.lessthan);
+            std.mem.sort(LetterFreq, &letters, LetterFreq.lessthan);
 
             var valid = true;
-            for (checksum) |c, i| {
+            for (checksum, 0..) |c, i| {
                 if (letters[i].letter != c)
                     valid = false;
             }
@@ -65,9 +65,9 @@ pub fn main() anyerror!void {
 
                 var decrypt: [100]u8 = undefined;
 
-                for (line[0 .. line.len - 7]) |c, i| {
+                for (line[0 .. line.len - 7], 0..) |c, i| {
                     if (c >= 'a' and c <= 'z') {
-                        decrypt[i] = 'a' + @intCast(u8, (@intCast(u32, c - 'a') + room_id) % 26);
+                        decrypt[i] = 'a' + @as(u8, @intCast((@as(u32, @intCast(c - 'a')) + room_id) % 26));
                     } else if (c == '-') {
                         decrypt[i] = ' ';
                     } else {

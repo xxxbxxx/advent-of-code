@@ -45,7 +45,7 @@ pub fn main() anyerror!void {
         len = disclen;
         while (len % 2 == 0) {
             len = len / 2;
-            for (disc[0..len]) |*d, i| {
+            for (disc[0..len], 0..) |*d, i| {
                 d.* = 1 ^ (disc[i * 2 + 0] ^ disc[i * 2 + 1]);
             }
         }

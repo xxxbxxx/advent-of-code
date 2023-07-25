@@ -43,13 +43,13 @@ fn insert(pats: anytype, in: anytype, out: anytype) !void {
     const trans = if (in.len == 2 * 2) &transfos2 else &transfos3;
     for (trans) |t| {
         var in2 = in;
-        for (t) |to, from| in2[to] = in[from];
+        for (t, 0..) |to, from| in2[to] = in[from];
         assert(countones(in) == countones(in2));
 
         if (false) {
             const s = if (in.len == 2 * 2) 2 else 3;
             trace("--- pattern=\n", .{});
-            for (in2[0 .. s * s]) |m, i| {
+            for (in2[0 .. s * s], 0..) |m, i| {
                 const c: u8 = if (m == 1) '#' else '.';
                 trace("{c}", .{c});
                 if (i % s == s - 1)

@@ -28,17 +28,17 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                 awake = false;
             } else if (tools.match_pattern("[{}] Guard #{} begins shift", line)) |fields| {
                 time = fields[0].lit;
-                guardId = @intCast(u32, fields[1].imm);
+                guardId = @as(u32, @intCast(fields[1].imm));
             } else {
                 std.debug.print("could not parse '{s}'\n", .{line});
                 return error.UnsupportedInput;
             }
 
             const fields = tools.match_pattern("1518-{}-{} {}:{}", time) orelse unreachable;
-            const month = @intCast(u32, fields[0].imm);
-            const day = @intCast(u32, fields[1].imm);
-            const hour = @intCast(u32, fields[2].imm);
-            const minutes = @intCast(u32, fields[3].imm);
+            const month = @as(u32, @intCast(fields[0].imm));
+            const day = @as(u32, @intCast(fields[1].imm));
+            const hour = @as(u32, @intCast(fields[2].imm));
+            const minutes = @as(u32, @intCast(fields[3].imm));
 
             // std.debug.print("shift: guard={}  day={}-{} mn={}\n", .{ guardId.?, month, day, minutes });
 
@@ -68,7 +68,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
 
         // ajustement: met les guardes arrivés en avance sur les bons jours
         var lastGuardId: ?u32 = null;
-        for (shifts) |_, i| {
+        for (shifts, 0..) |_, i| {
             if (shifts[i]) |*s| {
                 if (s.guardId == null) {
                     s.guardId = lastGuardId;
@@ -89,7 +89,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         const guardIdMostAsleep = mostasleep: {
             const sleepTimes = try allocator.alloc(u32, largestGuardId.? + 1);
             defer allocator.free(sleepTimes);
-            std.mem.set(u32, sleepTimes, 0);
+            @memset(sleepTimes, 0);
             for (shifts) |shift| {
                 if (shift) |s| {
                     for (s.state) |awake| {
@@ -101,7 +101,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
 
             var id: usize = undefined;
             var longuest: u32 = 0;
-            for (sleepTimes) |time, i| {
+            for (sleepTimes, 0..) |time, i| {
                 if (time > longuest) {
                     longuest = time;
                     id = i;
@@ -116,14 +116,14 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
             for (shifts) |shift| {
                 if (shift == null or shift.?.guardId.? != guardIdMostAsleep)
                     continue;
-                for (shift.?.state) |awake, i| {
+                for (shift.?.state, 0..) |awake, i| {
                     if (!awake) counts[i] += 1;
                 }
             }
 
             var best: usize = undefined;
             var best_count: u32 = 0;
-            for (counts) |c, i| {
+            for (counts, 0..) |c, i| {
                 if (c > best_count) {
                     best_count = c;
                     best = i;
@@ -141,11 +141,11 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     const ans2 = ans: {
         const sleepMinutes = try allocator.alloc([60]u16, (largestGuardId.? + 1));
         defer allocator.free(sleepMinutes);
-        std.mem.set([60]u16, sleepMinutes, [1]u16{0} ** 60);
+        @memset(sleepMinutes, [1]u16{0} ** 60);
 
         for (shifts) |shift| {
             if (shift) |s| {
-                for (s.state) |awake, i| {
+                for (s.state, 0..) |awake, i| {
                     if (!awake) {
                         sleepMinutes[s.guardId.?][i] += 1;
                     }
@@ -156,8 +156,8 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         var bestGuardId: usize = undefined;
         var bestMinute: usize = undefined;
         var bestNum: u16 = 0;
-        for (sleepMinutes) |sm, guardId| {
-            for (sm) |num, minute| {
+        for (sleepMinutes, 0..) |sm, guardId| {
+            for (sm, 0..) |num, minute| {
                 if (num > bestNum) {
                     bestNum = num;
                     bestGuardId = guardId;

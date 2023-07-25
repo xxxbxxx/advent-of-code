@@ -33,7 +33,7 @@ pub fn main() anyerror!void {
         var line: [len]u8 = undefined;
         line[0] = '.';
         line[line.len - 1] = '.';
-        for (line[1 .. len - 1]) |*c, i| {
+        for (line[1 .. len - 1], 0..) |*c, i| {
             const left = prevline[i + 0] == '^';
             const center = prevline[i + 1] == '^';
             const right = prevline[i + 2] == '^';

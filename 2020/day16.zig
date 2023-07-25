@@ -23,10 +23,10 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         while (it.next()) |line| {
             if (tools.match_pattern("{}: {}-{} or {}-{}", line)) |fields| { //zone: 47-249 or 265-972
                 const name = fields[0].lit;
-                const m0 = @intCast(u32, fields[1].imm);
-                const m1 = @intCast(u32, fields[2].imm);
-                const m2 = @intCast(u32, fields[3].imm);
-                const m3 = @intCast(u32, fields[4].imm);
+                const m0: u32 = @intCast(fields[1].imm);
+                const m1: u32 = @intCast(fields[2].imm);
+                const m2: u32 = @intCast(fields[3].imm);
+                const m3: u32 = @intCast(fields[4].imm);
                 try field_descs.append(FieldRange{
                     .name = name,
                     .r1 = Range{ .min = m0, .max = m1 },
@@ -100,8 +100,8 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
             if (!is_valid_ticket) continue;
 
             assert(t.len == nb_fields);
-            for (t) |val, j| {
-                for (param.fields) |f, i| {
+            for (t, 0..) |val, j| {
+                for (param.fields, 0..) |f, i| {
                     if ((val >= f.r1.min and val <= f.r1.max) or (val >= f.r2.min and val <= f.r2.max)) {
                         // vlaue valid for field
                     } else {
@@ -114,11 +114,11 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         var nb_fields_determined: u32 = 0;
         var field_indexes: [100]usize = undefined;
         while (nb_fields_determined < nb_fields) {
-            for (param.fields) |_, i| {
+            for (param.fields, 0..) |_, i| {
                 //std.debug.print("field n°{}: ", .{i});
                 var index: ?usize = null;
                 var unique = true;
-                for (possible_fields[i * nb_fields .. (i + 1) * nb_fields]) |b, j| {
+                for (possible_fields[i * nb_fields .. (i + 1) * nb_fields], 0..) |b, j| {
                     if (b) {
                         if (index != null) unique = false;
                         //     std.debug.print("X", .{});
@@ -146,7 +146,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         }
 
         var sum: u64 = 1;
-        for (param.my_ticket) |v, i| {
+        for (param.my_ticket, 0..) |v, i| {
             const name = param.fields[field_indexes[i]].name;
             //std.debug.print("{}: {}\n", .{ name, v });
             if (std.mem.startsWith(u8, name, "departure")) {

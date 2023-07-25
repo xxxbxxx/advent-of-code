@@ -21,7 +21,7 @@ const Attribs = enum {
 
     const asString = comptime blk: {
         var names = [1][]const u8{""} ** @memberCount(Attribs);
-        for (names) |*n, i| {
+        for (names, 0..) |*n, i| {
             n.* = @memberName(Attribs, i);
         }
         break :blk names;
@@ -51,7 +51,7 @@ fn parse_line(line: []const u8) Aunt {
         slice = if (sep) |s| slice[s + 2 ..] else slice[0..0];
 
         var found = false;
-        for (aunt.att) |*att, i| {
+        for (aunt.att, 0..) |*att, i| {
             if (std.mem.eql(u8, atrribute, Attribs.asString[i])) {
                 found = true;
                 att.* = std.fmt.parseInt(u32, value, 10) catch unreachable;
@@ -72,16 +72,16 @@ pub fn main() anyerror!void {
     const text = try std.fs.cwd().readFileAlloc(allocator, "day16.txt", limit);
 
     var clues: [@memberCount(Attribs)]u32 = undefined;
-    clues[@enumToInt(Attribs.children)] = 3;
-    clues[@enumToInt(Attribs.cats)] = 7;
-    clues[@enumToInt(Attribs.samoyeds)] = 2;
-    clues[@enumToInt(Attribs.pomeranians)] = 3;
-    clues[@enumToInt(Attribs.akitas)] = 0;
-    clues[@enumToInt(Attribs.vizslas)] = 0;
-    clues[@enumToInt(Attribs.goldfish)] = 5;
-    clues[@enumToInt(Attribs.trees)] = 3;
-    clues[@enumToInt(Attribs.cars)] = 2;
-    clues[@enumToInt(Attribs.perfumes)] = 1;
+    clues[@intFromEnum(Attribs.children)] = 3;
+    clues[@intFromEnum(Attribs.cats)] = 7;
+    clues[@intFromEnum(Attribs.samoyeds)] = 2;
+    clues[@intFromEnum(Attribs.pomeranians)] = 3;
+    clues[@intFromEnum(Attribs.akitas)] = 0;
+    clues[@intFromEnum(Attribs.vizslas)] = 0;
+    clues[@intFromEnum(Attribs.goldfish)] = 5;
+    clues[@intFromEnum(Attribs.trees)] = 3;
+    clues[@intFromEnum(Attribs.cars)] = 2;
+    clues[@intFromEnum(Attribs.perfumes)] = 1;
 
     var it = std.mem.tokenize(u8, text, "\n");
     var combi: u32 = 1;
@@ -89,8 +89,8 @@ pub fn main() anyerror!void {
         const aunt = parse_line(line);
 
         var ok = true;
-        for (aunt.att) |att, i| {
-            const e = @intToEnum(Attribs, @intCast(u4, i));
+        for (aunt.att, 0..) |att, i| {
+            const e = @as(Attribs, @enumFromInt(@as(u4, @intCast(i))));
             if (att) |a| {
                 ok = ok and switch (e) {
                     .cats, .trees => (a > clues[i]),

@@ -88,8 +88,8 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         while (!c.is_halted()) {
             assert(c.io_mode == .output);
             switch (cpu_out.cycle) {
-                0 => cpu_out.pos.x = @intCast(i32, c.io_port),
-                1 => cpu_out.pos.y = @intCast(i32, c.io_port),
+                0 => cpu_out.pos.x = @intCast(c.io_port),
+                1 => cpu_out.pos.y = @intCast(c.io_port),
                 2 => cpu_out.val = c.io_port,
                 else => unreachable,
             }
@@ -97,7 +97,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
             if (cpu_out.cycle >= 3) {
                 cpu_out.cycle = 0;
                 assert(cpu_out.pos.x >= 0 and cpu_out.pos.y >= 0);
-                arcade.screen.set(cpu_out.pos, @intCast(MapTile, cpu_out.val));
+                arcade.screen.set(cpu_out.pos, @intCast(cpu_out.val));
             }
 
             resume c.io_runframe;
@@ -140,8 +140,8 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
             } else if (c.io_mode == .output) {
                 trace("{} outputs {}\n", .{ c.name, c.io_port });
                 switch (cpu_out.cycle) {
-                    0 => cpu_out.pos.x = @intCast(i32, c.io_port),
-                    1 => cpu_out.pos.y = @intCast(i32, c.io_port),
+                    0 => cpu_out.pos.x = @intCast(c.io_port),
+                    1 => cpu_out.pos.y = @intCast(c.io_port),
                     2 => cpu_out.val = c.io_port,
                     else => unreachable,
                 }
@@ -151,7 +151,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                     if (cpu_out.pos.x < 0 or cpu_out.pos.y < 0) {
                         arcade.score_display = cpu_out.val;
                     } else {
-                        arcade.screen.set(cpu_out.pos, @intCast(MapTile, cpu_out.val));
+                        arcade.screen.set(cpu_out.pos, @intCast(cpu_out.val));
                         if (cpu_out.val == 3) arcade.pad = cpu_out.pos;
                         if (cpu_out.val == 4) arcade.ball = cpu_out.pos;
                     }

@@ -18,13 +18,13 @@ fn playGame(hands: [2][]const Card, variant: enum { classic, recursive }, alloca
     try decks[1].reserve(hands[1].len);
 
     //std.debug.print("New game: \n", .{});
-    for (hands) |cards, player| {
+    for (hands, 0..) |cards, player| {
         //std.debug.print("player= ", .{});
-        for (cards) |c, i| {
+        for (cards, 0..) |c, i| {
             // std.debug.print("{},", .{c});
             try decks[player].pushTail(c);
-            scores[player].prod += @intCast(u32, c * (cards.len - i));
-            scores[player].sum += @intCast(u16, c);
+            scores[player].prod += @intCast(c * (cards.len - i));
+            scores[player].sum += @intCast(c);
             scores[player].count += 1;
         }
         //std.debug.print("\n", .{});
@@ -41,7 +41,7 @@ fn playGame(hands: [2][]const Card, variant: enum { classic, recursive }, alloca
         // std.debug.print("playing {} vs {}\n", .{ c1, c2 });
 
         const cards = [2]Card{ c1, c2 };
-        for (cards) |c, player| {
+        for (cards, 0..) |c, player| {
             scores[player].prod -= c * scores[player].count;
             scores[player].sum -= c;
             scores[player].count -= 1;
@@ -50,7 +50,7 @@ fn playGame(hands: [2][]const Card, variant: enum { classic, recursive }, alloca
         const play1_wins = win: {
             if (variant == .recursive and c1 <= scores[0].count and c2 <= scores[1].count) {
                 var sub_cards: [2][52]Card = undefined;
-                for (cards) |card, player| {
+                for (cards, 0..) |card, player| {
                     var it = decks[player].iter();
                     var nb: u32 = 0;
                     while (it.next()) |c| {
@@ -95,7 +95,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         var it = std.mem.tokenize(u8, input_text, "\n\r");
         while (it.next()) |line| {
             if (tools.match_pattern("Player {}:", line)) |fields| {
-                player = @intCast(u2, fields[0].imm) - 1;
+                player = @as(u2, @intCast(fields[0].imm)) - 1;
             } else {
                 cards[player.?][nb[player.?]] = try std.fmt.parseInt(Card, line, 10);
                 nb[player.?] += 1;

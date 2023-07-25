@@ -21,8 +21,8 @@ fn runPrg(prg: []const Inst, in: []const u8) i64 {
     var in_idx: u32 = 0;
     var vars = [4]i64{ 0, 0, 0, 0 };
     for (prg) |inst| {
-        const a = &vars[@enumToInt(inst.a)];
-        const b = if (inst.b == .reg) vars[@enumToInt(inst.b.reg)] else inst.b.imm;
+        const a = &vars[@intFromEnum(inst.a)];
+        const b = if (inst.b == .reg) vars[@intFromEnum(inst.b.reg)] else inst.b.imm;
         switch (inst.op) {
             .inp => {
                 a.* = in[in_idx] - '0';
@@ -32,10 +32,10 @@ fn runPrg(prg: []const Inst, in: []const u8) i64 {
             .mul => a.* *= b,
             .div => a.* = @divFloor(a.*, b),
             .mod => a.* = @mod(a.*, b),
-            .eql => a.* = @boolToInt(a.* == b),
+            .eql => a.* = @intFromBool(a.* == b),
         }
     }
-    return vars[@enumToInt(Reg.z)];
+    return vars[@intFromEnum(Reg.z)];
 }
 
 fn decompiledToZig(in: [14]i64) i64 {
@@ -45,20 +45,20 @@ fn decompiledToZig(in: [14]i64) i64 {
     var w: i64 = 0;
 
     // zig fmt: off
-    w = in[0]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 1);x += 15;x = @boolToInt(x == w);x = @boolToInt(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 9;y *= x;z += y;
-    w = in[1]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 1);x += 11;x = @boolToInt(x == w);x = @boolToInt(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 1;y *= x;z += y;
-    w = in[2]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 1);x += 10;x = @boolToInt(x == w);x = @boolToInt(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 11;y *= x;z += y;
-    w = in[3]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 1);x += 12;x = @boolToInt(x == w);x = @boolToInt(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 3;y *= x;z += y;
-    w = in[4]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 26);x += -11;x = @boolToInt(x == w);x = @boolToInt(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 10;y *= x;z += y;
-    w = in[5]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 1);x += 11;x = @boolToInt(x == w);x = @boolToInt(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 5;y *= x;z += y;
-    w = in[6]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 1);x += 14;x = @boolToInt(x == w);x = @boolToInt(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 0;y *= x;z += y;
-    w = in[7]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 26);x += -6;x = @boolToInt(x == w);x = @boolToInt(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 7;y *= x;z += y;
-    w = in[8]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 1);x += 10;x = @boolToInt(x == w);x = @boolToInt(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 9;y *= x;z += y;
-    w = in[9]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 26);x += -6;x = @boolToInt(x == w);x = @boolToInt(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 15;y *= x;z += y;
-    w = in[10]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 26);x += -6;x = @boolToInt(x == w);x = @boolToInt(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 4;y *= x;z += y;
-    w = in[11]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 26);x += -16;x = @boolToInt(x == w);x = @boolToInt(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 10;y *= x;z += y;
-    w = in[12]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 26);x += -4;x = @boolToInt(x == w);x = @boolToInt(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 4;y *= x;z += y;
-    w = in[13]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 26);x += -2;x = @boolToInt(x == w);x = @boolToInt(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 9;y *= x;z += y;
+    w = in[0]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 1);x += 15;x = @intFromBool(x == w);x = @intFromBool(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 9;y *= x;z += y;
+    w = in[1]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 1);x += 11;x = @intFromBool(x == w);x = @intFromBool(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 1;y *= x;z += y;
+    w = in[2]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 1);x += 10;x = @intFromBool(x == w);x = @intFromBool(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 11;y *= x;z += y;
+    w = in[3]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 1);x += 12;x = @intFromBool(x == w);x = @intFromBool(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 3;y *= x;z += y;
+    w = in[4]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 26);x += -11;x = @intFromBool(x == w);x = @intFromBool(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 10;y *= x;z += y;
+    w = in[5]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 1);x += 11;x = @intFromBool(x == w);x = @intFromBool(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 5;y *= x;z += y;
+    w = in[6]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 1);x += 14;x = @intFromBool(x == w);x = @intFromBool(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 0;y *= x;z += y;
+    w = in[7]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 26);x += -6;x = @intFromBool(x == w);x = @intFromBool(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 7;y *= x;z += y;
+    w = in[8]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 1);x += 10;x = @intFromBool(x == w);x = @intFromBool(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 9;y *= x;z += y;
+    w = in[9]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 26);x += -6;x = @intFromBool(x == w);x = @intFromBool(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 15;y *= x;z += y;
+    w = in[10]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 26);x += -6;x = @intFromBool(x == w);x = @intFromBool(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 4;y *= x;z += y;
+    w = in[11]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 26);x += -16;x = @intFromBool(x == w);x = @intFromBool(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 10;y *= x;z += y;
+    w = in[12]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 26);x += -4;x = @intFromBool(x == w);x = @intFromBool(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 4;y *= x;z += y;
+    w = in[13]; x *= 0;x += z;x = @mod(x, 26);z = @divFloor(z, 26);x += -2;x = @intFromBool(x == w);x = @intFromBool(x == 0);y *= 0;y += 25;y *= x;y += 1;z *= y;y *= 0;y += w;y += 9;y *= x;z += y;
     // zig fmt: on
 
     return z;
@@ -183,7 +183,7 @@ fn dumpAsZigCode(prg: []const Inst, allocator: std.mem.Allocator) ![]u8 {
             .mul => len += (try std.fmt.bufPrint(buf[len..], "{s} *= {s};", .{ a, b })).len,
             .div => len += (try std.fmt.bufPrint(buf[len..], "{s} = @divFloor({s}, {s});", .{ a, a, b })).len,
             .mod => len += (try std.fmt.bufPrint(buf[len..], "{s} = @mod({s}, {s});", .{ a, a, b })).len,
-            .eql => len += (try std.fmt.bufPrint(buf[len..], "{s} = @boolToInt({s} == {s});", .{ a, a, b })).len,
+            .eql => len += (try std.fmt.bufPrint(buf[len..], "{s} = @intFromBool({s} == {s});", .{ a, a, b })).len,
         }
     }
     return buf[0..len];

@@ -33,10 +33,10 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
         while (it.next()) |line| {
             var step = blk: {
                 if (tools.match_pattern("deal with increment {}", line)) |vals| {
-                    const inc = @intCast(i32, vals[0].imm);
+                    const inc: i32 = @intCast(vals[0].imm);
                     break :blk AffineFunc{ .a = inc, .b = 0 };
                 } else if (tools.match_pattern("cut {}", line)) |vals| {
-                    const amount = @intCast(i32, vals[0].imm);
+                    const amount: i32 = @intCast(vals[0].imm);
                     break :blk AffineFunc{ .a = 1, .b = -amount };
                 } else if (tools.match_pattern("deal into new stack", line)) |_| {
                     break :blk AffineFunc{ .a = -1, .b = -1 };
@@ -69,10 +69,10 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
         while (it.next()) |line| {
             var step = blk: {
                 if (tools.match_pattern("deal with increment {}", line)) |vals| {
-                    const inc = @intCast(i32, vals[0].imm);
+                    const inc: i32 = @intCast(vals[0].imm);
                     break :blk AffineFunc{ .a = inc, .b = 0 };
                 } else if (tools.match_pattern("cut {}", line)) |vals| {
-                    const amount = @intCast(i32, vals[0].imm);
+                    const amount: i32 = @intCast(vals[0].imm);
                     break :blk AffineFunc{ .a = 1, .b = -amount };
                 } else if (tools.match_pattern("deal into new stack", line)) |_| {
                     break :blk AffineFunc{ .a = -1, .b = -1 };

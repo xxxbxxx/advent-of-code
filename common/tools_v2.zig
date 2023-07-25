@@ -41,7 +41,7 @@ pub const Vec = struct {
     }
 
     pub fn scale(a: i32, v: Vec2) Vec2 {
-        return v * @splat(2, a);
+        return v * @as(Vec2, @splat(a));
     }
 
     pub const Rot = enum { none, cw, ccw };
@@ -105,23 +105,23 @@ pub fn spiralIndexFromPos(p: Vec2) u32 {
         var i = 4 * y * y - y - x;
         if (y < x)
             i -= 2 * (y - x);
-        return @intCast(u32, i);
+        return @intCast(i);
     } else {
         var i = 4 * x * x - y - x;
         if (y < x)
             i += 2 * (y - x);
-        return @intCast(u32, i);
+        return @intCast(i);
     }
 }
 
 fn sqrtRound(v: usize) usize {
     // todo: cf std.math.sqrt(idx)
-    return @floatToInt(usize, @round(std.math.sqrt(@intToFloat(f64, v))));
+    return @intFromFloat(@round(std.math.sqrt(@floatFromInt(v))));
 }
 
 pub fn posFromSpiralIndex(idx: usize) Vec2 {
-    const i = @intCast(i32, idx);
-    const j = @intCast(i32, sqrtRound(idx));
+    const i: i32 = @intCast(idx);
+    const j: i32 = @intCast(sqrtRound(idx));
     const k = (std.math.absInt(j * j - i) catch unreachable) - j;
     const parity: i32 = @mod(j, 2); // 0 ou 1
     const sign: i32 = if (parity == 0) 1 else -1;
@@ -143,7 +143,7 @@ pub const BBox = struct {
     pub fn size(bbox: BBox) u32 {
         assert(!bbox.isEmpty());
         const sz = (bbox.max - bbox.min) + Vec2{ 1, 1 };
-        return @intCast(u32, @reduce(.Mul, sz));
+        return @intCast(@reduce(.Mul, sz));
     }
     pub const empty = BBox{ .min = Vec2{ 999999, 999999 }, .max = Vec2{ -999999, -999999 } };
 };
@@ -163,7 +163,7 @@ pub fn Map(comptime TileType: type, comptime width: usize, comptime height: usiz
         pub fn intToChar(t: Tile) u8 {
             return switch (t) {
                 0 => '.',
-                1...9 => (@intCast(u8, t) + '0'),
+                1...9 => (@as(u8, @intCast(t)) + '0'),
                 else => '?',
             };
         }
@@ -172,11 +172,7 @@ pub fn Map(comptime TileType: type, comptime width: usize, comptime height: usiz
                 return t;
             unreachable;
         }
-        const printToBufOpt = if (@import("builtin").zig_backend == .stage1)
-            struct { pos: ?Vec2 = null, clip: ?BBox = null, tileToCharFn: fn (m: Tile) u8 = defaultTileToChar }
-        else
-            struct { pos: ?Vec2 = null, clip: ?BBox = null, comptime tileToCharFn: fn (m: Tile) u8 = defaultTileToChar };
-        pub fn printToBuf(map: *const Self, buf: []u8, opt: printToBufOpt) []const u8 {
+        pub fn printToBuf(map: *const Self, buf: []u8, comptime opt: struct { pos: ?Vec2 = null, clip: ?BBox = null, tileToCharFn: fn (m: Tile) u8 = defaultTileToChar }) []const u8 {
             var i: usize = 0;
             const b = if (opt.clip) |box|
                 BBox{
@@ -215,7 +211,7 @@ pub fn Map(comptime TileType: type, comptime width: usize, comptime height: usiz
                     }
                 }
             } else {
-                std.mem.set(Tile, &map.map, v);
+                @memset(&map.map, v);
             }
         }
 
@@ -252,32 +248,32 @@ pub fn Map(comptime TileType: type, comptime width: usize, comptime height: usiz
                 var y = map.bbox.min[1];
                 while (y < prev.min[1]) : (y += 1) {
                     const o = map.offsetof(Vec2{ map.bbox.min[0], y });
-                    std.mem.set(Tile, map.map[o .. o + @intCast(usize, map.bbox.max[0] + 1 - map.bbox.min[0])], map.default_tile);
+                    @memset(map.map[o .. o + @as(usize, @intCast(map.bbox.max[0] + 1 - map.bbox.min[0]))], map.default_tile);
                 }
                 if (map.bbox.min[0] < prev.min[0]) {
                     assert(map.bbox.max[0] == prev.max[0]); // une seule colonne, on n'a grandi que d'un point.
                     while (y <= prev.max[1]) : (y += 1) {
                         const o = map.offsetof(Vec2{ map.bbox.min[0], y });
-                        std.mem.set(Tile, map.map[o .. o + @intCast(usize, prev.min[0] - map.bbox.min[0])], map.default_tile);
+                        @memset(map.map[o .. o + @as(usize, @intCast(prev.min[0] - map.bbox.min[0]))], map.default_tile);
                     }
                 } else if (map.bbox.max[0] > prev.max[0]) {
                     assert(map.bbox.min[0] == prev.min[0]);
                     while (y <= prev.max[1]) : (y += 1) {
                         const o = map.offsetof(Vec2{ prev.max[0] + 1, y });
-                        std.mem.set(Tile, map.map[o .. o + @intCast(usize, map.bbox.max[0] + 1 - (prev.max[0] + 1))], map.default_tile);
+                        @memset(map.map[o .. o + @as(usize, @intCast(map.bbox.max[0] + 1 - (prev.max[0] + 1)))], map.default_tile);
                     }
                 } else {
                     y += (prev.max[1] - prev.min[1]) + 1;
                 }
                 while (y <= map.bbox.max[1]) : (y += 1) {
                     const o = map.offsetof(Vec2{ map.bbox.min[0], y });
-                    std.mem.set(Tile, map.map[o .. o + @intCast(usize, map.bbox.max[0] + 1 - map.bbox.min[0])], map.default_tile);
+                    @memset(map.map[o .. o + @as(usize, @intCast(map.bbox.max[0] + 1 - map.bbox.min[0]))], map.default_tile);
                 }
             }
         }
 
         pub fn offsetof(_: *const Self, p: Vec2) usize {
-            return @intCast(usize, center_offset + @reduce(.Add, @as(@Vector(2, isize), p) * @Vector(2, isize){ 1, @intCast(isize, stride) }));
+            return @intCast(center_offset + @reduce(.Add, @as(@Vector(2, isize), p) * @Vector(2, isize){ 1, @intCast(stride) }));
         }
         pub fn at(map: *const Self, p: Vec2) Tile {
             assert(map.bbox.includes(p));
@@ -303,13 +299,13 @@ pub fn Map(comptime TileType: type, comptime width: usize, comptime height: usiz
         pub fn setLine(map: *Self, p: Vec2, t: []const Tile) void {
             if (allow_negative_pos) {
                 assert(p[0] <= Self.stride / 2 and -p[0] <= Self.stride / 2);
-                assert(p[0] + @intCast(i32, t.len - 1) <= Self.stride / 2);
+                assert(p[0] + @as(i32, @intCast(t.len - 1)) <= Self.stride / 2);
             } else {
                 assert(p[0] >= 0 and p[1] >= 0);
             }
 
             map.growBBox(p);
-            map.growBBox(p + Vec2{ @intCast(i32, t.len - 1), 0 });
+            map.growBBox(p + Vec2{ @intCast(t.len - 1), 0 });
 
             const offset = map.offsetof(p);
             std.mem.copy(Tile, map.map[offset .. offset + t.len], t);

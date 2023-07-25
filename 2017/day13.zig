@@ -33,11 +33,11 @@ pub fn main() anyerror!void {
     }
 
     var severity: u64 = 0;
-    for (scanners) |range, depth| {
+    for (scanners, 0..) |range, depth| {
         const t = depth;
         if (false and with_trace) {
             trace("t={} ------------\n", .{t});
-            for (scanners) |r2, d2| {
+            for (scanners, 0..) |r2, d2| {
                 if (r2 == 0) continue;
                 const step = t % ((r2 - 1) * 2);
                 const cur = if (step >= r2) ((r2 - 1) * 2) - step else step;
@@ -58,7 +58,7 @@ pub fn main() anyerror!void {
 
     var delay: u32 = 0;
     const min_delay = outer: while (true) : (delay += 1) {
-        for (scanners) |range, depth| {
+        for (scanners, 0..) |range, depth| {
             const t = delay + depth;
             if (range == 0)
                 continue;

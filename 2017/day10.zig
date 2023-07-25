@@ -32,8 +32,8 @@ pub fn main() anyerror!void {
     const mod = 256;
     var list = comptime blk: {
         var l: [mod]u8 = undefined;
-        for (l) |*e, i| {
-            e.* = @intCast(u8, i);
+        for (l, 0..) |*e, i| {
+            e.* = @as(u8, @intCast(i));
         }
         break :blk l;
     };
@@ -62,7 +62,7 @@ pub fn main() anyerror!void {
     const hextochar = "0123456789abcdef";
     var hash: [32]u8 = undefined;
     var accu: u8 = 0;
-    for (list) |l, i| {
+    for (list, 0..) |l, i| {
         accu ^= l;
         if ((i + 1) % 16 == 0) {
             hash[2 * (i / 16) + 0] = hextochar[(accu / 16) % 16];
@@ -71,5 +71,5 @@ pub fn main() anyerror!void {
         }
     }
 
-    try stdout.print("list={}, {}, {}, ... -> {}\nhash={}\n", .{ list[0], list[1], list[2], @intCast(u32, list[0]) * @intCast(u32, list[1]), hash });
+    try stdout.print("list={}, {}, {}, ... -> {}\nhash={}\n", .{ list[0], list[1], list[2], @as(u32, @intCast(list[0])) * @as(u32, @intCast(list[1])), hash });
 }

@@ -76,7 +76,7 @@ pub fn main() anyerror!void {
         var rem = c;
         var tot: i32 = 0;
         for (recipe[0..popu]) |*r| {
-            r.* = @intCast(i32, rem % 100);
+            r.* = @as(i32, @intCast(rem % 100));
             rem = rem / 100;
             tot += r.*;
             if (tot > 100)
@@ -90,7 +90,7 @@ pub fn main() anyerror!void {
         var flavor: i32 = 0;
         var texture: i32 = 0;
         var calories: i32 = 0;
-        for (recipe[0..popu]) |r, i| {
+        for (recipe[0..popu], 0..) |r, i| {
             const ing = ingred[i];
             capacity += ing.capacity * r;
             durability += ing.durability * r;

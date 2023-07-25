@@ -29,7 +29,7 @@ pub fn defaultMain(comptime input_fname: []const u8, comptime runFn: fn (input: 
             defer allocator.free(answer[1]);
 
             try stdout.print("{s}:\n", .{input_fname});
-            for (answer) |ans, i| {
+            for (answer, 0..) |ans, i| {
                 const multiline = (std.mem.indexOfScalar(u8, ans, '\n') != null);
                 if (multiline) {
                     try stdout.print("\tPART {d}:\n{s}", .{ i + 1, ans });
@@ -69,7 +69,7 @@ pub const Vec2 = struct {
         };
     }
     pub fn dist(a: Vec2, b: Vec2) u32 {
-        return @intCast(u32, (std.math.absInt(a.x - b.x) catch unreachable) + (std.math.absInt(a.y - b.y) catch unreachable));
+        return @intCast((std.math.absInt(a.x - b.x) catch unreachable) + (std.math.absInt(a.y - b.y) catch unreachable));
     }
 
     pub fn scale(a: i32, v: Vec2) Vec2 {
@@ -128,23 +128,23 @@ pub fn spiralIndexFromPos(p: Vec2) u32 {
         var i = 4 * p.y * p.y - p.y - p.x;
         if (p.y < p.x)
             i -= 2 * (p.y - p.x);
-        return @intCast(u32, i);
+        return @intCast(i);
     } else {
         var i = 4 * p.x * p.x - p.y - p.x;
         if (p.y < p.x)
             i += 2 * (p.y - p.x);
-        return @intCast(u32, i);
+        return @intCast(i);
     }
 }
 
 fn sqrtRound(v: usize) usize {
     // todo: cf std.math.sqrt(idx)
-    return @floatToInt(usize, @round(std.math.sqrt(@intToFloat(f64, v))));
+    return @intFromFloat(@round(std.math.sqrt(@floatFromInt(v))));
 }
 
 pub fn posFromSpiralIndex(idx: usize) Vec2 {
-    const i = @intCast(i32, idx);
-    const j = @intCast(i32, sqrtRound(idx));
+    const i: i32 = @intCast(idx);
+    const j: i32 = @intCast(sqrtRound(idx));
     const k = (std.math.absInt(j * j - i) catch unreachable) - j;
     const parity: i32 = @mod(j, 2); // 0 ou 1
     const sign: i32 = if (parity == 0) 1 else -1;
@@ -179,7 +179,7 @@ pub fn Map(comptime TileType: type, comptime width: usize, comptime height: usiz
         pub fn intToChar(t: Tile) u8 {
             return switch (t) {
                 0 => '.',
-                1...9 => (@intCast(u8, t) + '0'),
+                1...9 => (@as(u8, @intCast(t)) + '0'),
                 else => '?',
             };
         }
@@ -222,7 +222,7 @@ pub fn Map(comptime TileType: type, comptime width: usize, comptime height: usiz
                     }
                 }
             } else {
-                std.mem.set(Tile, &map.map, v);
+                @memset(&map.map, v);
             }
         }
 
@@ -261,26 +261,26 @@ pub fn Map(comptime TileType: type, comptime width: usize, comptime height: usiz
                 var y = map.bbox.min.y;
                 while (y < prev.min.y) : (y += 1) {
                     const o = map.offsetof(Vec2{ .x = map.bbox.min.x, .y = y });
-                    std.mem.set(Tile, map.map[o .. o + @intCast(usize, map.bbox.max.x + 1 - map.bbox.min.x)], map.default_tile);
+                    @memset(map.map[o .. o + @as(usize, @intCast(map.bbox.max.x + 1 - map.bbox.min.x))], map.default_tile);
                 }
                 if (map.bbox.min.x < prev.min.x) {
                     assert(map.bbox.max.x == prev.max.x); // une seule colonne, on n'a grandi que d'un point.
                     while (y <= prev.max.y) : (y += 1) {
                         const o = map.offsetof(Vec2{ .x = map.bbox.min.x, .y = y });
-                        std.mem.set(Tile, map.map[o .. o + @intCast(usize, prev.min.x - map.bbox.min.x)], map.default_tile);
+                        @memset(map.map[o .. o + @as(usize, @intCast(prev.min.x - map.bbox.min.x))], map.default_tile);
                     }
                 } else if (map.bbox.max.x > prev.max.x) {
                     assert(map.bbox.min.x == prev.min.x);
                     while (y <= prev.max.y) : (y += 1) {
                         const o = map.offsetof(Vec2{ .x = prev.max.x + 1, .y = y });
-                        std.mem.set(Tile, map.map[o .. o + @intCast(usize, map.bbox.max.x + 1 - (prev.max.x + 1))], map.default_tile);
+                        @memset(map.map[o .. o + @as(usize, @intCast(map.bbox.max.x + 1 - (prev.max.x + 1)))], map.default_tile);
                     }
                 } else {
                     y += (prev.max.y - prev.min.y) + 1;
                 }
                 while (y <= map.bbox.max.y) : (y += 1) {
                     const o = map.offsetof(Vec2{ .x = map.bbox.min.x, .y = y });
-                    std.mem.set(Tile, map.map[o .. o + @intCast(usize, map.bbox.max.x + 1 - map.bbox.min.x)], map.default_tile);
+                    @memset(map.map[o .. o + @as(usize, @intCast(map.bbox.max.x + 1 - map.bbox.min.x))], map.default_tile);
                 }
             }
 
@@ -297,7 +297,7 @@ pub fn Map(comptime TileType: type, comptime width: usize, comptime height: usiz
         }
 
         pub fn offsetof(_: *const Self, p: Vec2) usize {
-            return @intCast(usize, center_offset + @intCast(isize, p.x) + @intCast(isize, p.y) * @intCast(isize, stride));
+            return @intCast(center_offset + @as(isize, @intCast(p.x)) + @as(isize, @intCast(p.y)) * @as(isize, @intCast(stride)));
         }
         pub fn at(map: *const Self, p: Vec2) Tile {
             assert(p.x >= map.bbox.min.x and p.y >= map.bbox.min.y and p.x <= map.bbox.max.x and p.y <= map.bbox.max.y);
@@ -334,13 +334,13 @@ pub fn Map(comptime TileType: type, comptime width: usize, comptime height: usiz
         pub fn setLine(map: *Self, p: Vec2, t: []const Tile) void {
             if (allow_negative_pos) {
                 assert(p.x <= Self.stride / 2 and -p.x <= Self.stride / 2);
-                assert(p.x + @intCast(i32, t.len - 1) <= Self.stride / 2 and -p.x + @intCast(i32, t.len - 1) <= Self.stride / 2);
+                assert(p.x + @as(i32, @intCast(t.len - 1)) <= Self.stride / 2 and -p.x + @as(i32, @intCast(t.len - 1)) <= Self.stride / 2);
             } else {
                 assert(p.x >= 0 and p.y >= 0);
             }
 
             map.growBBox(p);
-            map.growBBox(p.add(Vec2{ .x = @intCast(i32, t.len - 1), .y = 0 }));
+            map.growBBox(p.add(Vec2{ .x = @intCast(t.len - 1), .y = 0 }));
 
             const offset = map.offsetof(p);
             std.mem.copy(Tile, map.map[offset .. offset + t.len], t);
@@ -647,7 +647,7 @@ fn PermutationsIterator(comptime T: type) type {
             self.index += 1;
             const out = buf[0..self.in.len];
             std.mem.copy(T, out, self.in);
-            for (out) |*e, i| {
+            for (out, 0..) |*e, i| {
                 const t = e.*;
                 e.* = out[i + k % mod];
                 out[i + k % mod] = t;
@@ -772,7 +772,7 @@ pub fn fmt_bufAppend(storage: []u8, i: *usize, comptime fmt: []const u8, v: anyt
 }
 
 pub fn nameToEnum(T: anytype, name: []const u8) !T {
-    for (std.meta.fieldNames(T)) |it, i| {
+    for (std.meta.fieldNames(T), 0..) |it, i| {
         if (std.mem.eql(u8, it, name))
             return std.meta.intToEnum(T, i) catch unreachable;
     } else return error.InvalidEnumName;
@@ -790,7 +790,7 @@ pub fn ModArith(comptime T: type) type {
 
     return struct {
         fn mod(a: T2, m: T) T {
-            return @intCast(T, @mod(a, m));
+            return @intCast(@mod(a, m));
         }
 
         pub fn pow(base: T, exp: T, m: T) T {
@@ -811,12 +811,14 @@ pub fn ModArith(comptime T: type) type {
             // Sortie : r[0] = pgcd(base, m) et r[0] = base*r[1]+m*r[2] -> si r[0] = 1, r[1] est l'inverse de base % m
             var r: @Vector(2, T) = [_]T{ base, 1 };
             var r1: @Vector(2, T) = [_]T{ m, 0 };
+            r[1] = 1;
+            r1[1] = 0; // work around bug.
 
             while (r1[0] != 0) {
-                const q = @divFloor(r[0], r1[0]);
+                const q: @Vector(2, T) = @splat(@divFloor(r[0], r1[0]));
                 const t = r;
                 r = r1;
-                r1 = t - @splat(2, q) * r1;
+                r1 = t - q * r1;
             }
             assert(r[0] == 1); // base et m ne sont pas premiers entre eux.
             assert(@mod((r[1] * @as(T2, base)), m) == 1);
@@ -980,9 +982,9 @@ pub const IntCode_Computer = struct {
     }
     const ParsedOpcode = struct { opcode: u8, modes: [3]OperandMode };
     fn parse_opcode(v: Data) !ParsedOpcode {
-        const opcode_and_modes = @intCast(u64, v);
+        const opcode_and_modes = @as(u64, @intCast(v));
         return ParsedOpcode{
-            .opcode = @intCast(u8, opcode_and_modes % 100),
+            .opcode = @intCast(opcode_and_modes % 100),
             .modes = [3]OperandMode{
                 try parse_mode((opcode_and_modes / 100) % 10),
                 try parse_mode((opcode_and_modes / 1000) % 10),
@@ -994,13 +996,13 @@ pub const IntCode_Computer = struct {
     fn parse_opcode_nofail(v: Data) ParsedOpcode {
         const div = @Vector(4, u16){ 1, 100, 1000, 10000 };
         const mod = @Vector(4, u16){ 100, 10, 10, 10 };
-        const opcode_and_modes = (@splat(4, @intCast(u16, v)) / div) % mod;
+        const opcode_and_modes = (@as(@Vector(4, u16), @splat(@intCast(v))) / div) % mod;
         return ParsedOpcode{
-            .opcode = @intCast(u8, opcode_and_modes[0]),
+            .opcode = @intCast(opcode_and_modes[0]),
             .modes = [3]OperandMode{
-                @intToEnum(OperandMode, opcode_and_modes[1]),
-                @intToEnum(OperandMode, opcode_and_modes[2]),
-                @intToEnum(OperandMode, opcode_and_modes[3]),
+                @enumFromInt(opcode_and_modes[1]),
+                @enumFromInt(opcode_and_modes[2]),
+                @enumFromInt(opcode_and_modes[3]),
             },
         };
     }
@@ -1013,9 +1015,9 @@ pub const IntCode_Computer = struct {
                 .rel => return par + base,
             },
             .any => switch (mode) {
-                .pos => return mem[@intCast(usize, par)],
+                .pos => return mem[@intCast(par)],
                 .imm => return par,
-                .rel => return mem[@intCast(usize, par + base)],
+                .rel => return mem[@intCast(par + base)],
             },
         }
     }
@@ -1023,7 +1025,7 @@ pub const IntCode_Computer = struct {
     pub fn boot(c: *Self, boot_image: []const Data) void {
         if (c.debug_trace) print("[{s}] boot\n", .{c.name});
         std.mem.copy(Data, c.memory[0..boot_image.len], boot_image);
-        std.mem.set(Data, c.memory[boot_image.len..], 0);
+        @memset(c.memory[boot_image.len..], 0);
         c.pc = 0;
         c.base = 0;
         c.io_port = undefined;
@@ -1077,7 +1079,7 @@ pub const IntCode_Computer = struct {
                                 c.io_runframe = @frame().*;
                             }
                             if (c.debug_trace) print("[{s}] ...got {}\n", .{ c.name, c.io_port });
-                            c.memory[@intCast(usize, p[0])] = c.io_port;
+                            c.memory[@intCast(p[0])] = c.io_port;
                         },
                         .out => {
                             const p = [1]Data{
@@ -1106,8 +1108,8 @@ pub const IntCode_Computer = struct {
 
                     // execute insn
                     switch (op) {
-                        .jne => c.pc = if (p[0] != 0) @intCast(usize, p[1]) else c.pc + 3,
-                        .jeq => c.pc = if (p[0] == 0) @intCast(usize, p[1]) else c.pc + 3,
+                        .jne => c.pc = if (p[0] != 0) @as(usize, @intCast(p[1])) else c.pc + 3,
+                        .jeq => c.pc = if (p[0] == 0) @as(usize, @intCast(p[1])) else c.pc + 3,
                         else => unreachable,
                     }
                 },
@@ -1122,10 +1124,10 @@ pub const IntCode_Computer = struct {
 
                     // execute insn
                     switch (op) {
-                        .add => c.memory[@intCast(usize, p[2])] = p[0] +% p[1],
-                        .mul => c.memory[@intCast(usize, p[2])] = p[0] *% p[1],
-                        .slt => c.memory[@intCast(usize, p[2])] = @boolToInt(p[0] < p[1]),
-                        .seq => c.memory[@intCast(usize, p[2])] = @boolToInt(p[0] == p[1]),
+                        .add => c.memory[@intCast(p[2])] = p[0] +% p[1],
+                        .mul => c.memory[@intCast(p[2])] = p[0] *% p[1],
+                        .slt => c.memory[@intCast(p[2])] = @intFromBool(p[0] < p[1]),
+                        .seq => c.memory[@intCast(p[2])] = @intFromBool(p[0] == p[1]),
                         else => unreachable,
                     }
                 },
@@ -1140,7 +1142,7 @@ pub const IntCode_Computer = struct {
         i += insn.name.len;
         std.mem.copy(u8, storage[i..], "\t");
         i += 1;
-        for (insn.operands) |optype, j| {
+        for (insn.operands, 0..) |optype, j| {
             if (j > 0) {
                 std.mem.copy(u8, storage[i..], ", ");
                 i += 2;

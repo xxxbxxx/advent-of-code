@@ -24,20 +24,20 @@ pub fn main() anyerror!void {
             const line = std.mem.trim(u8, line_full, " \n\r\t");
             if (line.len == 0)
                 continue;
-            for (line) |c, i| {
+            for (line, 0..) |c, i| {
                 counts[i][c - 'a'] += 1;
             }
         }
     }
 
     var word: [8]u8 = undefined;
-    for (counts) |col, i| {
+    for (counts, 0..) |col, i| {
         var best: u32 = 999;
-        for (col) |count, c| {
+        for (col, 0..) |count, c| {
             //trace("'{c}'={}\n", .{ @intCast(u8, c) + 'a', count });
             if (count > 0 and count < best) {
                 best = count;
-                word[i] = @intCast(u8, c) + 'a';
+                word[i] = @as(u8, @intCast(c)) + 'a';
             }
         }
     }

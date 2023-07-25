@@ -101,8 +101,8 @@ fn compute(gates: []Gate, w: Wire) u16 {
         .NOT => v = ~in[0],
         .AND => v = in[0] & in[1],
         .OR => v = in[0] | in[1],
-        .LSHIFT => v = in[0] << @intCast(u4, in[1]),
-        .RSHIFT => v = in[0] >> @intCast(u4, in[1]),
+        .LSHIFT => v = in[0] << @as(u4, @intCast(in[1])),
+        .RSHIFT => v = in[0] >> @as(u4, @intCast(in[1])),
     }
     g.val = v;
     return v;

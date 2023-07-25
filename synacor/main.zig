@@ -49,11 +49,11 @@ const VM = struct {
     fn asRegister(a: Word) ?u3 {
         if (a <= 32767) return null;
         if (a >= 32776) return null;
-        return @intCast(u3, a - 32768);
+        return @as(u3, @intCast(a - 32768));
     }
 
     fn asImmediate(a: Word) ?u15 {
-        if (a <= 32767) return @intCast(u15, a);
+        if (a <= 32767) return @as(u15, @intCast(a));
         return null;
     }
 
@@ -65,7 +65,7 @@ const VM = struct {
     fn dumpArg(a: Word, buf: []u8) ![]const u8 {
         if (a >= 32776) return error.InvalidVal;
         if (a >= 32768) return std.fmt.bufPrint(buf, "R{}", .{a - 32768});
-        if (a >= 0x20 and a < 0x7F) return std.fmt.bufPrint(buf, "#{} '{c}'", .{ a, @intCast(u7, a) });
+        if (a >= 0x20 and a < 0x7F) return std.fmt.bufPrint(buf, "#{} '{c}'", .{ a, @as(u7, @intCast(a)) });
         return std.fmt.bufPrint(buf, "#{}", .{a});
     }
 
@@ -109,8 +109,8 @@ const VM = struct {
                 s.sp -= 1;
                 s.regs[asRegister(arg.a).?] = s.stack[s.sp];
             },
-            .eq => |arg| s.regs[asRegister(arg.a).?] = @boolToInt(getVal(s, arg.b) == getVal(s, arg.c)),
-            .gt => |arg| s.regs[asRegister(arg.a).?] = @boolToInt(getVal(s, arg.b) > getVal(s, arg.c)),
+            .eq => |arg| s.regs[asRegister(arg.a).?] = @intFromBool(getVal(s, arg.b) == getVal(s, arg.c)),
+            .gt => |arg| s.regs[asRegister(arg.a).?] = @intFromBool(getVal(s, arg.b) > getVal(s, arg.c)),
             .jmp => |arg| s.ip = getVal(s, arg.a),
             .jt => |arg| if (getVal(s, arg.a) != 0) {
                 s.ip = getVal(s, arg.b);
@@ -124,7 +124,7 @@ const VM = struct {
             .band => |arg| s.regs[asRegister(arg.a).?] = (getVal(s, arg.b) & getVal(s, arg.c)),
             .bor => |arg| s.regs[asRegister(arg.a).?] = (getVal(s, arg.b) | getVal(s, arg.c)),
             .not => |arg| s.regs[asRegister(arg.a).?] = ~getVal(s, arg.b),
-            .rmem => |arg| s.regs[asRegister(arg.a).?] = @intCast(u15, s.mem[getVal(s, arg.b)]),
+            .rmem => |arg| s.regs[asRegister(arg.a).?] = @as(u15, @intCast(s.mem[getVal(s, arg.b)])),
             .wmem => |arg| s.mem[getVal(s, arg.a)] = getVal(s, arg.b),
             .call => |arg| {
                 s.stack[s.sp] = s.ip.?;
@@ -139,7 +139,7 @@ const VM = struct {
             },
             .out => |arg| {
                 if (out.len == 0) return error.NeedOuput;
-                out.*[0] = @intCast(u8, getVal(s, arg.a));
+                out.*[0] = @as(u8, @intCast(getVal(s, arg.a)));
                 out.* = out.*[1..];
             },
             .in => |arg| {
@@ -153,7 +153,7 @@ const VM = struct {
     }
 
     fn fetchInsn(ip: u15, mem: []const Word) struct { insn: Insn, sz: u2 } {
-        const opcode = @ptrCast(*const OpCode, &mem[ip]).*;
+        const opcode = @as(*const OpCode, @ptrCast(&mem[ip])).*;
         switch (opcode) {
             .halt => return .{ .sz = 0, .insn = Insn{ .halt = .{} } },
             .set => return .{ .sz = 2, .insn = Insn{ .set = .{ .a = mem[ip + 1], .b = mem[ip + 2] } } },
@@ -349,7 +349,7 @@ const SearchState = struct {
 const TraceStep = union(enum) { go: IFPlayer.Exit, take: IFPlayer.Object, use: IFPlayer.Object, drop: IFPlayer.Object };
 const BFS = tools.BestFirstSearch(SearchState, []const TraceStep);
 fn abs(x: anytype) usize {
-    return if (x > 0) @intCast(usize, x) else @intCast(usize, -x);
+    return if (x > 0) @as(usize, @intCast(x)) else @as(usize, @intCast(-x));
 }
 
 fn maybeQueueNewRoomToExplore(vms: *VM.State, node: BFS.Node, t: TraceStep, rooms: anytype, agenda: *BFS, arena: std.mem.Allocator) !void {
@@ -422,7 +422,7 @@ pub fn main() !void {
         .mem = undefined,
         .stack = undefined,
     };
-    _ = try std.fs.cwd().readFile("synacor/challenge.bin", @ptrCast([*]u8, &vm_state.mem)[0 .. vm_state.mem.len * @sizeOf(VM.Word)]);
+    _ = try std.fs.cwd().readFile("synacor/challenge.bin", @as([*]u8, @ptrCast(&vm_state.mem))[0 .. vm_state.mem.len * @sizeOf(VM.Word)]);
 
     var buf_out: [10000]u8 = undefined;
     var buf_in: [1024]u8 = undefined;
@@ -468,18 +468,18 @@ pub fn main() !void {
                 in = in[4..];
 
                 if (tools.match_pattern("r{}={}", in)) |fields| {
-                    vm_state.regs[@intCast(u3, fields[0].imm)] = @intCast(u15, fields[1].imm);
+                    vm_state.regs[@as(u3, @intCast(fields[0].imm))] = @as(u15, @intCast(fields[1].imm));
                 } else if (tools.match_pattern("m{}={}", in)) |fields| {
-                    const adr = @intCast(u15, fields[0].imm);
-                    vm_state.mem[adr] = @intCast(u15, fields[1].imm);
+                    const adr = @as(u15, @intCast(fields[0].imm));
+                    vm_state.mem[adr] = @as(u15, @intCast(fields[1].imm));
                 } else if (tools.match_pattern("m{}", in)) |fields| {
-                    const adr = @intCast(u15, fields[0].imm);
+                    const adr = @as(u15, @intCast(fields[0].imm));
                     print("[DEBUG] @{} = {s}\n", .{ adr, VM.dumpArg(vm_state.mem[adr], &buf_out) });
                 } else if (tools.match_pattern("set bp {}", in)) |fields| {
-                    const adr = @intCast(u15, fields[0].imm);
+                    const adr = @as(u15, @intCast(fields[0].imm));
                     try breakpoints.append(adr);
                 } else if (tools.match_pattern("clr bp {}", in)) |fields| {
-                    const adr = @intCast(u15, fields[0].imm);
+                    const adr = @as(u15, @intCast(fields[0].imm));
                     while (std.mem.indexOfScalar(u15, breakpoints.items, adr)) |idx| {
                         _ = breakpoints.swapRemove(idx);
                     }
@@ -488,7 +488,7 @@ pub fn main() !void {
                         print("[DEBUG] stack = {s}\n", .{VM.dumpArg(v, &buf_out)});
                     }
                 } else if (tools.match_pattern("asm {}", in)) |fields| {
-                    var ip = if (fields[0] == .imm) @intCast(u15, fields[0].imm) else vm_state.ip.?;
+                    var ip = if (fields[0] == .imm) @as(u15, @intCast(fields[0].imm)) else vm_state.ip.?;
                     var nb: u32 = 0;
                     while (nb < 30) : (nb += 1) {
                         const insn = VM.fetchInsn(ip, &vm_state.mem);
@@ -503,9 +503,9 @@ pub fn main() !void {
         const all_states = try allocator.alloc(struct { out: [1024]u8, out_len: u16, vms: VM.State }, 32767);
         defer allocator.free(all_states);
 
-        for (all_states) |*s, i| {
+        for (all_states, 0..) |*s, i| {
             s.vms = vm_state;
-            s.vms.regs[7] = @intCast(u15, i + 1);
+            s.vms.regs[7] = @as(u15, @intCast(i + 1));
             s.out_len = 0;
             _ = VM.run(&s.vms, "use teleporter", &buf_out);
         }
@@ -514,7 +514,7 @@ pub fn main() !void {
         var nb_still_running: usize = all_states.len;
         while (nb_still_running > 0) {
             nb_still_running = 0;
-            for (all_states) |*s, i| {
+            for (all_states, 0..) |*s, i| {
                 const ip = s.vms.ip orelse continue;
                 nb_still_running += 1;
                 var in: []const u8 = "\n";
@@ -522,7 +522,7 @@ pub fn main() !void {
                 const insn = VM.fetchInsn(ip, &s.vms.mem);
                 s.vms.ip = ip + 1 + insn.sz;
                 const err = VM.execInsn(&s.vms, insn.insn, &out, &in);
-                s.out_len = @intCast(u16, s.out.len - out.len);
+                s.out_len = @as(u16, @intCast(s.out.len - out.len));
                 err catch |e| switch (e) {
                     error.NeedInput => unreachable,
                     error.StackOverflow => {

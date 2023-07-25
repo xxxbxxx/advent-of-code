@@ -17,7 +17,7 @@ const Kart = struct {
 };
 
 pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
-    const params: struct { tracks: *const Map, init_karts: []const Kart } = blk: {
+    const params: struct { tracks: *const Map, init_karts: []const Kart, karts_raw: []const Kart } = blk: {
         const tracks = try allocator.create(Map);
         errdefer allocator.destroy(tracks);
         tracks.bbox = tools.BBox.empty;
@@ -29,8 +29,8 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         var y: i32 = 0;
         var it = std.mem.tokenize(u8, input_text, "\n\r");
         while (it.next()) |line| {
-            for (line) |sq, i| {
-                const p = Vec2{ .x = @intCast(i32, i), .y = y };
+            for (line, 0..) |sq, i| {
+                const p = Vec2{ .x = @as(i32, @intCast(i)), .y = y };
                 switch (sq) {
                     '^' => {
                         tracks.set(p, '|');
@@ -67,10 +67,10 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
             y += 1;
         }
 
-        break :blk .{ .tracks = tracks, .init_karts = karts[0..nb_kart] };
+        break :blk .{ .tracks = tracks, .init_karts = karts[0..nb_kart], .karts_raw = karts };
     };
     defer allocator.destroy(params.tracks);
-    defer allocator.free(params.init_karts);
+    defer allocator.free(params.karts_raw);
 
     //var buf: [5000]u8 = undefined;
     //std.debug.print("{}\n", .{params.tracks.printToBuf(null, null, null, &buf)});
@@ -81,8 +81,8 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         const karts = try allocator.dupe(Kart, params.init_karts);
         defer allocator.free(karts);
         while (true) {
-            std.sort.sort(Kart, karts, {}, Kart.lessThan);
-            for (karts[1..]) |it, i| {
+            std.mem.sort(Kart, karts, {}, Kart.lessThan);
+            for (karts[1..], 0..) |it, i| {
                 const prev = karts[i + 1 - 1];
                 if (it.p.x == prev.p.x and it.p.y == prev.p.y) break :ans it.p;
             }
@@ -97,7 +97,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
                     '/' => it.d = Vec2.rotate(it.d, if (it.d.x == 0) .cw else .ccw),
                     '+' => {
                         it.d = Vec2.rotate(it.d, turns[it.seq]);
-                        it.seq = (it.seq + 1) % @intCast(u32, turns.len);
+                        it.seq = (it.seq + 1) % @as(u32, @intCast(turns.len));
                     },
                     else => unreachable,
                 }
@@ -112,7 +112,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         const karts = try allocator.dupe(Kart, params.init_karts);
         defer allocator.free(karts);
         while (true) {
-            std.sort.sort(Kart, karts, {}, Kart.lessThan);
+            std.mem.sort(Kart, karts, {}, Kart.lessThan);
 
             for (karts) |*it| {
                 if (it.seq == DEAD) continue;
@@ -126,7 +126,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
                     '/' => it.d = Vec2.rotate(it.d, if (it.d.x == 0) .cw else .ccw),
                     '+' => {
                         it.d = Vec2.rotate(it.d, turns[it.seq]);
-                        it.seq = (it.seq + 1) % @intCast(u32, turns.len);
+                        it.seq = (it.seq + 1) % @as(u32, @intCast(turns.len));
                     },
                     else => unreachable,
                 }

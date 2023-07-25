@@ -16,17 +16,17 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         var it = std.mem.tokenize(u8, input_text, "\n\r");
         while (it.next()) |line| {
             if (tools.match_pattern("x={}, y={}..{}", line)) |fields| {
-                const x = @intCast(i32, fields[0].imm);
-                const ymin = @intCast(i32, fields[1].imm);
-                const ymax = @intCast(i32, fields[2].imm);
+                const x = @as(i32, @intCast(fields[0].imm));
+                const ymin = @as(i32, @intCast(fields[1].imm));
+                const ymax = @as(i32, @intCast(fields[2].imm));
                 var p = Vec2{ .x = x, .y = ymin };
                 while (p.y <= ymax) : (p.y += 1) {
                     map.set(p, '#');
                 }
             } else if (tools.match_pattern("y={}, x={}..{}", line)) |fields| {
-                const y = @intCast(i32, fields[0].imm);
-                const xmin = @intCast(i32, fields[1].imm);
-                const xmax = @intCast(i32, fields[2].imm);
+                const y = @as(i32, @intCast(fields[0].imm));
+                const xmin = @as(i32, @intCast(fields[1].imm));
+                const xmax = @as(i32, @intCast(fields[2].imm));
                 var p = Vec2{ .x = xmin, .y = y };
                 while (p.x <= xmax) : (p.x += 1) {
                     map.set(p, '#');

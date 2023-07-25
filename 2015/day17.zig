@@ -15,7 +15,7 @@ fn parse_line(line: []const u8) ?u32 {
 }
 
 fn pow2(x: usize) u32 {
-    return @as(u32, 1) << @intCast(u5, x);
+    return @as(u32, 1) << @as(u5, @intCast(x));
 }
 pub fn main() anyerror!void {
     var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
@@ -45,7 +45,7 @@ pub fn main() anyerror!void {
     while (c < combi) : (c += 1) {
         var total: u32 = 0;
         var nb: u32 = 0;
-        for (sizes) |s, i| {
+        for (sizes, 0..) |s, i| {
             if (c & pow2(i) != 0) {
                 nb += 1;
                 total += s;

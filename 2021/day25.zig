@@ -11,8 +11,8 @@ pub const main = tools.defaultMain("2021/day25.txt", run);
 
 pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const u8 {
     const stride = std.mem.indexOfScalar(u8, input, '\n').? + 1;
-    const height = @intCast(u32, (input.len + 1) / stride);
-    const width = @intCast(u32, stride - 1);
+    const height: u32 = @intCast((input.len + 1) / stride);
+    const width: u32 = @intCast(stride - 1);
     trace("input: {}x{}\n", .{ width, height });
 
     const ans1 = ans: {

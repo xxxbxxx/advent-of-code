@@ -21,7 +21,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         var nb_inc: usize = 0;
         var prev = list[0];
         for (list[1..len]) |cur| {
-            nb_inc += @boolToInt(cur > prev);
+            nb_inc += @intFromBool(cur > prev);
             prev = cur;
         }
         break :ans nb_inc;
@@ -33,8 +33,8 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         while (i < len - 2) : (i += 1) {
             //const prev = list[i-1] + list[i] + list[i+1];
             //const cur = list[i] + list[i+1] + list[i+2];
-            //nb_inc += @boolToInt(cur > prev);
-            nb_inc += @boolToInt(list[i + 2] > list[i - 1]);
+            //nb_inc += @intFromBool(cur > prev);
+            nb_inc += @intFromBool(list[i + 2] > list[i - 1]);
         }
         break :ans nb_inc;
     };

@@ -30,12 +30,12 @@ fn trace_grid(header: []const u8, g: Grid) void {
 const neibourgh_masks_part1: [25]Grid = blk: {
     @setEvalBranchQuota(4000);
     var neib = [1]Grid{null_grid} ** 25;
-    for (neib) |*grid, i| {
+    for (&neib, 0..) |*grid, i| {
         var j: u32 = 0;
         while (j < 25) : (j += 1) {
             grid.setValue(j, //
-                (@boolToInt((i / 5) == (j / 5)) & (@boolToInt(i == j + 1) | @boolToInt(j == i + 1))) // same line
-            | (@boolToInt(i == j + 5) | @boolToInt(j == i + 5)) != 0); // same column
+                (@intFromBool((i / 5) == (j / 5)) & (@intFromBool(i == j + 1) | @intFromBool(j == i + 1))) // same line
+            | (@intFromBool(i == j + 5) | @intFromBool(j == i + 5)) != 0); // same column
         }
     }
     break :blk neib;
@@ -80,7 +80,7 @@ const neibourgh_masks_part2: [25][3]Grid = blk: {
 
     //@setEvalBranchQuota(4000);
     var neib = [1][3]Grid{[3]Grid{ null_grid, null_grid, null_grid }} ** 25;
-    for (neib) |*layers, i| {
+    for (&neib, 0..) |*layers, i| {
         for (table[i]) |maybe_square| {
             if (maybe_square) |sq| layers[1 + sq.l].set(sq.i);
         }
@@ -129,7 +129,7 @@ pub fn run(_: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]cons
         var cur = start_grid;
 
         while (true) {
-            const biodiversity = @intCast(usize, cur.mask) & 0b11111_11111_11111_11111_11111; // zig bug  u25->usize garbage bits
+            const biodiversity = @as(usize, @intCast(cur.mask)) & 0b11111_11111_11111_11111_11111; // zig bug  u25->usize garbage bits
             if (visited.isSet(biodiversity)) {
                 break :ans biodiversity;
             }
@@ -170,8 +170,8 @@ pub fn run(_: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]cons
                 var new: [world.len]Grid = undefined;
                 new[0] = null_grid;
                 new[world.len - 1] = null_grid;
-                std.mem.set(Grid, &new, null_grid); // zig bug work-around (u25 vs padding bits for u32)
-                for (new[1 .. world.len - 1]) |*layer, idx| {
+                @memset(&new, null_grid); // zig bug work-around (u25 vs padding bits for u32)
+                for (new[1 .. world.len - 1], 0..) |*layer, idx| {
                     var i: u32 = 0;
                     while (i < 25) : (i += 1) {
                         const count = 0 //

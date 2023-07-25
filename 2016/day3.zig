@@ -11,7 +11,7 @@ fn addsat(a: u3, range: u3, d: i32) u3 {
     const b: i32 = @as(i32, a) + d;
     if (b <= 2 - @as(i32, range)) return 2 - range;
     if (b >= 2 + @as(i32, range)) return 2 + range;
-    return @intCast(u3, b);
+    return @as(u3, @intCast(b));
 }
 
 pub fn main() anyerror!void {

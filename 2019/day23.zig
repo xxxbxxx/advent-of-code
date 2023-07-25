@@ -40,7 +40,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
     var prev_nat: ?Packet = undefined;
     var nat: ?Packet = undefined;
     var cpus: [50]NIC = undefined;
-    for (cpus) |*c, i| {
+    for (cpus, 0..) |*c, i| {
         c.cpu = Computer{
             .name = try std.fmt.allocPrint(allocator, "Computer n°{}", .{i}),
             .memory = try allocator.alloc(Computer.Data, 5000),
@@ -56,7 +56,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
         _ = async c.cpu.run();
 
         assert(c.cpu.io_mode == .input);
-        c.cpu.io_port = @intCast(Computer.Data, i);
+        c.cpu.io_port = @intCast(i);
         trace("wrting input to {s} = {}\n", .{ c.cpu.name, c.cpu.io_port });
         trace("resuming {s}\n", .{c.cpu.name});
         resume c.cpu.io_runframe;
@@ -96,7 +96,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
                 net_idle = false;
                 trace("{s} outputs {}\n", .{ c.cpu.name, c.cpu.io_port });
                 if (c.out_index == 0) {
-                    c.out_dest = @intCast(u32, c.cpu.io_port);
+                    c.out_dest = @intCast(c.cpu.io_port);
                 } else {
                     c.out_packet[c.out_index - 1] = c.cpu.io_port;
                 }
@@ -129,8 +129,8 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
     }
 
     return [_][]const u8{
-        try std.fmt.allocPrint(allocator, "{?}", .{ans1}),
-        try std.fmt.allocPrint(allocator, "{?}", .{ans2}),
+        try std.fmt.allocPrint(allocator, "{}", .{ans1}),
+        try std.fmt.allocPrint(allocator, "{}", .{ans2}),
     };
 }
 

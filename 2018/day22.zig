@@ -18,9 +18,9 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         var it = std.mem.tokenize(u8, input_text, "\n\r");
         while (it.next()) |line| {
             if (tools.match_pattern("depth: {}", line)) |fields| {
-                depth = @intCast(u32, fields[0].imm);
+                depth = @as(u32, @intCast(fields[0].imm));
             } else if (tools.match_pattern("target: {},{}", line)) |fields| {
-                target = Vec2{ .x = @intCast(i32, fields[0].imm), .y = @intCast(i32, fields[1].imm) };
+                target = Vec2{ .x = @as(i32, @intCast(fields[0].imm)), .y = @as(i32, @intCast(fields[1].imm)) };
             } else unreachable;
         }
         break :param .{ .depth = depth.?, .target = target.? };
@@ -36,10 +36,10 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
                     if (p.y == 0) break :blk p.x * 16807;
                     if (p.x == 0) break :blk p.y * 48271;
                     if (p.eq(param.target)) break :blk 0;
-                    break :blk @intCast(i32, map.at(p.add(Vec2{ .x = -1, .y = 0 }))) * @intCast(i32, map.at(p.add(Vec2{ .x = 0, .y = -1 })));
+                    break :blk @as(i32, @intCast(map.at(p.add(Vec2{ .x = -1, .y = 0 })))) * @as(i32, @intCast(map.at(p.add(Vec2{ .x = 0, .y = -1 }))));
                 };
-                const level = (@intCast(u32, geo_idx) + param.depth) % 20183;
-                map.set(p, @intCast(u16, level));
+                const level = (@as(u32, @intCast(geo_idx)) + param.depth) % 20183;
+                map.set(p, @as(u16, @intCast(level)));
             }
         }
     }
@@ -91,7 +91,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
                         next.state.tool = tool;
                         next.state.p = cur.state.p;
                         next.cost = cur.cost + 7;
-                        next.rating = @intCast(i32, Vec2.dist(next.state.p, param.target) * 1 + next.cost);
+                        next.rating = @as(i32, @intCast(Vec2.dist(next.state.p, param.target) * 1 + next.cost));
                         try bfs.insert(next);
                     }
                 }
@@ -116,7 +116,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
                     next.state.tool = cur.state.tool;
                     next.state.p = next_p;
                     next.cost = cur.cost + 1;
-                    next.rating = @intCast(i32, Vec2.dist(next.state.p, param.target) * 1 + next.cost);
+                    next.rating = @as(i32, @intCast(Vec2.dist(next.state.p, param.target) * 1 + next.cost));
                     try bfs.insert(next);
                 }
             }

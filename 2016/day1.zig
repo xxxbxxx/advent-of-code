@@ -8,7 +8,7 @@ fn trace(comptime fmt: []const u8, args: anytype) void {
 }
 
 fn abs(x: i32) u32 {
-    return if (x > 0) @intCast(u32, x) else @intCast(u32, -x);
+    return if (x > 0) @as(u32, @intCast(x)) else @as(u32, @intCast(-x));
 }
 
 pub fn main() anyerror!void {
@@ -46,10 +46,10 @@ pub fn main() anyerror!void {
         }
 
         while (d > 0) : (d -= 1) {
-            map[@intCast(usize, p.x + 1000 * p.y)] = 1;
+            map[@as(usize, @intCast(p.x + 1000 * p.y))] = 1;
             p.x += dirs[edir].x;
             p.y += dirs[edir].y;
-            if (map[@intCast(usize, p.x + 1000 * p.y)] != 0) {
+            if (map[@as(usize, @intCast(p.x + 1000 * p.y))] != 0) {
                 try stdout.print("pos= {}  d= {}\n", .{ p, abs(p.x) + abs(p.y) });
 
                 break :blk;

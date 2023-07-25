@@ -9,7 +9,7 @@ fn trace(comptime fmt: []const u8, args: anytype) void {
 }
 
 fn add(p: usize, d: isize) usize {
-    return @intCast(usize, @intCast(isize, p) + d);
+    return @as(usize, @intCast(@as(isize, @intCast(p)) + d));
 }
 
 pub fn main() anyerror!void {
@@ -34,7 +34,7 @@ pub fn main() anyerror!void {
             assert(width == line.len);
 
             if (stride == 0) {
-                stride = @ptrToInt(line.ptr) - @ptrToInt(text.ptr);
+                stride = @intFromPtr(line.ptr) - @intFromPtr(text.ptr);
             }
             assert(line.ptr == text.ptr + height * stride);
 
@@ -51,7 +51,7 @@ pub fn main() anyerror!void {
     const left: u2 = 1;
     const down: u2 = 2;
     const right: u2 = 3;
-    const moves = [_]isize{ -@intCast(isize, stride), -1, @intCast(isize, stride), 1 };
+    const moves = [_]isize{ -@as(isize, @intCast(stride)), -1, @as(isize, @intCast(stride)), 1 };
 
     const start_dir = down;
     var start_pos: usize = 0;

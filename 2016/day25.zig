@@ -26,10 +26,10 @@ pub fn match_insn(comptime pattern: []const u8, text: []const u8) ?[2]Arg {
     if (tools.match_pattern(pattern, text)) |vals| {
         var count: usize = 0;
         var values: [2]Arg = undefined;
-        for (values[0..argcount]) |*v, i| {
+        for (values[0..argcount], 0..) |*v, i| {
             switch (vals[i]) {
-                .imm => |imm| v.* = .{ .imm = @intCast(i32, imm) },
-                .name => |name| v.* = .{ .reg = @intCast(u2, name[0] - 'a') },
+                .imm => |imm| v.* = .{ .imm = @as(i32, @intCast(imm)) },
+                .name => |name| v.* = .{ .reg = @as(u2, @intCast(name[0] - 'a')) },
             }
         }
         return values;
@@ -155,7 +155,7 @@ pub fn main() anyerror!void {
                     //if (offset == 0)
                     //    trace("@{}:  {} {} {}  / a={},b={},c={}, d={}\n", .{ c.pc + 1, insn.opcode, insn.arg[0], insn.arg[1], c.regs[0], c.regs[1], c.regs[2], c.regs[3] });
                     if (val != 0) {
-                        c.pc = @intCast(usize, @intCast(i32, c.pc) + offset);
+                        c.pc = @as(usize, @intCast(@as(i32, @intCast(c.pc)) + offset));
                     } else {
                         c.pc += 1;
                     }
@@ -165,8 +165,8 @@ pub fn main() anyerror!void {
                         .imm => |imm| imm,
                         .reg => |reg| c.regs[reg],
                     };
-                    if (@intCast(i32, c.pc) + val >= 0 and @intCast(i32, c.pc) + val < program_len) {
-                        const mod_insn = &program[@intCast(usize, @intCast(i32, c.pc) + val)];
+                    if (@as(i32, @intCast(c.pc)) + val >= 0 and @as(i32, @intCast(c.pc)) + val < program_len) {
+                        const mod_insn = &program[@as(usize, @intCast(@as(i32, @intCast(c.pc)) + val))];
                         switch (mod_insn.opcode) {
                             .cpy => {
                                 mod_insn.opcode = .jnz;

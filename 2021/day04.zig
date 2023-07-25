@@ -54,18 +54,18 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
         };
         const states = try allocator.alloc(State, grid_list.len);
         defer allocator.free(states);
-        std.mem.set(State, states, .{ .sum = 0, .lines = [5]u8{ 0, 0, 0, 0, 0 }, .columns = [5]u8{ 0, 0, 0, 0, 0 } });
+        @memset(states, .{ .sum = 0, .lines = [5]u8{ 0, 0, 0, 0, 0 }, .columns = [5]u8{ 0, 0, 0, 0, 0 } });
 
         var active_grids = try allocator.alloc(u32, grid_list.len);
         defer allocator.free(active_grids);
-        for (active_grids) |*idx, i| idx.* = @intCast(u32, i);
+        for (active_grids, 0..) |*idx, i| idx.* = @as(u32, @intCast(i));
 
         var ans1: ?u32 = null;
 
         for (number_list) |n| {
             var j: i32 = 0;
             while (j < active_grids.len) : (j += 1) {
-                const i = active_grids[@intCast(usize, j)];
+                const i = active_grids[@as(usize, @intCast(j))];
                 const g = grid_list[i];
 
                 if (std.mem.indexOfScalar(u8, &g, n)) |idx| {
@@ -85,7 +85,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
                         }
 
                         // écarte la grille
-                        active_grids[@intCast(usize, j)] = active_grids[active_grids.len - 1];
+                        active_grids[@as(usize, @intCast(j))] = active_grids[active_grids.len - 1];
                         active_grids.len -= 1;
                         j -= 1;
                     }

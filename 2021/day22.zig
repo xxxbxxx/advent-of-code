@@ -30,7 +30,7 @@ const Box = struct {
 
 fn boxListEqual(as: []const Box, bs: []const Box) bool {
     if (as.len != bs.len) return false;
-    for (as) |a, i| {
+    for (as, 0..) |a, i| {
         const b = bs[i];
         if (a.order != b.order) return false;
         assert(a.on == b.on and @reduce(.And, a.min == b.min) and @reduce(.And, a.max == b.max));
@@ -108,7 +108,7 @@ fn countNbLit(allocator: std.mem.Allocator, min: Vec3, max: Vec3, sorted_list: [
                         if (@reduce(.And, p == Vec3{ 0, 0, 0 }))
                             trace("raster: pointlit00={}\n", .{(if (stack.peek()) |b| b.on else false)});
 
-                        nb_lit_2 += @boolToInt(if (stack.peek()) |b| b.on else false);
+                        nb_lit_2 += @intFromBool(if (stack.peek()) |b| b.on else false);
                     }
                 }
                 nb_lit_1 += nb_lit_2;
@@ -127,7 +127,7 @@ fn countNbLit_octree_rasterize(min: Vec3, max: Vec3, octree: *const Octree) u64 
         while (p[1] <= max[1]) : (p += Vec3{ 0, 1, 0 }) {
             p[2] = min[2];
             while (p[2] <= max[2]) : (p += Vec3{ 0, 0, 1 }) {
-                nb_lit += @boolToInt(octree.isPointLit(p));
+                nb_lit += @intFromBool(octree.isPointLit(p));
             }
         }
     }
@@ -237,7 +237,7 @@ const Octree = struct {
         switch (cur.*) {
             .leave_islit => |on| return on,
             .node => |n| {
-                const quadrant: u3 = @boolToInt(p[0] >= n.p[0]) * @as(u3, 0b100) + @boolToInt(p[1] >= n.p[1]) * @as(u3, 0b010) + @boolToInt(p[2] >= n.p[2]) * @as(u3, 0b001);
+                const quadrant: u3 = @intFromBool(p[0] >= n.p[0]) * @as(u3, 0b100) + @intFromBool(p[1] >= n.p[1]) * @as(u3, 0b010) + @intFromBool(p[2] >= n.p[2]) * @as(u3, 0b001);
                 return isPointLitRecurse(self, p, n.childs[quadrant]);
             },
         }
@@ -251,8 +251,8 @@ const Octree = struct {
         if (@reduce(.Or, max <= min)) return 0;
         switch (cur.*) {
             .leave_islit => |on| {
-                //trace("volume+= {} * {}..{}\n", .{@boolToInt(on), min, max });
-                return @boolToInt(on == is_lit) * @reduce(.Mul, @intCast(@Vector(3, u64), max - min));
+                //trace("volume+= {} * {}..{}\n", .{@intFromBool(on), min, max });
+                return @intFromBool(on == is_lit) * @reduce(.Mul, @as(@Vector(3, u64), @intCast(max - min)));
             },
             .node => |n| {
                 const vol000 = computeVolumeRecurse(self, is_lit, @max(min, Vec3{ min[0], min[1], min[2] }), @min(max, Vec3{ n.p[0], n.p[1], n.p[2] }), n.childs[0b000]);
@@ -425,13 +425,13 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
         var it = std.mem.tokenize(u8, input, "\n");
         while (it.next()) |line| {
             if (tools.match_pattern("on x={}..{},y={}..{},z={}..{}", line)) |val| {
-                const min = Vec3{ @intCast(i32, val[0].imm), @intCast(i32, val[2].imm), @intCast(i32, val[4].imm) };
-                const max = Vec3{ @intCast(i32, val[1].imm), @intCast(i32, val[3].imm), @intCast(i32, val[5].imm) };
-                try list.append(Box{ .min = min, .max = max, .on = true, .order = @intCast(u32, list.items.len) });
+                const min = Vec3{ @intCast(val[0].imm), @intCast(val[2].imm), @intCast(val[4].imm) };
+                const max = Vec3{ @intCast(val[1].imm), @intCast(val[3].imm), @intCast(val[5].imm) };
+                try list.append(Box{ .min = min, .max = max, .on = true, .order = @intCast(list.items.len) });
             } else if (tools.match_pattern("off x={}..{},y={}..{},z={}..{}", line)) |val| {
-                const min = Vec3{ @intCast(i32, val[0].imm), @intCast(i32, val[2].imm), @intCast(i32, val[4].imm) };
-                const max = Vec3{ @intCast(i32, val[1].imm), @intCast(i32, val[3].imm), @intCast(i32, val[5].imm) };
-                try list.append(Box{ .min = min, .max = max, .on = false, .order = @intCast(u32, list.items.len) });
+                const min = Vec3{ @intCast(val[0].imm), @intCast(val[2].imm), @intCast(val[4].imm) };
+                const max = Vec3{ @intCast(val[1].imm), @intCast(val[3].imm), @intCast(val[5].imm) };
+                try list.append(Box{ .min = min, .max = max, .on = false, .order = @intCast(list.items.len) });
             } else {
                 trace("skipping '{s}'...\n", .{line});
             }
@@ -444,7 +444,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
         try octree.addBox(box);
     }
 
-    std.sort.sort(Box, list.items, {}, Box.lessThan2);
+    std.mem.sort(Box, list.items, {}, Box.lessThan2);
     const ans1 = try countNbLit(gpa, Vec3{ -50, -50, -50 }, Vec3{ 50, 50, 50 }, list.items);
     const ans1b = countNbLit_octree_rasterize(Vec3{ -50, -50, -50 }, Vec3{ 50, 50, 50 }, &octree);
     trace("ans1a={}, ans1b={}\n", .{ ans1, ans1b });

@@ -79,7 +79,7 @@ pub fn main() anyerror!void {
     var changed = true;
     while (changed) {
         changed = false;
-        for (bots) |*bot, ibot| {
+        for (bots, 0..) |*bot, ibot| {
             if (bot.val[0]) |v0| {
                 if (bot.val[1]) |v1| {
                     changed = true;

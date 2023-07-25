@@ -17,8 +17,8 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         const input = try allocator.alloc(u8, (height + 2) * stride);
         errdefer allocator.free(input);
 
-        std.mem.set(u8, input[0 .. width + 2], '.');
-        std.mem.set(u8, input[(height + 1) * stride .. ((height + 1) * stride) + width + 2], '.');
+        @memset(input[0 .. width + 2], '.');
+        @memset(input[(height + 1) * stride .. ((height + 1) * stride) + width + 2], '.');
         input[width + 2] = '\n';
         input[((height + 1) * stride) + width + 2] = '\n';
 
@@ -67,13 +67,13 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
                         };
                         inline for (neighbours) |o| {
                             const n = p.add(o);
-                            if (prev[@intCast(usize, n.y) * param.stride + @intCast(usize, n.x)] == '#')
+                            if (prev[@as(usize, @intCast(n.y)) * param.stride + @as(usize, @intCast(n.x))] == '#')
                                 count += 1;
                         }
                         break :blk count;
                     };
-                    const curseat = prev[@intCast(usize, p.y) * param.stride + @intCast(usize, p.x)];
-                    const nextseat = &next[@intCast(usize, p.y) * param.stride + @intCast(usize, p.x)];
+                    const curseat = prev[@as(usize, @intCast(p.y)) * param.stride + @as(usize, @intCast(p.x))];
+                    const nextseat = &next[@as(usize, @intCast(p.y)) * param.stride + @as(usize, @intCast(p.x))];
                     if (curseat == 'L' and nb_neihb == 0) {
                         nextseat.* = '#';
                     } else if (curseat == '#' and nb_neihb >= 4) {
@@ -118,15 +118,15 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
 
                         var d: i32 = 0;
                         var count: u32 = 0;
-                        var done: std.meta.Vector(8, u1) = [1]u1{0} ** 8;
+                        var done: @Vector(8, u1) = [1]u1{0} ** 8;
                         while (@reduce(.And, done) == 0) {
                             d += 1;
-                            inline for (neighbours) |o, i| {
+                            inline for (neighbours, 0..) |o, i| {
                                 const n = p.add(Vec2{ .x = o.x * d, .y = o.y * d });
                                 if (n.x < 1 or n.y < 1 or n.x > param.width or n.y > param.height) {
                                     done[i] = 1;
                                 } else if (done[i] != 0) {
-                                    const seat = prev[@intCast(usize, n.y) * param.stride + @intCast(usize, n.x)];
+                                    const seat = prev[@as(usize, @intCast(n.y)) * param.stride + @as(usize, @intCast(n.x))];
                                     if (seat == '#') {
                                         count += 1;
                                         done[i] = 1;
@@ -138,7 +138,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
                         }
                         break :blk count;
                     };
-                    const idx = @intCast(usize, p.y) * param.stride + @intCast(usize, p.x);
+                    const idx = @as(usize, @intCast(p.y)) * param.stride + @as(usize, @intCast(p.x));
                     const curseat = prev[idx];
                     const nextseat = &next[idx];
                     if (curseat == 'L' and nb_neihb == 0) {

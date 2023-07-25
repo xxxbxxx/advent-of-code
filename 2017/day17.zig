@@ -29,9 +29,9 @@ pub fn main() anyerror!void {
         assert(circular_buffer.len == round);
         cursor = (cursor + steps) % round + 1;
         if (cursor == circular_buffer.len) {
-            try circular_buffer.append(@intCast(u16, round));
+            try circular_buffer.append(@as(u16, @intCast(round)));
         } else {
-            try circular_buffer.insert(cursor, @intCast(u16, round));
+            try circular_buffer.insert(cursor, @as(u16, @intCast(round)));
         }
     }
     try stdout.print("buffer: len={}, elem={}\n", .{ circular_buffer.len, circular_buffer.items[cursor + 1] });

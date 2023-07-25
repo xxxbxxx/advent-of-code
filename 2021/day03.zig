@@ -11,7 +11,7 @@ fn filter_in_place(initial_list: []u16, mode: enum { least_frequent, most_freque
         const mask = @as(u16, 1) << bit_index;
         var ones: u32 = 0;
         for (list) |l| {
-            ones += @boolToInt(l & mask != 0);
+            ones += @intFromBool(l & mask != 0);
         }
         const criteria = switch (mode) {
             .least_frequent => if (ones >= (list.len + 1) / 2 or ones == 0) 0 else mask, //  or ones == 0 : s'il y en a zero, on garde tout
@@ -46,20 +46,20 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
     const allocator = arena.allocator();
 
     var number_list: []u16 = undefined;
-    var digits_list: []@Vector(16, u8) = undefined; // msb
+    var digits_list: []@Vector(16, u1) = undefined; // msb
     {
         const line_count = std.mem.count(u8, input, "\n") + 1;
         const nums = try allocator.alloc(u16, line_count);
-        const digs = try allocator.alloc(@Vector(16, u8), line_count);
+        const digs = try allocator.alloc(@Vector(16, u1), line_count);
 
         var it = std.mem.tokenize(u8, input, "\n\r");
         var l: u32 = 0;
         while (it.next()) |line| : (l += 1) {
-            var val = @splat(16, @as(u8, 0));
+            var val: @Vector(16, u1) = @splat(0);
             var num: u16 = 0;
-            for (line) |c, i| {
-                val[i] = @boolToInt(c == '1');
-                num = (num * 2) | @boolToInt(c == '1');
+            for (line, 0..) |c, i| {
+                val[i] = @intFromBool(c == '1');
+                num = (num * 2) | @intFromBool(c == '1');
             }
             nums[l] = num;
             digs[l] = val;
@@ -69,7 +69,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
     }
 
     const ans1 = ans: {
-        const zero = @splat(16, @as(u16, 0));
+        const zero: @Vector(16, u16) = @splat(0);
         var counters = zero;
         for (digits_list) |val| {
             counters += @as(@Vector(16, u16), val);
@@ -80,15 +80,15 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
 
         //std.debug.print("line_count={}, counts={}\n", .{ digits_list.len, counters });
 
-        const ones = counters > @splat(16, @intCast(u16, digits_list.len / 2));
-        const width = @reduce(.Add, @as(@Vector(16, u16), @bitCast(@Vector(16, u1), counters > zero)));
+        const ones = counters > @as(@Vector(16, u16), @splat(@intCast(digits_list.len / 2)));
+        const width = @reduce(.Add, @as(@Vector(16, u16), @as(@Vector(16, u1), @bitCast(counters > zero))));
         //std.debug.print("width={}, ones={}\n", .{ width, ones });
 
         for (@as([16]bool, ones)[0..width]) |bit| {
             gamma *= 2;
             epsilon *= 2;
-            gamma |= @boolToInt(bit);
-            epsilon |= @boolToInt(!bit);
+            gamma |= @intFromBool(bit);
+            epsilon |= @intFromBool(!bit);
         }
         break :ans epsilon * gamma;
     };

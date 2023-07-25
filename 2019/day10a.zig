@@ -32,11 +32,11 @@ fn is_visible(map: Map, eye: Vec2, target: Vec2) bool {
 
     const v = Vec2{ .x = d.x / l, .y = d.y / l };
 
-    for (map) |has_asteroid, i| {
+    for (map, 0..) |has_asteroid, i| {
         if (!has_asteroid) continue;
         const x = i % map_width;
         const y = i / map_width;
-        const p = Vec2{ .x = @intToFloat(f32, x) - eye.x, .y = @intToFloat(f32, y) - eye.y };
+        const p = Vec2{ .x = @floatFromInt(x) - eye.x, .y = @floatFromInt(y) - eye.y };
         const s = v.x * p.x + v.y * p.y;
         if (s < eps or s > l - eps)
             continue;
@@ -69,18 +69,18 @@ fn next_to_destroy(map: Map, eye: Vec2, prev_target: Vec2) ?struct {
     var bestangle: f32 = 7;
     var bestx: u32 = undefined;
     var besty: u32 = undefined;
-    for (map) |has_asteroid, i| {
+    for (map, 0..) |has_asteroid, i| {
         if (!has_asteroid) continue;
         const x = i % map_width;
         const y = i / map_width;
-        if (!is_visible(map, eye, Vec2{ .x = @intToFloat(f32, x), .y = @intToFloat(f32, y) }))
+        if (!is_visible(map, eye, Vec2{ .x = @floatFromInt(x), .y = @floatFromInt(y) }))
             continue;
-        const p = Vec2{ .x = @intToFloat(f32, x) - eye.x, .y = @intToFloat(f32, y) - eye.y };
+        const p = Vec2{ .x = @floatFromInt(x) - eye.x, .y = @floatFromInt(y) - eye.y };
         const a = angle(p);
         if (mod2pi(a - angleref) > 0 and mod2pi(a - angleref) < bestangle) {
             bestangle = mod2pi(a - angleref);
-            bestx = @intCast(u32, x);
-            besty = @intCast(u32, y);
+            bestx = @intCast(x);
+            besty = @intCast(y);
         }
     }
     return if (bestangle < 6.5) .{ .x = bestx, .y = besty } else null;
@@ -100,19 +100,19 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
 
     var best: u32 = 0;
     var besteye: Vec2 = undefined;
-    for (map) |has_asteroid0, i| {
+    for (map, 0..) |has_asteroid0, i| {
         if (!has_asteroid0) continue;
         const x0 = i % map_width;
         const y0 = i / map_width;
-        const eye = Vec2{ .x = @intToFloat(f32, x0), .y = @intToFloat(f32, y0) };
+        const eye = Vec2{ .x = @floatFromInt(x0), .y = @floatFromInt(y0) };
         var counter: u32 = 0;
-        for (map) |has_asteroid1, j| {
+        for (map, 0..) |has_asteroid1, j| {
             if (!has_asteroid1) continue;
             const x1 = j % map_width;
             const y1 = j / map_width;
             if (x1 == x0 and y1 == y0)
                 continue;
-            const tgt = Vec2{ .x = @intToFloat(f32, x1), .y = @intToFloat(f32, y1) };
+            const tgt = Vec2{ .x = @floatFromInt(x1), .y = @floatFromInt(y1) };
             if (is_visible(map, eye, tgt)) {
                 //                trace("can see  {},{}\n", .{ x1, y1});
                 counter += 1;
@@ -132,7 +132,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
             trace("shootn°{} {}\n", .{ ord, target });
             assert(map[target.x + map_width * target.y]);
             map[target.x + map_width * target.y] = false;
-            prev = Vec2{ .x = @intToFloat(f32, target.x), .y = @intToFloat(f32, target.y) };
+            prev = Vec2{ .x = @floatFromInt(target.x), .y = @floatFromInt(target.y) };
             if (ord == 200)
                 break :ans (target.x * 100 + target.y);
             ord += 1;

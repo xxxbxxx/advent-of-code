@@ -44,8 +44,8 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
     const target = blk: {
         if (tools.match_pattern("target area: x={}..{}, y={}..{}", std.mem.trim(u8, input, "\n\r \t"))) |val| {
             break :blk BBox{
-                .min = Vec2{ @intCast(i32, val[0].imm), @intCast(i32, val[2].imm) },
-                .max = Vec2{ @intCast(i32, val[1].imm), @intCast(i32, val[3].imm) },
+                .min = Vec2{ @as(i32, @intCast(val[0].imm)), @as(i32, @intCast(val[2].imm)) },
+                .max = Vec2{ @as(i32, @intCast(val[1].imm)), @as(i32, @intCast(val[3].imm)) },
             };
         } else {
             return error.UnsupportedInput;
@@ -59,7 +59,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
     //  y le plus long..mmm.  quand on reppasse par zero, c'est symétrique de la vitesse de lancement. et donc meme raisonnement, a partir de là, en un coup ymin
     const ans = ans: {
         const fastest_x = target.max[0];
-        const slowest_x = (std.math.sqrt(1 + 8 * @intCast(u32, target.min[0])) - 1) / 2;
+        const slowest_x = (std.math.sqrt(1 + 8 * @as(u32, @intCast(target.min[0]))) - 1) / 2;
         trace("valid initial xvels={}..{}\n", .{ slowest_x, fastest_x });
         trace("              yvels={}..{}\n", .{ target.min[1], -target.min[1] });
 
@@ -69,7 +69,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
         while (v[0] <= fastest_x) : (v[0] += 1) {
             v[1] = target.min[1];
             while (v[1] <= -target.min[1]) : (v[1] += 1) {
-                const hits = @boolToInt(hitsTarget(target, v));
+                const hits = @intFromBool(hitsTarget(target, v));
                 hit_count += hits;
                 best_apex = @max(best_apex, hits * computeApex(v));
             }

@@ -48,7 +48,7 @@ fn run_part(initial_color: u1, computer: *Computer, boot_image: []const Computer
             } else if (c.io_mode == .output) {
                 // try stdout.print("{} outputs {}\n", .{ c.name, c.io_port });
                 if (cycle == .paint) {
-                    map.set(pos, Tile{ .color = @intCast(u1, c.io_port), .visited = 1 });
+                    map.set(pos, Tile{ .color = @intCast(c.io_port), .visited = 1 });
                     cycle = .turn;
                 } else {
                     if (c.io_port == 0) {

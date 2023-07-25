@@ -30,7 +30,7 @@ const Computer = struct {
     };
 
     fn read_param(c: *Computer, par: Data, mod: bool) Data {
-        return (if (mod) par else c.memory_bank[@intCast(usize, par)]);
+        return (if (mod) par else c.memory_bank[@intCast(par)]);
     }
 
     fn run(c: *Computer, input: Data) Data {
@@ -42,7 +42,7 @@ const Computer = struct {
         var pc: usize = 0;
         while (true) {
             // decode insn opcode
-            const opcode_and_mods = @intCast(usize, mem[pc]);
+            const opcode_and_mods: usize = @intCast(mem[pc]);
             pc += 1;
             const opcode = opcode_and_mods % 100;
             const mods = [_]bool{
@@ -68,14 +68,14 @@ const Computer = struct {
             // execute insn
             switch (opcode) {
                 insn_halt => break,
-                insn_add => mem[@intCast(usize, p[2])] = p[0] + p[1],
-                insn_mul => mem[@intCast(usize, p[2])] = p[0] * p[1],
-                insn_input => mem[@intCast(usize, p[0])] = input,
+                insn_add => mem[@intCast(p[2])] = p[0] + p[1],
+                insn_mul => mem[@intCast(p[2])] = p[0] * p[1],
+                insn_input => mem[@intCast(p[0])] = input,
                 insn_output => output = p[0],
-                insn_jne => pc = if (p[0] != 0) @intCast(usize, p[1]) else pc,
-                insn_jeq => pc = if (p[0] == 0) @intCast(usize, p[1]) else pc,
-                insn_slt => mem[@intCast(usize, p[2])] = if (p[0] < p[1]) 1 else 0,
-                insn_seq => mem[@intCast(usize, p[2])] = if (p[0] == p[1]) 1 else 0,
+                insn_jne => pc = if (p[0] != 0) @intCast(p[1]) else pc,
+                insn_jeq => pc = if (p[0] == 0) @intCast(p[1]) else pc,
+                insn_slt => mem[@intCast(p[2])] = if (p[0] < p[1]) 1 else 0,
+                insn_seq => mem[@intCast(p[2])] = if (p[0] == p[1]) 1 else 0,
 
                 else => @panic("Illegal instruction"),
             }

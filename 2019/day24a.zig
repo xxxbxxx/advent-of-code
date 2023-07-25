@@ -40,8 +40,10 @@ fn dostep(grid: Map) Map {
 }
 pub fn main() anyerror!void {
     const stdout = std.io.getStdOut().writer();
+    _ = stdout;
     const allocator = &std.heap.ArenaAllocator.init(std.heap.page_allocator).allocator;
     const limit = 1 * 1024 * 1024 * 1024;
+    _ = limit;
 
     const text =
         \\ ..###
@@ -58,12 +60,13 @@ pub fn main() anyerror!void {
         \\ ..#..
         \\ #....
     ;
+    _ = text0;
 
     var grid = Map{ .default_tile = 0 };
     var i: u32 = 0;
     for (text) |c| {
         if (c == '.' or c == '#') {
-            const p = Vec2{ .x = @intCast(i32, i % 5), .y = @intCast(i32, i / 5) };
+            const p = Vec2{ .x = @intCast(i % 5), .y = @intCast(i / 5) };
             grid.set(p, c);
             i += 1;
         }
@@ -86,7 +89,7 @@ pub fn main() anyerror!void {
                 var sq: u32 = 1;
                 for (grid.map) |m| {
                     if (m == '#')
-                        b += @intCast(u25, sq);
+                        b += @intCast(sq);
                     sq *= 2;
                 }
                 break :blk b;

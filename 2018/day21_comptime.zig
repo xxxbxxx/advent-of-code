@@ -41,7 +41,7 @@ fn compile(comptime prg: []Insn, comptime ip_reg: u8) type {
                     if (ip >= prg.len) return state;
                 }
 
-                inline for (prg) |insn, i| {
+                inline for (prg, 0..) |insn, i| {
                     if (ip == i) comptime_eval(insn.op, insn.par, &state.reg);
                 }
                 state.reg[ip_reg] += 1;
@@ -117,7 +117,7 @@ pub fn run(_: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     const ans2 = ans: {
         const visited = try allocator.alloc(bool, 16 * 1024 * 1024);
         defer allocator.free(visited);
-        std.mem.set(bool, visited, false);
+        @memset(visited, false);
 
         var ctx = PeekCtx2{ .visited = visited, .prev = 0 };
         _ = compiled_prg.run(State{ .reg = .{ 0, 0, 0, 0, 0, 0 } }, &ctx, peekState2);

@@ -26,7 +26,7 @@ const Portals = std.ArrayHashMap(u10, struct { out: Vec2, in: Vec2 }, PortalCont
 const Edge = enum { inner, outer };
 
 fn addPortal(portals: *Portals, pos: Vec2, letter1: u8, letter2: u8, edge: Edge) void {
-    const tag = @intCast(u10, letter1 - 'A') * 26 + @intCast(u10, letter2 - 'A');
+    const tag = @as(u10, @intCast(letter1 - 'A')) * 26 + @as(u10, @intCast(letter2 - 'A'));
     const entry = portals.getOrPut(tag) catch unreachable;
     if (edge == .inner) {
         entry.value_ptr.in = pos;
@@ -42,8 +42,8 @@ fn parseLine(input: []const u8, stride: usize, p0: Vec2, p1: Vec2, inc: Vec2, ed
         switch (input[o]) {
             '#' => {},
             '.' => {
-                const l1 = input[@intCast(usize, @intCast(isize, o) + offset_letter1)];
-                const l2 = input[@intCast(usize, @intCast(isize, o) + offset_letter2)];
+                const l1 = input[@intCast(@as(isize, @intCast(o)) + offset_letter1)];
+                const l2 = input[@intCast(@as(isize, @intCast(o)) + offset_letter2)];
                 addPortal(portals, p, l1, l2, edge);
             },
             else => unreachable,
@@ -70,7 +70,7 @@ fn parsePortals(input: []const u8, stride: usize, width: u15, height: u15, porta
     assert(input[inner_right + inner_top * stride] == '#' and input[(inner_right + 0) + (inner_top + 1) * stride] == '#' and input[(inner_right - 1) + (inner_top + 0) * stride] == '#' and input[(inner_right - 1) + (inner_top + 1) * stride] == ' ');
     assert(input[inner_right + inner_bottom * stride] == '#' and input[(inner_right + 0) + (inner_bottom - 1) * stride] == '#' and input[(inner_right - 1) + (inner_bottom + 0) * stride] == '#' and input[(inner_right - 1) + (inner_bottom - 1) * stride] == ' ');
 
-    const offset_line = @intCast(isize, stride);
+    const offset_line: isize = @intCast(stride);
     parseLine(input, stride, Vec2{ outer_left, outer_top }, Vec2{ outer_right, outer_top }, Vec2{ 1, 0 }, .outer, -offset_line * 2, -offset_line, portals);
     parseLine(input, stride, Vec2{ outer_left, outer_bottom }, Vec2{ outer_right, outer_bottom }, Vec2{ 1, 0 }, .outer, offset_line, offset_line * 2, portals);
     parseLine(input, stride, Vec2{ outer_left, outer_top }, Vec2{ outer_left, outer_bottom }, Vec2{ 0, 1 }, .outer, -2, -1, portals);
@@ -97,14 +97,14 @@ fn flood_fill_recurse(input: []const u8, stride: usize, p: Vec2, depth: u16, dma
 }
 
 fn compute_distance_map(input: []const u8, stride: usize, p: Vec2, dmap: []u16) void {
-    std.mem.set(u16, dmap, 0);
+    @memset(dmap, 0);
     flood_fill_recurse(input, stride, p, 1, dmap);
     const o = offset_from_pos(p, stride);
     dmap[o] = 0; // cas special entrée pas géré avant: un pas en avant, un pas en arrière
 }
 
 fn offset_from_pos(p: Vec2, stride: usize) usize {
-    return @intCast(usize, p[0]) + @intCast(usize, p[1]) * stride;
+    return @as(usize, @intCast(p[0])) + @as(usize, @intCast(p[1])) * stride;
 }
 
 pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]const u8 {
@@ -114,13 +114,13 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
     // 3. trouver la meilleure séquence de paires
 
     const stride = std.mem.indexOfScalar(u8, input, '\n').? + 1;
-    const height = @intCast(u15, input.len / stride);
-    const width = @intCast(u15, stride - 1);
+    const height: u15 = @intCast(input.len / stride);
+    const width: u15 = @intCast(stride - 1);
 
     var portals = Portals.init(allocator);
     defer portals.deinit();
-    const tagAA = @intCast(u10, 0) * 26 + @intCast(u10, 0);
-    const tagZZ = @intCast(u10, 'Z' - 'A') * 26 + @intCast(u10, 'Z' - 'A');
+    const tagAA: u10 = @as(u10, @intCast(0)) * 26 + @as(u10, @intCast(0));
+    const tagZZ: u10 = @as(u10, @intCast('Z' - 'A')) * 26 + @as(u10, @intCast('Z' - 'A'));
     {
         const entryAA = portals.getOrPut(tagAA) catch unreachable;
         const entryZZ = portals.getOrPut(tagZZ) catch unreachable;
@@ -132,11 +132,11 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
         trace("portals: count={}\n", .{portals.count()});
         var it = portals.iterator();
         while (it.next()) |e| {
-            trace("  {c}{c}: {} -> {}\n", .{ 'A' + @intCast(u8, e.key_ptr.* / 26), 'A' + @intCast(u8, e.key_ptr.* % 26), e.value_ptr.in, e.value_ptr.out });
+            trace("  {c}{c}: {} -> {}\n", .{ 'A' + @as(u8, @intCast(e.key_ptr.* / 26)), 'A' + @as(u8, @intCast(e.key_ptr.* % 26)), e.value_ptr.in, e.value_ptr.out });
         }
     }
-    const indexAA = @intCast(u8, portals.getIndex(tagAA).? * 2 + 1);
-    const indexZZ = @intCast(u8, portals.getIndex(tagZZ).? * 2 + 1);
+    const indexAA: u8 = @intCast(portals.getIndex(tagAA).? * 2 + 1);
+    const indexZZ: u8 = @intCast(portals.getIndex(tagZZ).? * 2 + 1);
 
     const portal_count = portals.count() * 2;
     var dist_table = try allocator.alloc(u16, portal_count * portal_count);
@@ -177,14 +177,14 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
             trace("distances:\n    ", .{});
             var i: usize = 0;
             while (i < portal_count) : (i += 1) {
-                trace("{c}{c} ", .{ 'A' + @intCast(u8, portals.keys()[i / 2] / 26), 'A' + @intCast(u8, portals.keys()[i / 2] % 26) });
+                trace("{c}{c} ", .{ 'A' + @as(u8, @intCast(portals.keys()[i / 2] / 26)), 'A' + @as(u8, @intCast(portals.keys()[i / 2] % 26)) });
             }
             trace("\n", .{});
 
             i = 0;
             while (i < portal_count) : (i += 1) {
                 var j: usize = 0;
-                trace("{c}{c} ", .{ 'A' + @intCast(u8, portals.keys()[i / 2] / 26), 'A' + @intCast(u8, portals.keys()[i / 2] % 26) });
+                trace("{c}{c} ", .{ 'A' + @as(u8, @intCast(portals.keys()[i / 2] / 26)), 'A' + @as(u8, @intCast(portals.keys()[i / 2] % 26)) });
                 while (j < portal_count) : (j += 1) {
                     assert(dist_table[j + i * portal_count] == dist_table[i + j * portal_count]); // sanity check.
                     trace(" {:2}", .{dist_table[j + i * portal_count]});
@@ -230,7 +230,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
                 }
                 trace("  walk: ...{} -{}-> {}  ({})\n", .{ node.state, d, i, steps });
                 try bfs.insert(BestFirstSearch.Node{
-                    .rating = @intCast(i32, steps),
+                    .rating = @intCast(steps),
                     .cost = steps,
                     .state = i,
                     .trace = {},
@@ -243,7 +243,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
                 const steps = node.cost + 1;
                 trace("  tele: ...{} -1-> {}  ({})\n", .{ node.state, index, steps });
                 try bfs.insert(BestFirstSearch.Node{
-                    .rating = @intCast(i32, steps),
+                    .rating = @intCast(steps),
                     .cost = steps,
                     .state = index,
                     .trace = {},
@@ -286,7 +286,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
                 } else if (i == indexZZ or i == indexAA) continue;
                 trace("  walk: ...{} -{}-> {}  ({})\n", .{ node.state, d, i, steps });
                 try bfs.insert(BestFirstSearch.Node{
-                    .rating = @intCast(i32, steps + 8 * @as(u32, node.state.level)),
+                    .rating = @intCast(steps + 8 * @as(u32, node.state.level)),
                     .cost = steps,
                     .state = .{ .tp = i, .level = node.state.level },
                     .trace = {},
@@ -301,7 +301,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
                     const steps = node.cost + 1;
                     trace("  tele: ...{} -1-> {}  ({})\n", .{ node.state, index, steps });
                     try bfs.insert(BestFirstSearch.Node{
-                        .rating = @intCast(i32, steps + 8 * @as(u32, node.state.level)),
+                        .rating = @intCast(steps + 8 * @as(u32, node.state.level)),
                         .cost = steps,
                         .state = .{ .tp = index, .level = if (is_outer) node.state.level - 1 else node.state.level + 1 },
                         .trace = {},

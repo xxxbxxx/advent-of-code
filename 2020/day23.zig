@@ -9,7 +9,7 @@ fn PackedArray(comptime T: type, comptime stride: usize, comptime count: usize) 
     return struct {
         mem: [count * stride]u8,
         inline fn at(self: *@This(), i: usize) *align(1) T {
-            return @ptrCast(*align(1) T, &self.mem[i * stride]);
+            return @as(*align(1) T, @ptrCast(&self.mem[i * stride]));
         }
     };
 }
@@ -121,7 +121,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
             var i: u32 = 0;
             var cup = cups.at(1).next;
             while (i < 8) : (i += 1) {
-                ans[i] = @intCast(u8, cup) + '0';
+                ans[i] = @as(u8, @intCast(cup)) + '0';
                 cup = cups.at(cup).next;
             }
             //std.debug.print("cups= {}\n", .{ans});
@@ -172,7 +172,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         {
             const cup1 = cups.at(1).next;
             const cup2 = cups.at(cup1).next;
-            break :ans @intCast(u64, cup1) * @intCast(u64, cup2);
+            break :ans @as(u64, @intCast(cup1)) * @as(u64, @intCast(cup2));
         }
     };
 

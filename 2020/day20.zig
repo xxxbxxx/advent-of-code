@@ -42,12 +42,12 @@ fn transform(in: Map, t: Vec2.Transfo, out_buf: []u8) Map {
         while (i < width) : (i += 1) {
             const o2 = Vec2{ .x = i * 2 - c2.x, .y = j * 2 - c2.y };
             const p2 = Vec2.add(Vec2.scale(o2.x, r.x), Vec2.scale(o2.y, r.y));
-            const p = Vec2{ .x = @intCast(u16, p2.x + c2.x) / 2, .y = @intCast(u16, p2.y + c2.y) / 2 };
+            const p = Vec2{ .x = @as(u16, @intCast(p2.x + c2.x)) / 2, .y = @as(u16, @intCast(p2.y + c2.y)) / 2 };
             //   print("{} <- {} == {}\n", .{ o2, p2, w });
 
-            out_buf[@intCast(u32, i) + @intCast(u32, j) * stride] = in.map[@intCast(u32, p.x) + @intCast(u32, p.y) * stride];
+            out_buf[@as(u32, @intCast(i)) + @as(u32, @intCast(j)) * stride] = in.map[@as(u32, @intCast(p.x)) + @as(u32, @intCast(p.y)) * stride];
         }
-        out_buf[width + @intCast(u32, j) * stride] = '\n';
+        out_buf[width + @as(u32, @intCast(j)) * stride] = '\n';
     }
 
     return Map{
@@ -62,11 +62,11 @@ fn computeTransormedBorders(in: *Map) void {
     for (Vec2.all_tranfos) |t| {
         var buf: [stride * height]u8 = undefined;
         const m = transform(in.*, t, &buf);
-        borders[@enumToInt(t)] = extractBorders(m.map);
+        borders[@intFromEnum(t)] = extractBorders(m.map);
     }
 
     var canon: [4]Border = undefined;
-    for (canon) |*it, i| {
+    for (&canon, 0..) |*it, i| {
         it.* = if (borders[0][i] < @bitReverse(borders[0][i])) borders[0][i] else @bitReverse(borders[0][i]);
     }
 
@@ -88,12 +88,12 @@ const State = struct {
 
 fn bigPosFromIndex(idx: usize, big_stride: usize) Vec2 {
     if (true) { // sens de lecture  -> permet de placer un coin dès le debut au bon endroit.
-        return Vec2{ .y = @intCast(i32, idx / big_stride), .x = @intCast(i32, idx % big_stride) };
+        return Vec2{ .y = @intCast(idx / big_stride), .x = @intCast(idx % big_stride) };
     } else { // spirale partant du centre.
-        const c = Vec2{ .y = @intCast(i32, big_stride / 2), .x = @intCast(i32, big_stride / 2) };
+        const c = Vec2{ .y = @intCast(big_stride / 2), .x = @intCast(big_stride / 2) };
         const p = Vec2.add(c, tools.posFromSpiralIndex(idx));
-        const s = @intCast(i32, big_stride);
-        return Vec2{ .x = @intCast(i32, @mod(p.x, s)), .y = @intCast(i32, @mod(p.y, s)) }; // gère le fait que c'est décentré si la taille est paire
+        const s: i32 = @intCast(big_stride);
+        return Vec2{ .x = @intCast(@mod(p.x, s)), .y = @intCast(@mod(p.y, s)) }; // gère le fait que c'est décentré si la taille est paire
     }
 }
 
@@ -102,15 +102,15 @@ fn checkValid(s: State, maps: []const Map) bool {
 
     var borders_mem = [_][4]Border{.{ 0, 0, 0, 0 }} ** (16 * 16);
     var borders = borders_mem[0 .. big_stride * big_stride];
-    for (s.list[0..s.placed]) |it, i| {
+    for (s.list[0..s.placed], 0..) |it, i| {
         const p = bigPosFromIndex(i, big_stride);
         assert(p.y >= 0 and p.y < big_stride and p.x >= 0 and p.x < big_stride);
-        borders[@intCast(usize, p.x) + @intCast(usize, p.y) * big_stride] = maps[it.map_idx].borders.?.transformed[@enumToInt(it.t)];
+        borders[@as(usize, @intCast(p.x)) + @as(usize, @intCast(p.y)) * big_stride] = maps[it.map_idx].borders.?.transformed[@intFromEnum(it.t)];
     }
 
-    for (borders[0 .. big_stride * big_stride]) |b, i| {
+    for (borders[0 .. big_stride * big_stride], 0..) |b, i| {
         if ((b[0] | b[1] | b[2] | b[3]) == 0) continue;
-        const p = Vec2{ .x = @intCast(i32, i % big_stride), .y = @intCast(i32, i / big_stride) };
+        const p = Vec2{ .x = @intCast(i % big_stride), .y = @intCast(i / big_stride) };
         const border_list = [_]struct { this: u8, other: u8, d: Vec2 }{
             .{ .this = 0, .other = 2, .d = Vec2{ .x = 0, .y = -1 } },
             .{ .this = 3, .other = 1, .d = Vec2{ .x = -1, .y = 0 } },
@@ -119,7 +119,7 @@ fn checkValid(s: State, maps: []const Map) bool {
         };
         for (border_list) |it| {
             const n = Vec2.add(p, it.d);
-            const neib = if (n.y >= 0 and n.y < big_stride and n.x >= 0 and n.x < big_stride) borders[@intCast(usize, n.x) + @intCast(usize, n.y) * big_stride] else [4]Border{ 0, 0, 0, 0 };
+            const neib = if (n.y >= 0 and n.y < big_stride and n.x >= 0 and n.x < big_stride) borders[@as(usize, @intCast(n.x)) + @as(usize, @intCast(n.y)) * big_stride] else [4]Border{ 0, 0, 0, 0 };
             const empty = ((neib[0] | neib[1] | neib[2] | neib[3]) == 0);
             if (!empty and b[it.this] != neib[it.other]) return false;
         }
@@ -132,23 +132,23 @@ fn replaceIfMatches(pat: []const []const u8, p: Vec2, t: Vec2.Transfo, map: []u8
     const r = Vec2.referential(t);
 
     // check if pattern matches...
-    for (pat) |line, j| {
-        for (line) |c, i| {
+    for (pat, 0..) |line, j| {
+        for (line, 0..) |c, i| {
             if (c == ' ') continue;
             assert(c == '#');
-            const p1 = p.add(Vec2.scale(@intCast(i32, i), r.x)).add(Vec2.scale(@intCast(i32, j), r.y));
+            const p1 = p.add(Vec2.scale(@intCast(i), r.x)).add(Vec2.scale(@intCast(j), r.y));
             if (p1.x < 0 or p1.x >= w) return;
             if (p1.y < 0 or p1.y >= h) return;
-            if (map[@intCast(usize, p1.y) * w + @intCast(usize, p1.x)] != c) return;
+            if (map[@as(usize, @intCast(p1.y)) * w + @as(usize, @intCast(p1.x))] != c) return;
         }
     }
 
     // .. if ok, replace pattern
-    for (pat) |line, j| {
-        for (line) |c, i| {
+    for (pat, 0..) |line, j| {
+        for (line, 0..) |c, i| {
             if (c == ' ') continue;
-            const p1 = p.add(Vec2.scale(@intCast(i32, i), r.x)).add(Vec2.scale(@intCast(i32, j), r.y));
-            map[@intCast(usize, p1.y) * w + @intCast(usize, p1.x)] = '0';
+            const p1 = p.add(Vec2.scale(@intCast(i), r.x)).add(Vec2.scale(@intCast(j), r.y));
+            map[@as(usize, @intCast(p1.y)) * w + @as(usize, @intCast(p1.x))] = '0';
         }
     }
 }
@@ -167,7 +167,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         var it = std.mem.tokenize(u8, input_text, "\n\r");
         while (it.next()) |line| {
             if (tools.match_pattern("Tile {}:", line)) |fields| {
-                ident = @intCast(u32, fields[0].imm);
+                ident = @intCast(fields[0].imm);
             } else {
                 const w = std.mem.indexOfScalar(u8, input_text, '\n').?;
                 assert(w == width);
@@ -198,19 +198,19 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         const occurences = try allocator.alloc(u8, 1 << 10);
         defer allocator.free(occurences);
 
-        std.mem.set(u8, occurences, 0);
+        @memset(occurences, 0);
         for (param.maps) |m| {
             for (m.borders.?.canon) |b| occurences[b] += 1;
         }
         for (occurences) |it| assert(it <= 2); // pff en fait il n'y a pas d'ambiguités...
 
         var corners = std.ArrayList(u8).init(arena.allocator());
-        for (param.maps) |m, i| {
+        for (param.maps, 0..) |m, i| {
             var uniq: u32 = 0;
-            for (m.borders.?.canon) |b| uniq += @boolToInt(occurences[b] == 1);
+            for (m.borders.?.canon) |b| uniq += @intFromBool(occurences[b] == 1);
             assert(uniq <= 2);
             if (uniq == 2) // deux bords uniques -> coin!
-                try corners.append(@intCast(u8, i));
+                try corners.append(@intCast(i));
         }
         //print("found corner pieces: {}\n", .{corners.items});
         break :blk corners.items;
@@ -225,8 +225,8 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
 
         const initial_state = blk: {
             var s = State{ .placed = 0, .list = undefined };
-            for (s.list) |*m, i| {
-                m.map_idx = if (i < param.maps.len) @intCast(u8, i) else undefined;
+            for (&s.list, 0..) |*m, i| {
+                m.map_idx = if (i < param.maps.len) @as(u8, @intCast(i)) else undefined;
                 m.t = .r0;
             }
 
@@ -236,7 +236,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
             break :blk s;
         };
 
-        try bfs.insert(BFS.Node{ .state = initial_state, .trace = {}, .rating = @intCast(i32, param.maps.len), .cost = 0 });
+        try bfs.insert(BFS.Node{ .state = initial_state, .trace = {}, .rating = @intCast(param.maps.len), .cost = 0 });
 
         final_state = result: while (bfs.pop()) |n| {
             //print("agenda: {}, steps:{}\n", .{ bfs.agenda.count(), n.cost });
@@ -260,7 +260,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
 
         if (false) {
             print("final state: ", .{});
-            for (final_state.list[0..param.maps.len]) |it, i| {
+            for (final_state.list[0..param.maps.len], 0..) |it, i| {
                 const p = bigPosFromIndex(i, param.big_stride);
                 print("{}:{}{}, ", .{ p, param.maps[it.map_idx].ident, it.t });
             }
@@ -282,14 +282,14 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         defer allocator.free(big);
 
         // build merged map
-        for (final_state.list[0..final_state.placed]) |it, i| {
+        for (final_state.list[0..final_state.placed], 0..) |it, i| {
             const big_p = bigPosFromIndex(i, param.big_stride);
 
             var buf: [stride * height]u8 = undefined;
             const m = transform(param.maps[it.map_idx], it.t, &buf);
             var j: usize = 0;
             while (j < height - 2) : (j += 1) {
-                const o = ((@intCast(u32, big_p.y) * (height - 2) + j) * w + @intCast(u32, big_p.x) * (width - 2));
+                const o = ((@as(u32, @intCast(big_p.y)) * (height - 2) + j) * w + @as(u32, @intCast(big_p.x)) * (width - 2));
                 std.mem.copy(u8, big[o .. o + (width - 2)], m.map[(j + 1) * stride + 1 .. (j + 1) * stride + 1 + (width - 2)]);
             }
         }

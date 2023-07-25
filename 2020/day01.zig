@@ -16,7 +16,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     }
 
     const ans1 = ans: {
-        for (list[0 .. len - 1]) |n1, idx1| {
+        for (list[0 .. len - 1], 0..) |n1, idx1| {
             for (list[idx1 + 1 .. len]) |n2| {
                 if (n1 + n2 == 2020) break :ans n1 * n2;
             }
@@ -25,8 +25,8 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     };
 
     const ans2 = ans: {
-        for (list[0 .. len - 2]) |n1, idx1| {
-            for (list[idx1 + 1 .. len - 1]) |n2, idx2| {
+        for (list[0 .. len - 2], 0..) |n1, idx1| {
+            for (list[idx1 + 1 .. len - 1], 0..) |n2, idx2| {
                 if (n1 + n2 >= 2020) continue;
                 for (list[idx1 + 1 + idx2 + 1 .. len]) |n3| {
                     if (n1 + n2 + n3 == 2020) break :ans n1 * n2 * n3;

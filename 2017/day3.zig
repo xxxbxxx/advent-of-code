@@ -9,7 +9,7 @@ fn trace(comptime fmt: []const u8, args: anytype) void {
 }
 
 fn abs(a: i32) u32 {
-    return if (a > 0) @intCast(u32, a) else @intCast(u32, -a);
+    return if (a > 0) @as(u32, @intCast(a)) else @as(u32, @intCast(-a));
 }
 
 const Map = tools.Map(u48, 1000, 1000, true);
@@ -38,7 +38,7 @@ pub fn main() anyerror!void {
     //defer allocator.free(text);
 
     var grid = Map{ .default_tile = 0 };
-    std.mem.set(u48, &grid.map, 0);
+    @memset(&grid.map, 0);
 
     var p = Vec2{ .x = 0, .y = 0 };
     var num: u48 = 1;

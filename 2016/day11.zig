@@ -65,7 +65,7 @@ pub fn main() anyerror!void {
         }
 
         fn tracefloors(s: *const @This()) void {
-            for (s.objects) |floor, i| {
+            for (s.objects, 0..) |floor, i| {
                 trace("F{} ", .{i});
                 if (i == s.elevator) {
                     trace("E  ", .{});
@@ -82,12 +82,12 @@ pub fn main() anyerror!void {
 
         fn floorsum(s: *const @This()) u32 {
             var sum: usize = 0;
-            for (s.objects) |floor, i| {
+            for (s.objects, 0..) |floor, i| {
                 for (floor) |o| {
                     if (o) sum += i;
                 }
             }
-            return @intCast(u32, sum);
+            return @as(u32, @intCast(sum));
         }
     };
 
@@ -151,7 +151,7 @@ pub fn main() anyerror!void {
             ns.elevator = if (goup) s.elevator - 1 else s.elevator + 1;
 
             const floor = s.objects[s.elevator];
-            for (floor) |has1, obj1| {
+            for (floor, 0..) |has1, obj1| {
                 if (!has1)
                     continue;
                 ns.objects = s.objects;
@@ -160,11 +160,11 @@ pub fn main() anyerror!void {
                 ns.objects[ns.elevator][obj1] = true;
                 if (ns.is_valid()) {
                     //trace("...inserting solo {}\n", .{obj1});
-                    next.rating = @intCast(i32, next.steps + 3 * ns.floorsum());
+                    next.rating = @as(i32, @intCast(next.steps + 3 * ns.floorsum()));
                     try searcher.insert(next);
                 }
 
-                for (floor[obj1 + 1 ..]) |has2, index2| {
+                for (floor[obj1 + 1 ..], 0..) |has2, index2| {
                     if (!has2)
                         continue;
                     const obj2 = obj1 + 1 + index2;
@@ -175,7 +175,7 @@ pub fn main() anyerror!void {
                     defer ns.objects[ns.elevator][obj2] = false;
                     if (ns.is_valid()) {
                         //trace("...inserting pair {},{}\n", .{ obj1, obj2 });
-                        next.rating = @intCast(i32, next.steps + 3 * ns.floorsum());
+                        next.rating = @as(i32, @intCast(next.steps + 3 * ns.floorsum()));
                         try searcher.insert(next);
                     }
                 }

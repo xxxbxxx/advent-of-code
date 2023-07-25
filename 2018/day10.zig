@@ -15,8 +15,8 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         while (it.next()) |line| {
             const fields = tools.match_pattern("position=<{}, {}> velocity=<{}, {}>", line) orelse unreachable;
             try stars.append(Star{
-                .p = Vec2{ .x = @intCast(i32, fields[0].imm), .y = @intCast(i32, fields[1].imm) },
-                .v = Vec2{ .x = @intCast(i32, fields[2].imm), .y = @intCast(i32, fields[3].imm) },
+                .p = Vec2{ .x = @as(i32, @intCast(fields[0].imm)), .y = @as(i32, @intCast(fields[1].imm)) },
+                .v = Vec2{ .x = @as(i32, @intCast(fields[2].imm)), .y = @as(i32, @intCast(fields[3].imm)) },
             });
         }
     }

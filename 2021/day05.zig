@@ -5,14 +5,13 @@ const tools = @import("tools");
 pub const main = tools.defaultMain("2021/day05.txt", run);
 
 const Tile = @Vector(2, u2); // [0] only axis aligned, [1] all
-//const Tile = @Vector(2, u8); // 'u2' fails with stage2.
 const Map = tools.Map(Tile, 1000, 1000, false);
 const Vec2 = tools.Vec2;
 
 fn rasterize(map: *Map, a: Vec2, b: Vec2) void {
     const delta = tools.Vec.clamp(b - a, Vec2{ -1, -1 }, Vec2{ 1, 1 });
     const is_diag = @reduce(.And, delta != Vec2{ 0, 0 });
-    const inc = Tile{ @boolToInt(!is_diag), 1 };
+    const inc = Tile{ @intFromBool(!is_diag), 1 };
     var p = a;
     while (@reduce(.Or, p != b + delta)) : (p += delta) {
         const prev = map.get(p) orelse Tile{ 0, 0 };
@@ -34,8 +33,8 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
         var it = std.mem.tokenize(u8, input, "\n\r");
         while (it.next()) |line| {
             if (tools.match_pattern("{},{} -> {},{}", line)) |val| {
-                const a = Vec2{ @intCast(i32, val[0].imm), @intCast(i32, val[1].imm) };
-                const b = Vec2{ @intCast(i32, val[2].imm), @intCast(i32, val[3].imm) };
+                const a = Vec2{ @as(i32, @intCast(val[0].imm)), @as(i32, @intCast(val[1].imm)) };
+                const b = Vec2{ @as(i32, @intCast(val[2].imm)), @as(i32, @intCast(val[3].imm)) };
                 rasterize(&map, a, b);
             } else {
                 std.debug.print("skipping {s}\n", .{line});
@@ -49,7 +48,8 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
     const ans = ans: {
         var count = @Vector(2, u32){ 0, 0 };
         var it = map.iter(null);
-        while (it.next()) |v| count += @as(@Vector(2, u32), @bitCast(@Vector(2, u1), v > Tile{ 1, 1 })); // aka @boolToInt()
+        while (it.next()) |v|
+            count += @as(@Vector(2, u1), @bitCast((v > Tile{ 1, 1 }))); // aka @intFromBool()
         break :ans count;
     };
 

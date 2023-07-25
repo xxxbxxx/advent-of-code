@@ -17,10 +17,10 @@ pub fn match_insn(comptime pattern: []const u8, text: []const u8) ?[2]Arg {
     if (tools.match_pattern(pattern, text)) |vals| {
         var count: usize = 0;
         var values: [2]Arg = undefined;
-        for (values) |*v, i| {
+        for (values, 0..) |*v, i| {
             switch (vals[i]) {
                 .imm => |imm| v.* = .{ .imm = imm },
-                .name => |name| v.* = .{ .reg = @intCast(u5, name[0] - 'a') },
+                .name => |name| v.* = .{ .reg = @as(u5, @intCast(name[0] - 'a')) },
             }
         }
         return values;
@@ -123,7 +123,7 @@ pub fn main() anyerror!void {
     while (prevcount0 != cpus[0].send_count or prevcount1 != cpus[1].send_count) {
         prevcount0 = cpus[0].send_count;
         prevcount1 = cpus[1].send_count;
-        for (cpus) |*c, icpu| {
+        for (cpus, 0..) |*c, icpu| {
             const other = &cpus[1 - icpu];
 
             run: while (c.pc < program_len) {
@@ -189,7 +189,7 @@ pub fn main() anyerror!void {
                         };
 
                         if (val > 0) {
-                            c.pc = @intCast(usize, @intCast(i32, c.pc) + ofs);
+                            c.pc = @as(usize, @intCast(@as(i32, @intCast(c.pc)) + ofs));
                             continue; // skip c.pc + 1...
                         }
                     },

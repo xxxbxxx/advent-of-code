@@ -36,13 +36,13 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
             while (inner.next()) |inner_line| {
                 assert(outer_line.len == inner_line.len);
                 var diffs: usize = 0;
-                for (outer_line) |outer_letter, i| {
+                for (outer_line, 0..) |outer_letter, i| {
                     if (outer_letter != inner_line[i]) diffs += 1;
                 }
                 if (diffs == 1) {
                     const common = try arena.allocator().alloc(u8, outer_line.len - 1);
                     var j: usize = 0;
-                    for (outer_line) |letter, i| {
+                    for (outer_line, 0..) |letter, i| {
                         if (letter == inner_line[i]) {
                             common[j] = letter;
                             j += 1;

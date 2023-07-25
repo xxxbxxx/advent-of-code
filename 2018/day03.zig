@@ -11,8 +11,8 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         while (it.next()) |line| {
             const fields = tools.match_pattern("#{} @ {},{}: {}x{}", line) orelse unreachable;
             //const patchId = fields[0].imm;
-            const pos = Vec2{ .x = @intCast(i32, fields[1].imm), .y = @intCast(i32, fields[2].imm) };
-            const size = Vec2{ .x = @intCast(i32, fields[3].imm) - 1, .y = @intCast(i32, fields[4].imm) - 1 };
+            const pos = Vec2{ .x = @as(i32, @intCast(fields[1].imm)), .y = @as(i32, @intCast(fields[2].imm)) };
+            const size = Vec2{ .x = @as(i32, @intCast(fields[3].imm)) - 1, .y = @as(i32, @intCast(fields[4].imm)) - 1 };
             const patch = tools.BBox{
                 .min = pos,
                 .max = Vec2.add(pos, size),
@@ -40,8 +40,8 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         while (it.next()) |line| {
             const fields = tools.match_pattern("#{} @ {},{}: {}x{}", line) orelse unreachable;
             const patchId = fields[0].imm;
-            const pos = Vec2{ .x = @intCast(i32, fields[1].imm), .y = @intCast(i32, fields[2].imm) };
-            const size = Vec2{ .x = @intCast(i32, fields[3].imm) - 1, .y = @intCast(i32, fields[4].imm) - 1 };
+            const pos = Vec2{ .x = @as(i32, @intCast(fields[1].imm)), .y = @as(i32, @intCast(fields[2].imm)) };
+            const size = Vec2{ .x = @as(i32, @intCast(fields[3].imm)) - 1, .y = @as(i32, @intCast(fields[4].imm)) - 1 };
             const patch = tools.BBox{
                 .min = pos,
                 .max = Vec2.add(pos, size),

@@ -55,7 +55,7 @@ pub fn main() anyerror!void {
 
             const valid = interresting and seq[0] == c and seq[1] == c;
             if (valid) {
-                for (pending.items) |*it, j| {
+                for (pending.items, 0..) |*it, j| {
                     if (it.letter == c and it.index + 1000 >= i and it.index != i) {
                         answers[found] = it.index;
                         found += 1;
@@ -91,6 +91,6 @@ pub fn main() anyerror!void {
         }
     }
 
-    std.sort.sort(usize, answers[0..found], std.sort.asc(usize));
+    std.mem.sort(usize, answers[0..found], std.sort.asc(usize));
     try stdout.print("key 64 at i='{}'\n", .{answers[63]});
 }

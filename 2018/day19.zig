@@ -45,14 +45,14 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
             if (tools.match_pattern("{} {} {} {}", line)) |fields| {
                 const op = try tools.nameToEnum(Opcode, fields[0].lit);
                 const par = [3]u32{
-                    @intCast(u32, fields[1].imm),
-                    @intCast(u32, fields[2].imm),
-                    @intCast(u32, fields[3].imm),
+                    @as(u32, @intCast(fields[1].imm)),
+                    @as(u32, @intCast(fields[2].imm)),
+                    @as(u32, @intCast(fields[3].imm)),
                 };
                 try prg.append(Insn{ .op = op, .par = par });
             } else if (tools.match_pattern("#ip {}", line)) |fields| {
                 assert(ip == null);
-                ip = @intCast(u32, fields[0].imm);
+                ip = @as(u32, @intCast(fields[0].imm));
             } else unreachable;
         }
         break :param .{ .ip = ip.?, .prg = prg.items };
@@ -80,7 +80,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
             }
 
             reg = eval(param.prg[ip].op, param.prg[ip].par, reg);
-            ip = @intCast(u32, reg[param.ip]);
+            ip = @as(u32, @intCast(reg[param.ip]));
             ip += 1;
         }
         break :ans reg[0];

@@ -26,7 +26,7 @@ fn looknsay(in: []const u8, out: *[]u8, storage: []u8) void {
     cur[slice.len] = prev;
     cur = cur[slice.len + 1 ..];
 
-    out.* = storage[0..(@ptrToInt(cur.ptr) - @ptrToInt(storage.ptr))];
+    out.* = storage[0..(@intFromPtr(cur.ptr) - @intFromPtr(storage.ptr))];
 }
 
 pub fn main() anyerror!void {

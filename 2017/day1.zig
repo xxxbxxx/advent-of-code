@@ -19,7 +19,7 @@ pub fn main() anyerror!void {
 
     assert(text.len % 2 == 0);
     var sum: u32 = 0;
-    for (text) |c, i| {
+    for (text, 0..) |c, i| {
         assert(c >= '0' and c <= '9');
         const n = c - '0';
         if (c == text[(i + text.len / 2) % text.len])

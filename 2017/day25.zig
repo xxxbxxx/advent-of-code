@@ -79,7 +79,7 @@ pub fn main() anyerror!void {
 
     var step: u32 = 0;
     while (step < steps) : (step += 1) {
-        const t = &tape[@intCast(usize, cursor)];
+        const t = &tape[@as(usize, @intCast(cursor))];
         const action = states[state][t.*];
         t.* = action.write;
         cursor += action.move;

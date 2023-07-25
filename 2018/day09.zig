@@ -12,8 +12,8 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         var it = std.mem.tokenize(u8, input, "\n\r");
         const fields = tools.match_pattern("{} players; last marble is worth {} points", it.next().?) orelse unreachable;
         break :blk .{
-            .nb_players = @intCast(u32, fields[0].imm),
-            .nb_marbles = @intCast(u32, fields[1].imm) + 1,
+            .nb_players = @as(u32, @intCast(fields[0].imm)),
+            .nb_marbles = @as(u32, @intCast(fields[1].imm)) + 1,
         };
     };
 
@@ -21,7 +21,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     const ans1 = ans: {
         const scores = try allocator.alloc(u32, params.nb_players);
         defer allocator.free(scores);
-        std.mem.set(u32, scores, 0);
+        @memset(scores, 0);
         var highscore_player: u32 = 0;
 
         var circle2 = MarbleCircle.init(allocator);
@@ -66,7 +66,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                 std.debug.print("\n", .{});
 
                 std.debug.print("[{}]: ", .{player + 1});
-                for (circle.items) |it, i| {
+                for (circle.items, 0..) |it, i| {
                     if (i == current) {
                         std.debug.print("({}) ", .{it});
                     } else {
@@ -78,7 +78,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         }
         if (false) {
             std.debug.print("Scores: ", .{});
-            for (scores) |it, i| {
+            for (scores, 0..) |it, i| {
                 if (i == highscore_player) {
                     std.debug.print(">{}< ", .{it});
                 } else {
@@ -96,7 +96,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     const ans2 = ans: {
         const scores = try allocator.alloc(u32, params.nb_players);
         defer allocator.free(scores);
-        std.mem.set(u32, scores, 0);
+        @memset(scores, 0);
         var highscore_player: u32 = 0;
 
         var circle = MarbleCircle.init(allocator);

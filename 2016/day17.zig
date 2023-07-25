@@ -55,7 +55,7 @@ pub fn main() anyerror!void {
             };
         };
 
-        for (doors) |d, i| {
+        for (doors, 0..) |d, i| {
             if (!d)
                 continue;
             const dirs = [4]Vec2{ .{ .x = 0, .y = -1 }, .{ .x = 0, .y = 1 }, .{ .x = -1, .y = 0 }, .{ .x = 1, .y = 0 } };

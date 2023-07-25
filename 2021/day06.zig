@@ -28,10 +28,10 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
     // descendants = f([generation][age])
     const descendants = blk: {
         var _descendants: [257][9]u64 = undefined;
-        std.mem.set(u64, &_descendants[0], 1);
+        @memset(&_descendants[0], 1);
         var gen: u32 = 1;
         while (gen <= 256) : (gen += 1) {
-            for (_descendants[gen]) |*pop, age| {
+            for (&_descendants[gen], 0..) |*pop, age| {
                 pop.* = switch (age) {
                     0 => _descendants[gen - 1][6] + _descendants[gen - 1][8],
                     else => _descendants[gen - 1][age - 1],

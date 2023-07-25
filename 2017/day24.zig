@@ -73,7 +73,7 @@ pub fn main() anyerror!void {
         var it = std.mem.tokenize(u8, text, "\n");
         while (it.next()) |line| {
             if (tools.match_pattern("{}/{}", line)) |vals| {
-                components_buf[len] = Component{ @intCast(u32, vals[0].imm), @intCast(u32, vals[1].imm) };
+                components_buf[len] = Component{ @as(u32, @intCast(vals[0].imm)), @as(u32, @intCast(vals[1].imm)) };
                 len += 1;
             } else {
                 trace("skipping {}\n", .{line});

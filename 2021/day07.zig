@@ -20,7 +20,7 @@ fn fuelCost_part2(dist: u32) u32 {
 fn computeTotalFuel(list: []i16, t: i16, fuelcostFn: fn (u32) u32) u64 {
     var total: u64 = 0;
     for (list) |p| {
-        total += fuelcostFn(@intCast(u32, std.math.absInt(t - p) catch unreachable));
+        total += fuelcostFn(@as(u32, @intCast(std.math.absInt(t - p) catch unreachable)));
     }
     return total;
 }
@@ -82,7 +82,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
         defer gpa.free(cpu.memory);
         const image = try gpa.alloc(tools.IntCode_Computer.Data, list0.items.len);
         defer gpa.free(image);
-        for (image) |*m, i| {
+        for (image, 0..) |*m, i| {
             m.* = list0.items[i];
         }
         cpu.boot(image);
@@ -90,7 +90,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
         while (!cpu.is_halted()) {
             switch (cpu.io_mode) {
                 .input => unreachable,
-                .output => trace("{c}", .{@intCast(u8, cpu.io_port)}), // "Ceci n'est pas une intcode program"
+                .output => trace("{c}", .{@as(u8, @intCast(cpu.io_port))}), // "Ceci n'est pas une intcode program"
             }
             resume cpu.io_runframe;
         }

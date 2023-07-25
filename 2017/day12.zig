@@ -19,15 +19,15 @@ pub fn main() anyerror!void {
     defer allocator.free(text);
 
     var process_groups: [2000]u16 = undefined;
-    for (process_groups) |*g, i| {
-        g.* = @intCast(u16, i);
+    for (process_groups, 0..) |*g, i| {
+        g.* = @as(u16, @intCast(i));
     }
     var used_groups: [process_groups.len]bool = undefined;
 
     var dirty = true;
     while (dirty) {
         dirty = false;
-        std.mem.set(bool, &used_groups, false);
+        @memset(&used_groups, false);
         var it = std.mem.split(u8, text, "\n");
         while (it.next()) |line0| {
             const line = std.mem.trim(u8, line0, " \n\t\r");

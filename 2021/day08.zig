@@ -48,7 +48,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
         var count: u32 = 0;
         for (list0.items) |it| {
             for (it.output) |o|
-                count += @boolToInt(o.len == 2 or o.len == 3 or o.len == 4 or o.len == 7);
+                count += @intFromBool(o.len == 2 or o.len == 3 or o.len == 4 or o.len == 7);
         }
         break :ans count;
     };
@@ -86,7 +86,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
                 var invariant: u8 = 0;
                 // +, * marchent aussi.  ^ fait des valeurs plus petites
                 for (pattern) |c| invariant ^= occurences[c - 'a'];
-                invariant *= @intCast(u8, pattern.len);
+                invariant *= @as(u8, @intCast(pattern.len));
                 return invariant;
             }
 
@@ -104,7 +104,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
         var matcher = Matcher{ .digit_from_invariant = undefined };
         var invariant_collision = [1]bool{false} ** 256;
         const occurences = matcher.computeSymbolOccurences(&models);
-        for (models) |m, digit| {
+        for (models, 0..) |m, digit| {
             const invariant = Matcher.computeInvariant(m, occurences);
             assert(!invariant_collision[invariant]);
             invariant_collision[invariant] = true;
@@ -138,12 +138,12 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
 // old brute force attempt:
 pub fn indexOf(models: [10][]const u8, dico: [7]u8, pat: []const u8) ?u4 {
     var buf: [7]u8 = undefined;
-    for (pat) |c, i| {
+    for (pat, 0..) |c, i| {
         buf[i] = dico[c - 'a'];
     }
-    std.sort.sort(u8, buf[0..pat.len], {}, comptime std.sort.asc(u8));
-    for (models) |m, digit| {
-        if (std.mem.eql(u8, m, buf[0..pat.len])) return @intCast(u4, digit);
+    std.mem.sort(u8, buf[0..pat.len], {}, comptime std.sort.asc(u8));
+    for (models, 0..) |m, digit| {
+        if (std.mem.eql(u8, m, buf[0..pat.len])) return @as(u4, @intCast(digit));
     } else return null;
 }
 

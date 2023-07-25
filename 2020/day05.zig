@@ -47,7 +47,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     const ans1 = max_seatid;
 
     // === part 2 ==============
-    const ans2 = for (occupied_seats) |occ, i| {
+    const ans2 = for (occupied_seats, 0..) |occ, i| {
         if (!occ and i > 1 and occupied_seats[i - 1] and occupied_seats[i + 1])
             break i;
     } else unreachable;

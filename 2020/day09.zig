@@ -14,8 +14,8 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                 list[count] = val;
                 count += 1;
             } else {
-                const valid = valid: for (list) |v1, i| {
-                    for (list) |v2, j| {
+                const valid = valid: for (list, 0..) |v1, i| {
+                    for (list, 0..) |v2, j| {
                         if (val == v1 + v2 and i != j) break :valid true;
                     }
                 } else false;
@@ -39,7 +39,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
             count += 1;
 
             const c2 = cumul[count - 1];
-            for (cumul[0 .. count - 1]) |c1, i| {
+            for (cumul[0 .. count - 1], 0..) |c1, i| {
                 if (c2 - c1 == ans1) {
                     const min = cumul[i + 1] - c1;
                     const max = val;

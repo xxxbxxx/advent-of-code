@@ -9,7 +9,7 @@ fn trace(comptime fmt: []const u8, args: anytype) void {
 
 const Vec3 = [3]i32;
 fn abs(x: i32) u32 {
-    return if (x >= 0) @intCast(u32, x) else @intCast(u32, -x);
+    return if (x >= 0) @intCast(x) else @intCast(-x);
 }
 fn length(d: Vec3) u32 {
     return abs(d[0]) + abs(d[1]) + abs(d[2]);
@@ -74,7 +74,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     {
         var total: u32 = 0;
         for (initial_state) |it| {
-            for (center) |*p, j| {
+            for (&center, 0..) |*p, j| {
                 p.* += it.pos[j];
             }
             total += length(it.pos) * length(it.vel);
@@ -84,12 +84,12 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
 
     var tables = [_]Hash{ Hash.init(allocator), Hash.init(allocator), Hash.init(allocator) };
     defer {
-        for (tables) |*t| {
+        for (&tables) |*t| {
             t.deinit();
         }
     }
     {
-        for (center) |_, a| {
+        for (center, 0..) |_, a| {
             const axis = Axis{
                 .pos = .{ initial_state[0].pos[a], initial_state[1].pos[a], initial_state[2].pos[a], initial_state[3].pos[a] },
                 .vel = .{ initial_state[0].vel[a], initial_state[1].vel[a], initial_state[2].vel[a], initial_state[3].vel[a] },
@@ -105,16 +105,16 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     var step: u32 = 1;
     while (axis_repeat[0] == null or axis_repeat[1] == null or axis_repeat[2] == null) : (step += 1) {
         var total: u32 = 0;
-        for (next) |*this, i| {
+        for (&next, 0..) |*this, i| {
             const pos = cur[i].pos;
             var vel = cur[i].vel;
             for (cur) |other| {
-                for (vel) |*v, j| {
+                for (&vel, 0..) |*v, j| {
                     if (other.pos[j] > pos[j]) v.* += 1;
                     if (other.pos[j] < pos[j]) v.* -= 1;
                 }
             }
-            for (this.pos) |*p, j| {
+            for (&this.pos, 0..) |*p, j| {
                 p.* = pos[j] + vel[j];
             }
             this.vel = vel;
@@ -126,7 +126,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
             total_energy_at_1000 = total;
         }
 
-        for (axis_repeat) |*axr, a| {
+        for (&axis_repeat, 0..) |*axr, a| {
             if (axr.*) |_|
                 continue;
             const axis = Axis{
@@ -142,9 +142,9 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         cur = next;
     }
 
-    const rpt_x = @as(u64, axis_repeat[0].?);
-    const rpt_y = @as(u64, axis_repeat[1].?);
-    const rpt_z = @as(u64, axis_repeat[2].?);
+    const rpt_x: u64 = axis_repeat[0].?;
+    const rpt_y: u64 = axis_repeat[1].?;
+    const rpt_z: u64 = axis_repeat[2].?;
     trace("repeats:  {},{},{}\n", .{ rpt_x, rpt_y, rpt_z });
     const ppcm1 = ppcm(rpt_x, rpt_y);
     const ppcm2 = ppcm(ppcm1, rpt_z);

@@ -33,7 +33,7 @@ pub fn main() anyerror!void {
     var steps: u32 = 0;
     var pc: isize = 0;
     while (pc >= 0 and pc < len) {
-        const jmp = &offsets[@intCast(usize, pc)];
+        const jmp = &offsets[@as(usize, @intCast(pc))];
         pc += jmp.*;
         if (jmp.* >= 3) {
             jmp.* -= 1;

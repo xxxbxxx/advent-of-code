@@ -47,7 +47,7 @@ pub fn main() anyerror!void {
     const center = half * stride + half;
 
     var map: [stride * stride]u2 = undefined;
-    std.mem.set(u2, &map, State.clean);
+    @memset(&map, State.clean);
     if (false) {
         map[center + (-1) * stride + 1] = State.infected;
         map[center + 0 * stride - 1] = State.infected;
@@ -70,7 +70,7 @@ pub fn main() anyerror!void {
     var infections: u32 = 0;
     var steps: u32 = 0;
     while (steps < 10000000) : (steps += 1) {
-        const m = &map[@intCast(usize, pos)];
+        const m = &map[@as(usize, @intCast(pos))];
         switch (m.*) {
             State.clean => {
                 m.* +%= 1;

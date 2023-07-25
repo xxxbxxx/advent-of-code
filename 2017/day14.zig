@@ -22,8 +22,8 @@ fn knotHash(str: []const u8) u128 {
     const mod = 256;
     var list = comptime blk: {
         var l: [mod]u8 = undefined;
-        for (l) |*e, i| {
-            e.* = @intCast(u8, i);
+        for (l, 0..) |*e, i| {
+            e.* = @as(u8, @intCast(i));
         }
         break :blk l;
     };
@@ -46,10 +46,10 @@ fn knotHash(str: []const u8) u128 {
 
     var hash: u128 = 0;
     var accu: u8 = 0;
-    for (list) |l, i| {
+    for (list, 0..) |l, i| {
         accu ^= l;
         if ((i + 1) % 16 == 0) {
-            hash |= @intCast(u128, accu) << @intCast(u7, ((i / 16) * 8));
+            hash |= @as(u128, @intCast(accu)) << @as(u7, @intCast(((i / 16) * 8)));
             accu = 0;
         }
     }
@@ -89,7 +89,7 @@ pub fn main() anyerror!void {
 
             var bit: u8 = 0;
             while (bit < 128) : (bit += 1) {
-                const filled = (hash & (@as(u128, 1) << @intCast(u7, bit))) != 0;
+                const filled = (hash & (@as(u128, 1) << @as(u7, @intCast(bit)))) != 0;
                 if (filled) {
                     sectors += 1;
                     disk[row * 128 + bit] = sectors;

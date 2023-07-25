@@ -35,12 +35,12 @@ pub fn main() anyerror!void {
         var it = std.mem.tokenize(u8, text, ", \n\r");
         while (it.next()) |move| {
             if (tools.match_pattern("s{}", move)) |vals| {
-                const a = @intCast(u4, vals[0].imm);
+                const a = @as(u4, @intCast(vals[0].imm));
                 dance0[len] = Move{ .s = a };
                 len += 1;
             } else if (tools.match_pattern("x{}/{}", move)) |vals| {
-                const a = @intCast(u4, vals[0].imm);
-                const b = @intCast(u4, vals[1].imm);
+                const a = @as(u4, @intCast(vals[0].imm));
+                const b = @as(u4, @intCast(vals[1].imm));
                 dance0[len] = Move{ .x = .{ .a = a, .b = b } };
                 len += 1;
             } else if (tools.match_pattern("p{}/{}", move)) |vals| {

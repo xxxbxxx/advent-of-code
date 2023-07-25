@@ -26,7 +26,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                 const desc = fields[1].lit;
 
                 const color_id = contents_desc.items.len;
-                try colors.putNoClobber(color, @intCast(u16, color_id));
+                try colors.putNoClobber(color, @intCast(color_id));
                 try contents_desc.append(desc);
             }
         }
@@ -37,8 +37,8 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         errdefer allocator.free(contents);
         errdefer allocator.free(parents);
 
-        std.mem.set(Bag, parents, Bag{ .count = 0, .items = undefined });
-        for (contents_desc.items) |desc, color_id| {
+        @memset(parents, Bag{ .count = 0, .items = undefined });
+        for (contents_desc.items, 0..) |desc, color_id| {
             const c = &contents[color_id];
             if (std.mem.eql(u8, desc, "no other bags")) {
                 c.* = Bag{ .count = 0, .items = undefined };
@@ -47,7 +47,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                 var iter = std.mem.tokenize(u8, desc, ",");
                 while (iter.next()) |item| {
                     const v = tools.match_pattern("{} {} bag", item) orelse unreachable;
-                    const n = @intCast(u8, v[0].imm);
+                    const n: u8 = @intCast(v[0].imm);
                     const col = colors.get(v[1].lit) orelse unreachable;
 
                     c.items[c.count].n = n;
@@ -56,7 +56,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
 
                     const p = &parents[col];
                     p.items[p.count].n = n;
-                    p.items[p.count].col = @intCast(u16, color_id);
+                    p.items[p.count].col = @intCast(color_id);
                     p.count += 1;
                 }
             }

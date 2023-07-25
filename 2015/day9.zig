@@ -61,7 +61,7 @@ pub fn main() anyerror!void {
     var permutations_mem: [maxcities]u32 = undefined;
     const perm = permutations_mem[0..nb_cities];
     var permuts: usize = 1;
-    for (perm) |p, i| {
+    for (perm, 0..) |p, i| {
         permuts *= (i + 1);
     }
 
@@ -69,12 +69,12 @@ pub fn main() anyerror!void {
     var maxdist: u32 = 0;
     var j: u32 = 0;
     while (j < permuts) : (j += 1) {
-        for (perm) |*p, i| {
-            p.* = @intCast(u32, i);
+        for (perm, 0..) |*p, i| {
+            p.* = @as(u32, @intCast(i));
         }
         var mod = nb_cities;
         var k = j;
-        for (perm) |*p, i| {
+        for (perm, 0..) |*p, i| {
             swap(p, &perm[i + k % mod]);
             k /= mod;
             mod -= 1;

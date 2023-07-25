@@ -17,17 +17,17 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     while (candidate < 765869) : (candidate += 1) {
         var digits: [6]u8 = undefined;
         var val = candidate;
-        digits[5] = @intCast(u8, val % 10);
+        digits[5] = @intCast(val % 10);
         val /= 10;
-        digits[4] = @intCast(u8, val % 10);
+        digits[4] = @intCast(val % 10);
         val /= 10;
-        digits[3] = @intCast(u8, val % 10);
+        digits[3] = @intCast(val % 10);
         val /= 10;
-        digits[2] = @intCast(u8, val % 10);
+        digits[2] = @intCast(val % 10);
         val /= 10;
-        digits[1] = @intCast(u8, val % 10);
+        digits[1] = @intCast(val % 10);
         val /= 10;
-        digits[0] = @intCast(u8, val % 10);
+        digits[0] = @intCast(val % 10);
         val /= 10;
 
         // part 1

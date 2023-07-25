@@ -19,11 +19,11 @@ fn dfs(packets: []const u8, groups: [3][]const u8, best: *Result) void {
     var qe: u64 = 1;
     {
         for (groups[0]) |p| {
-            qe *= @intCast(u64, p);
+            qe *= @as(u64, @intCast(p));
         }
 
         var m = [3]u32{ 0, 0, 0 };
-        for (groups) |g, i| {
+        for (groups, 0..) |g, i| {
             for (g) |p| {
                 m[i] += p;
             }
@@ -56,7 +56,7 @@ fn dfs(packets: []const u8, groups: [3][]const u8, best: *Result) void {
             if (best.progress > delta) {
                 best.progress = delta;
                 trace("progress: delta={} left={}\n", delta, mleft);
-                for (groups) |g, i| {
+                for (groups, 0..) |g, i| {
                     trace("  group{} = [", i);
                     for (g) |p| {
                         trace("{}, ", p);
@@ -75,13 +75,13 @@ fn dfs(packets: []const u8, groups: [3][]const u8, best: *Result) void {
     }
 
     if (packets.len == 0) {
-        var s0 = @intCast(u32, groups[0].len);
+        var s0 = @as(u32, @intCast(groups[0].len));
         if (s0 < best.s0 or (s0 == best.s0 and qe < best.qe)) {
             best.qe = qe;
             best.s0 = s0;
             best.progress = 999999999;
             trace("new best: {}\n", best.*);
-            for (groups) |g, i| {
+            for (groups, 0..) |g, i| {
                 trace("  group{} = [", i);
                 for (g) |p| {
                     trace("{}, ", p);
@@ -93,7 +93,7 @@ fn dfs(packets: []const u8, groups: [3][]const u8, best: *Result) void {
         var storage: [maxpackets]u8 = undefined;
         const newpackets = storage[0 .. packets.len - 1];
 
-        for (packets) |p, i| {
+        for (packets, 0..) |p, i| {
             std.mem.copy(u8, newpackets[0..i], packets[0..i]);
             std.mem.copy(u8, newpackets[i..], packets[i + 1 ..]);
 
@@ -108,7 +108,7 @@ fn dfs(packets: []const u8, groups: [3][]const u8, best: *Result) void {
                     continue;
 
                 var newgroups: [3][]const u8 = undefined;
-                for (newgroups) |*ng, k| {
+                for (newgroups, 0..) |*ng, k| {
                     if (k == j) {
                         const newgroup = storage[packets.len .. packets.len + g.len + 1];
                         std.mem.copy(u8, newgroup, g);

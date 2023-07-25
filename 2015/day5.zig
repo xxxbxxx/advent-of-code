@@ -41,7 +41,7 @@ fn is_nice2(s: []const u8) bool {
 
     var hasrepeatpair = false;
     var pair = [2]u8{ 0, 0 };
-    for (s) |c, i| {
+    for (s, 0..) |c, i| {
         pair[0] = pair[1];
         pair[1] = c;
         var pair2 = [2]u8{ 1, 1 };

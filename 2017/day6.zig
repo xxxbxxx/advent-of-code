@@ -28,7 +28,7 @@ pub fn main() anyerror!void {
         const imax = blk: {
             var max: u8 = 0;
             var imax: ?usize = null;
-            for (bank) |v, i| {
+            for (bank, 0..) |v, i| {
                 if (v > max) {
                     max = v;
                     imax = i;

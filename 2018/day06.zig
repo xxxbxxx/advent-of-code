@@ -22,7 +22,7 @@ const Vec2 = tools.Vec2;
 const Map = tools.Map(Tile, 2000, 2000, true);
 
 fn abs(x: i32) u32 {
-    return if (x >= 0) @intCast(u32, x) else @intCast(u32, -x);
+    return if (x >= 0) @as(u32, @intCast(x)) else @as(u32, @intCast(-x));
 }
 
 pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
@@ -40,7 +40,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         var it = std.mem.tokenize(u8, input, "\n\r");
         while (it.next()) |line| {
             const fields = tools.match_pattern("{}, {}", line) orelse unreachable;
-            const pos = Vec2{ .x = @intCast(i32, fields[0].imm), .y = @intCast(i32, fields[1].imm) };
+            const pos = Vec2{ .x = @as(i32, @intCast(fields[0].imm)), .y = @as(i32, @intCast(fields[1].imm)) };
             coordList[coordCount] = pos;
             coordCount += 1;
             map.set(pos, Tile{ .tag = tag, .dist = 0 });

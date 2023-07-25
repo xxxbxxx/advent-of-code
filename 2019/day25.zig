@@ -121,7 +121,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
 
                 if (cpu.io_mode == .output) {
                     //trace("{s} outputs {}\n", .{ cpu.name, cpu.io_port });
-                    stdout.writeByte(@intCast(u8, cpu.io_port)) catch return error.UnsupportedInput;
+                    stdout.writeByte(@intCast(cpu.io_port)) catch return error.UnsupportedInput;
                 }
                 //trace("resuming {s}\n", .{cpu.name});
                 resume cpu.io_runframe;
@@ -142,7 +142,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
                         var deathtext: [1000]u8 = undefined;
                         var deathtextlen: usize = 0;
                         while (cpu.io_mode != .input) {
-                            deathtext[deathtextlen] = @intCast(u8, cpu.io_port);
+                            deathtext[deathtextlen] = @intCast(cpu.io_port);
                             deathtextlen += 1;
                             if (cpu.is_halted()) {
                                 trace("halted by {s}, after commands: {s}\n", .{ deathtext[0..deathtextlen], node.trace.commands[0..node.trace.len] });
@@ -179,7 +179,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
                             break;
                         }
                         if (cpu.io_mode == .output) {
-                            desc[out] = @intCast(u8, cpu.io_port);
+                            desc[out] = @intCast(cpu.io_port);
                             out += 1;
                         }
                         resume cpu.io_runframe;
@@ -254,7 +254,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
                                     if (std.mem.eql(u8, line[0..2], "- ")) {
                                         const item = line[2..];
                                         const item_num = itemblk: {
-                                            for (items.items) |existing, i| {
+                                            for (items.items, 0..) |existing, i| {
                                                 if (std.mem.eql(u8, item, existing))
                                                     break :itemblk i;
                                             }
@@ -280,7 +280,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
                         }
                     }
 
-                    for (rooms.items) |r, i| {
+                    for (rooms.items, 0..) |r, i| {
                         if (std.mem.eql(u8, room.name, r.name)) {
                             assert(room.pos.x == r.pos.x and room.pos.y == r.pos.y);
                             assert(std.mem.eql(bool, &room.doors, &r.doors));
@@ -306,7 +306,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
                     const room = rooms.items[room_index.?];
                     const p = room.pos;
                     map.set(p, ' ');
-                    for (room.doors) |open, d| {
+                    for (room.doors, 0..) |open, d| {
                         const np = Vec2{ .x = p.x + dirs[d].x, .y = p.y + dirs[d].y };
                         var prev_val = map.get(np) orelse '#';
 
@@ -337,7 +337,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
                     const room = rooms.items[room_index.?];
                     const p = room.pos;
 
-                    for (room.doors) |open, d| {
+                    for (room.doors, 0..) |open, d| {
                         if (!open)
                             continue;
 
@@ -346,7 +346,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
                             .rating = node.rating + 1,
                             .state = State{
                                 .room_index = room_index.?,
-                                .door = @intCast(u2, d),
+                                .door = @intCast(d),
                                 .inventory = node.state.inventory,
                                 .next_pos = Vec2{ .x = p.x + dirs[d].x * 2, .y = p.y + dirs[d].y * 2 },
                             },
@@ -361,7 +361,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
                             new.cost = node.cost + 1 + 1;
                             new.rating = node.rating + 1 + 10;
                             new.trace.len = node.trace.len;
-                            new.state.inventory |= (@as(u64, 1) << @intCast(u6, itemidx));
+                            new.state.inventory |= (@as(u64, 1) << @intCast(itemidx));
                             tools.fmt_bufAppend(&new.trace.commands, &new.trace.len, "take {s}\n", .{items.items[itemidx]});
                             tools.fmt_bufAppend(&new.trace.commands, &new.trace.len, "{s}\n", .{cmds[d]});
                             try bfs.insert(new);

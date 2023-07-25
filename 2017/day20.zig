@@ -86,14 +86,14 @@ pub fn main() anyerror!void {
             stabilised = true;
             closest_i = 0;
             var closest_dist: u32 = 1000000000;
-            for (parts[0..len]) |*p, i| {
+            for (parts[0..len], 0..) |*p, i| {
                 update(p);
                 if (!is_stabilised(p))
                     stabilised = false;
 
                 const d = (p.p.x * sgn(p.p.x) + p.p.y * sgn(p.p.y) + p.p.z * sgn(p.p.z));
                 if (d < closest_dist) {
-                    closest_dist = @intCast(u32, d);
+                    closest_dist = @as(u32, @intCast(d));
                     closest_i = i;
                 }
             }
@@ -115,14 +115,14 @@ pub fn main() anyerror!void {
             stabilised = true;
             var closest_i: usize = 0;
             var closest_dist: u32 = 1000000000;
-            for (parts[0..len]) |p, i| {
+            for (parts[0..len], 0..) |p, i| {
                 tmp[i] = p;
                 update(&tmp[i]);
             }
 
             var l: usize = 0;
-            for (tmp[0..len]) |p, i| {
-                const collides = for (tmp[0..len]) |q, j| {
+            for (tmp[0..len], 0..) |p, i| {
+                const collides = for (tmp[0..len], 0..) |q, j| {
                     if (i != j and p.p.x == q.p.x and p.p.y == q.p.y and p.p.z == q.p.z)
                         break true;
                 } else false;

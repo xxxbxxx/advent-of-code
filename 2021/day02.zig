@@ -13,11 +13,11 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         while (it.next()) |line| {
             var delta = Vec2{ 0, 0 };
             if (tools.match_pattern("forward {}", line)) |val| {
-                delta[0] = @intCast(i32, val[0].imm);
+                delta[0] = @as(i32, @intCast(val[0].imm));
             } else if (tools.match_pattern("down {}", line)) |val| {
-                delta[1] = @intCast(i32, val[0].imm);
+                delta[1] = @as(i32, @intCast(val[0].imm));
             } else if (tools.match_pattern("up {}", line)) |val| {
-                delta[1] = @intCast(i32, -val[0].imm);
+                delta[1] = @as(i32, @intCast(-val[0].imm));
             } else {
                 std.debug.print("skipping {s}\n", .{line});
             }
@@ -32,12 +32,12 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         var it = std.mem.tokenize(u8, input, "\n\r");
         while (it.next()) |line| {
             if (tools.match_pattern("forward {}", line)) |val| {
-                const x = @intCast(i32, val[0].imm);
+                const x = @as(i32, @intCast(val[0].imm));
                 pos += Vec2{ x, x * aim };
             } else if (tools.match_pattern("down {}", line)) |val| {
-                aim += @intCast(i32, val[0].imm);
+                aim += @as(i32, @intCast(val[0].imm));
             } else if (tools.match_pattern("up {}", line)) |val| {
-                aim -= @intCast(i32, val[0].imm);
+                aim -= @as(i32, @intCast(val[0].imm));
             } else {
                 std.debug.print("skipping {s}\n", .{line});
             }

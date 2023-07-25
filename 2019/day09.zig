@@ -35,7 +35,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
 
     const names = [_][]const u8{ "Tester", "Sensor" }; // part 1 and 2.
     var computers: [names.len]Computer = undefined;
-    for (computers) |*c, i| {
+    for (computers, 0..) |*c, i| {
         c.* = Computer{
             .name = names[i],
             .memory = try allocator.alloc(Computer.Data, 10000),
@@ -58,7 +58,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     var num_halted: usize = 0;
     while (num_halted < computers.len) {
         num_halted = 0;
-        for (computers) |*c, i| {
+        for (computers, 0..) |*c, i| {
             if (c.is_halted()) {
                 num_halted += 1;
                 continue;

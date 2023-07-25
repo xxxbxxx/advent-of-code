@@ -3,7 +3,7 @@ const assert = std.debug.assert;
 const tools = @import("tools");
 
 fn maskOf(bit: usize) u26 {
-    return @as(u26, 1) << @intCast(u5, bit);
+    return @as(u26, 1) << @as(u5, @intCast(bit));
 }
 
 pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
@@ -30,11 +30,11 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         var todo = allSteps;
         while (done != todo) {
             const nextStep = ns: {
-                for (table) |deps, s| {
+                for (table, 0..) |deps, s| {
                     if (deps & ~done != 0) continue;
                     if (done & maskOf(s) != 0) continue;
                     if (allSteps & maskOf(s) == 0) continue;
-                    break :ns @intCast(u8, s);
+                    break :ns @as(u8, @intCast(s));
                 }
                 unreachable;
             };
@@ -49,9 +49,9 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     const ans2 = ans: {
         var workTodo: [26]u8 = undefined;
         var time: u32 = 0;
-        for (workTodo) |*it, step| {
+        for (&workTodo, 0..) |*it, step| {
             if (allSteps & maskOf(step) != 0)
-                it.* = @intCast(u8, step) + 1 + 60;
+                it.* = @as(u8, @intCast(step)) + 1 + 60;
         }
         var done: u26 = 0;
         //var buf2: [32]u8 = undefined;
@@ -63,7 +63,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
             // std.debug.print("t={}: ", .{time});
             var idleWorkers: u32 = 5;
             var doneThisStep: u26 = 0;
-            for (table) |deps, s| {
+            for (table, 0..) |deps, s| {
                 if (deps & ~done != 0) continue;
                 if (done & maskOf(s) != 0) continue;
                 if (allSteps & maskOf(s) == 0) continue;

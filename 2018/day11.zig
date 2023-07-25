@@ -5,14 +5,14 @@ const tools = @import("tools");
 const Vec2 = tools.Vec2;
 
 fn powerOfCell(p: Vec2, SN: u32) i32 {
-    const rackId = @intCast(u32, p.x + 10);
-    var pow = @intCast(u32, p.y) * rackId;
+    const rackId = @as(u32, @intCast(p.x + 10));
+    var pow = @as(u32, @intCast(p.y)) * rackId;
     pow += SN;
     pow *= rackId;
     pow /= 100;
     pow = pow % 10;
 
-    return @intCast(i32, pow) - 5;
+    return @as(i32, @intCast(pow)) - 5;
 }
 
 pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
@@ -32,7 +32,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
             p.x = 0;
             while (p.x <= 300) : (p.x += 1) {
                 if (p.x == 0 or p.y == 0) {
-                    powergrid[@intCast(usize, p.x + stride * p.y)] = 0;
+                    powergrid[@as(usize, @intCast(p.x + stride * p.y))] = 0;
                     continue;
                 }
                 const p00 = Vec2.add(p, Vec2{ .x = 0, .y = 0 });
@@ -40,10 +40,10 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                 //const p10 = Vec2.add(p, Vec2{ .x = -1, .y = 0 });
                 //const p11 = Vec2.add(p, Vec2{ .x = -1, .y = -1 });
                 const pow = powerOfCell(p00, SN);
-                const acc01 = powergrid[@intCast(usize, (p.x - 1) + stride * (p.y - 0))];
-                const acc10 = powergrid[@intCast(usize, (p.x - 0) + stride * (p.y - 1))];
-                const acc11 = powergrid[@intCast(usize, (p.x - 1) + stride * (p.y - 1))];
-                powergrid[@intCast(usize, p.x + stride * p.y)] = pow + (acc01 + (acc10 - acc11));
+                const acc01 = powergrid[@as(usize, @intCast((p.x - 1) + stride * (p.y - 0)))];
+                const acc10 = powergrid[@as(usize, @intCast((p.x - 0) + stride * (p.y - 1)))];
+                const acc11 = powergrid[@as(usize, @intCast((p.x - 1) + stride * (p.y - 1)))];
+                powergrid[@as(usize, @intCast(p.x + stride * p.y))] = pow + (acc01 + (acc10 - acc11));
             }
         }
     }
@@ -57,10 +57,10 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
             p.x = 1;
             while (p.x <= 300 - 3) : (p.x += 1) {
                 const sz = Vec2{ .x = 2, .y = 2 };
-                const acc00 = powergrid[@intCast(usize, (p.x - 1) + stride * (p.y - 1))];
-                const acc03 = powergrid[@intCast(usize, (p.x - 1) + stride * (p.y + sz.y))];
-                const acc30 = powergrid[@intCast(usize, (p.x + sz.x) + stride * (p.y - 1))];
-                const acc33 = powergrid[@intCast(usize, (p.x + sz.x) + stride * (p.y + sz.y))];
+                const acc00 = powergrid[@as(usize, @intCast((p.x - 1) + stride * (p.y - 1)))];
+                const acc03 = powergrid[@as(usize, @intCast((p.x - 1) + stride * (p.y + sz.y)))];
+                const acc30 = powergrid[@as(usize, @intCast((p.x + sz.x) + stride * (p.y - 1)))];
+                const acc33 = powergrid[@as(usize, @intCast((p.x + sz.x) + stride * (p.y + sz.y)))];
                 const pow = (acc33 - acc03) - (acc30 - acc00);
                 if (best_pow < pow) {
                     best_pow = pow;
@@ -81,10 +81,10 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
             while (p.x <= 300) : (p.x += 1) {
                 var sz: i32 = 0;
                 while (sz <= (300 - p.x) and sz <= (300 - p.y)) : (sz += 1) {
-                    const acc00 = powergrid[@intCast(usize, (p.x - 1) + stride * (p.y - 1))];
-                    const acc03 = powergrid[@intCast(usize, (p.x - 1) + stride * (p.y + sz))];
-                    const acc30 = powergrid[@intCast(usize, (p.x + sz) + stride * (p.y - 1))];
-                    const acc33 = powergrid[@intCast(usize, (p.x + sz) + stride * (p.y + sz))];
+                    const acc00 = powergrid[@as(usize, @intCast((p.x - 1) + stride * (p.y - 1)))];
+                    const acc03 = powergrid[@as(usize, @intCast((p.x - 1) + stride * (p.y + sz)))];
+                    const acc30 = powergrid[@as(usize, @intCast((p.x + sz) + stride * (p.y - 1)))];
+                    const acc33 = powergrid[@as(usize, @intCast((p.x + sz) + stride * (p.y + sz)))];
                     const pow = (acc33 - acc03) - (acc30 - acc00);
                     if (best_pow < pow) {
                         best_pow = pow;

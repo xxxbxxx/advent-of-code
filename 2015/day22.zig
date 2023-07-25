@@ -62,7 +62,7 @@ fn playfight_bfs(boss: Carac, player: Carac, active_spells: [5]i32, turn: u32) ?
     //  trace("{}turn={}, spells={},{},{}, player: {},{},{}, boss: {}\n", padding, turn, as0[2], as0[3], as0[4], p0.points, p0.mana, p0.armor, b0.points);
 
     p0.armor = 0;
-    for (as0) |*duration, i| {
+    for (as0, 0..) |*duration, i| {
         if (duration.* > 0) {
             apply_effect(&b0, &p0, i);
             duration.* -= 1;
@@ -79,7 +79,7 @@ fn playfight_bfs(boss: Carac, player: Carac, active_spells: [5]i32, turn: u32) ?
 
     if (playerturn) {
         var bestcost: ?i32 = null;
-        for (spells) |s, i| {
+        for (spells, 0..) |s, i| {
             var b1 = b0;
             var p1 = p0;
             var as1 = [5]i32{ 0, 0, as0[2], as0[3], as0[4] };

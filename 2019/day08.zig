@@ -43,8 +43,8 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     }
 
     var composite: Layer = undefined;
-    for (composite) |*pix, i| {
-        for (layers) |_, l| {
+    for (&composite, 0..) |*pix, i| {
+        for (layers, 0..) |_, l| {
             switch (layers[layers.len - 1 - l][i]) {
                 '0' => pix.* = ' ',
                 '1' => pix.* = '*',

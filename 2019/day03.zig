@@ -34,7 +34,7 @@ fn parse_segments(insns: []const u8, pool: []Segment) []Segment {
         }
         var len: i32 = 0;
         while (i < insns.len and insns[i] != ',') : (i += 1) {
-            len = len * 10 + @intCast(i32, insns[i] - '0');
+            len = len * 10 + @as(i32, @intCast(insns[i] - '0'));
         }
 
         var d = Vec2{ .x = 0, .y = 0 };
@@ -63,7 +63,7 @@ fn parse_segments(insns: []const u8, pool: []Segment) []Segment {
 }
 
 fn distance(p: Vec2) u32 {
-    return (if (p.x < 0) @intCast(u32, -p.x) else @intCast(u32, p.x)) + (if (p.y < 0) @intCast(u32, -p.y) else @intCast(u32, p.y));
+    return (if (p.x < 0) @as(u32, @intCast(-p.x)) else @as(u32, @intCast(p.x))) + (if (p.y < 0) @as(u32, @intCast(-p.y)) else @as(u32, @intCast(p.y)));
 }
 const Intersec = struct {
     dist: u32,
@@ -133,8 +133,8 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     var pool: [1000]Segment = undefined;
 
     var it = std.mem.split(u8, input, "\n");
-    const l1 = std.mem.trim(u8, it.next() orelse unreachable, &std.ascii.spaces);
-    const l2 = std.mem.trim(u8, it.next() orelse unreachable, &std.ascii.spaces);
+    const l1 = std.mem.trim(u8, it.next() orelse unreachable, &std.ascii.whitespace);
+    const l2 = std.mem.trim(u8, it.next() orelse unreachable, &std.ascii.whitespace);
     const segs1 = parse_segments(l1, pool[0..]);
     const segs2 = parse_segments(l2, pool[segs1.len..]);
 

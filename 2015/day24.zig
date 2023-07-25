@@ -86,7 +86,7 @@ fn agenda_pop(a: *Agenda) ?Candidate {
 }
 
 fn agenda_init(a: *Agenda) void {
-    for (a.pool) |*it, i| {
+    for (a.pool, 0..) |*it, i| {
         it.next = i + 1;
     }
     a.pool[a.pool.len - 1].next = Agenda.none;
@@ -115,7 +115,7 @@ fn bfs(a: *Agenda, curbest: *Result) void {
         };
 
         {
-            var s0 = @intCast(u32, groups[0].len);
+            var s0 = @as(u32, @intCast(groups[0].len));
             if (s0 > curbest.s0 or (s0 == curbest.s0 and qe >= curbest.qe))
                 continue;
         }
@@ -127,7 +127,7 @@ fn bfs(a: *Agenda, curbest: *Result) void {
             bestrem2 = rem2;
             trace("progress.. rems={},{},{}, qe={} agenda={}, iter={}\n", rem0, rem1, rem2, qe, a.count, iter);
             trace("cur candidate:\n");
-            for (groups) |g, i| {
+            for (groups, 0..) |g, i| {
                 trace("  group{} = [", i);
                 for (g) |p| {
                     trace("{}, ", p);
@@ -143,7 +143,7 @@ fn bfs(a: *Agenda, curbest: *Result) void {
             if (g.len >= curbest.s0)
                 continue;
 
-            for (packets) |p, i| {
+            for (packets, 0..) |p, i| {
                 if (p > rem0)
                     continue;
 
@@ -181,7 +181,7 @@ fn bfs(a: *Agenda, curbest: *Result) void {
 
         if (rem1 > 0) {
             const g = groups[1];
-            for (packets) |p, i| {
+            for (packets, 0..) |p, i| {
                 if (p > rem1)
                     continue;
 
@@ -220,7 +220,7 @@ fn bfs(a: *Agenda, curbest: *Result) void {
 
         if (rem2 > 0) {
             const g = groups[2];
-            for (packets) |p, i| {
+            for (packets, 0..) |p, i| {
                 if (p > rem2)
                     continue;
 
@@ -259,19 +259,19 @@ fn bfs(a: *Agenda, curbest: *Result) void {
         {
             const newgroups = [4][]const u8{ groups[0], groups[1], groups[2], packets };
             var m = [4]u32{ 0, 0, 0, 0 };
-            for (newgroups) |g, i| {
+            for (newgroups, 0..) |g, i| {
                 for (g) |p| {
                     m[i] += p;
                 }
             }
             assert(m[0] == m[1] and m[0] == m[2] and m[0] == m[3]);
 
-            var s0 = @intCast(u32, newgroups[0].len);
+            var s0 = @as(u32, @intCast(newgroups[0].len));
             if (s0 < curbest.s0 or (s0 == curbest.s0 and qe < curbest.qe)) {
                 curbest.qe = qe;
                 curbest.s0 = s0;
                 trace("new best: {}\n", curbest.*);
-                for (newgroups) |g, i| {
+                for (newgroups, 0..) |g, i| {
                     trace("  group{} = [", i);
                     for (g) |p| {
                         trace("{}, ", p);
@@ -312,7 +312,7 @@ pub fn main() anyerror!void {
         .rem1 = targetmass,
         .rem2 = targetmass,
         .qe = 1,
-        .packets = @intCast(u8, packets.len),
+        .packets = @as(u8, @intCast(packets.len)),
         .groups = [4]u8{ 0, 0, 0, 0 },
         .storage = packets,
     };

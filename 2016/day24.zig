@@ -14,8 +14,8 @@ const Vec2 = tools.Vec2;
 fn compute_dists(start: u8, map: *const Map, dists: []u32) void {
     var dmap_max: [200 * 100]u16 = [1]u16{9999} ** (200 * 100);
     assert(map.bbox.min.x == 0 and map.bbox.min.y == 0);
-    const w = @intCast(u32, map.bbox.max.x) + 1;
-    const h = @intCast(u32, map.bbox.max.y) + 1;
+    const w = @as(u32, @intCast(map.bbox.max.x)) + 1;
+    const h = @as(u32, @intCast(map.bbox.max.y)) + 1;
     const stride = w;
     const dmap = dmap_max[0 .. w + stride * h];
 
@@ -26,7 +26,7 @@ fn compute_dists(start: u8, map: *const Map, dists: []u32) void {
         while (p.y < h) : (p.y += 1) {
             p.x = 0;
             while (p.x < w) : (p.x += 1) {
-                const o = @intCast(u32, p.x) + stride * @intCast(u32, p.y);
+                const o = @as(u32, @intCast(p.x)) + stride * @as(u32, @intCast(p.y));
                 const m = map.at(p);
                 if (m == '#')
                     continue;
@@ -40,7 +40,7 @@ fn compute_dists(start: u8, map: *const Map, dists: []u32) void {
                         if (map.get(p1)) |m1| {
                             if (m1 == '#')
                                 continue;
-                            const o1 = @intCast(u32, p1.x) + stride * @intCast(u32, p1.y);
+                            const o1 = @as(u32, @intCast(p1.x)) + stride * @as(u32, @intCast(p1.y));
                             if (d > dmap[o1] + 1) {
                                 d = dmap[o1] + 1;
                             }
@@ -121,7 +121,7 @@ pub fn main() anyerror!void {
             {
                 var mod: u32 = nb_chkpts - 1;
                 var k = p;
-                for (order) |*c, i| {
+                for (order, 0..) |*c, i| {
                     const t = c.*;
                     c.* = order[i + k % mod];
                     order[i + k % mod] = t;
@@ -157,7 +157,7 @@ pub fn main() anyerror!void {
             {
                 var mod: u32 = nb_chkpts - 1;
                 var k = p;
-                for (order) |*c, i| {
+                for (order, 0..) |*c, i| {
                     const t = c.*;
                     c.* = order[i + k % mod];
                     order[i + k % mod] = t;

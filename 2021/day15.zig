@@ -30,7 +30,7 @@ fn computeLowestExitLevel(alloc: std.mem.Allocator, width: usize, height: usize,
 
     const acculevels = try alloc.alloc(u16, width * height);
     defer alloc.free(acculevels);
-    std.mem.set(u16, acculevels, 0x7FFF);
+    @memset(acculevels, 0x7FFF);
     //var best: u16 = 0x7FFF;  // useless, pas grand chose à élaguer
 
     // start point
@@ -131,7 +131,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
                 const y0 = y % ctx.h;
                 const dist = (x / ctx.w) + (y / ctx.h);
                 const v = ctx.risk[x0 + y0 * ctx.stride] - '0';
-                return @intCast(u8, (v + dist - 1) % 9 + 1);
+                return @as(u8, @intCast((v + dist - 1) % 9 + 1));
             }
         } = .{ .risk = input, .w = width, .h = height, .stride = stride_in };
 

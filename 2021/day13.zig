@@ -11,7 +11,7 @@ pub const main = tools.defaultMain("2021/day13.txt", run);
 
 const Vec2 = tools.Vec2;
 fn sortAndremoveDups(list: []Vec2) []Vec2 {
-    std.sort.sort(Vec2, list, {}, tools.Vec.lessThan);
+    std.mem.sort(Vec2, list, {}, tools.Vec.lessThan);
 
     var i: u32 = 1;
     var j: u32 = 0;
@@ -38,19 +38,19 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
     while (it.next()) |line| {
         if (tools.match_pattern("{},{}", line)) |val| {
             const v = Vec2{
-                @intCast(i32, val[0].imm),
-                @intCast(i32, val[1].imm),
+                @as(i32, @intCast(val[0].imm)),
+                @as(i32, @intCast(val[1].imm)),
             };
             try dot_list.append(v);
         } else if (tools.match_pattern("fold along x={}", line)) |val| {
-            const x = @intCast(i32, val[0].imm);
+            const x = @as(i32, @intCast(val[0].imm));
             for (dot_list.items) |*v| {
                 if (v.*[0] > x)
                     v.* = Vec2{ 2 * x, 0 } + Vec2{ -1, 1 } * v.*;
             }
             if (first_fold == null) first_fold = try gpa.dupe(Vec2, dot_list.items);
         } else if (tools.match_pattern("fold along y={}", line)) |val| {
-            const y = @intCast(i32, val[0].imm);
+            const y = @as(i32, @intCast(val[0].imm));
             for (dot_list.items) |*v| {
                 if (v.*[1] > y)
                     v.* = Vec2{ 0, 2 * y } + Vec2{ 1, -1 } * v.*;

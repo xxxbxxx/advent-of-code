@@ -49,7 +49,7 @@ fn compute_dists(cavern: *const Map, units: []const Unit, o: Vec2) Map {
             const down = m.at(Vec2{ .x = p.x, .y = p.y + 1 });
 
             const old = m.at(p);
-            const new = std.math.min(std.math.min(left, right), std.math.min(up, down));
+            const new = @min(left, right, up, down);
             if (new == 255) continue;
             if (old != new + 1) {
                 m.set(p, new + 1);
@@ -75,7 +75,7 @@ fn debug_print_state(cavern: *const Map, units: []const Unit) void {
 fn playout(cavern: *const Map, units: []Unit) u32 {
     var round: u32 = 0;
     while (true) {
-        std.sort.sort(Unit, units, {}, Unit.lessThan);
+        std.mem.sort(Unit, units, {}, Unit.lessThan);
         for (units) |*it| {
             if (it.hit_points == 0) continue;
             //            std.debug.print("examining unit @{}...\n", .{it.p});
@@ -111,7 +111,7 @@ fn playout(cavern: *const Map, units: []Unit) u32 {
             if (best_nb == 0) {
                 continue; // can't move
             }
-            std.sort.sort(Vec2, candidates[0..best_nb], {}, Vec2.lessThan);
+            std.mem.sort(Vec2, candidates[0..best_nb], {}, Vec2.lessThan);
 
             //      std.debug.print("...moving to @{}\n", .{candidates[0]});
 
@@ -151,7 +151,7 @@ fn playout(cavern: *const Map, units: []Unit) u32 {
 
         var alive = [2]bool{ false, false };
         for (units) |it| {
-            if (it.hit_points != 0) alive[@enumToInt(it.type)] = true;
+            if (it.hit_points != 0) alive[@intFromEnum(it.type)] = true;
         }
         if (!alive[0] or !alive[1]) {
             return round;
@@ -162,7 +162,7 @@ fn playout(cavern: *const Map, units: []Unit) u32 {
 }
 
 pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
-    const params: struct { cavern: *const Map, units: []const Unit } = blk: {
+    const params: struct { cavern: *const Map, units: []const Unit, units_raw: []const Unit } = blk: {
         const cavern = try allocator.create(Map);
         errdefer allocator.destroy(cavern);
         cavern.bbox = tools.BBox.empty;
@@ -174,8 +174,8 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         var y: i32 = 0;
         var it = std.mem.tokenize(u8, input_text, "\n\r");
         while (it.next()) |line| {
-            for (line) |sq, i| {
-                const p = Vec2{ .x = @intCast(i32, i), .y = y };
+            for (line, 0..) |sq, i| {
+                const p = Vec2{ .x = @as(i32, @intCast(i)), .y = y };
                 switch (sq) {
                     '#' => cavern.set(p, '#'),
                     '.' => cavern.set(p, '.'),
@@ -198,10 +198,10 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
             y += 1;
         }
 
-        break :blk .{ .cavern = cavern, .units = units[0..nb_units] };
+        break :blk .{ .cavern = cavern, .units = units[0..nb_units], .units_raw = units };
     };
     defer allocator.destroy(params.cavern);
-    defer allocator.free(params.units);
+    defer allocator.free(params.units_raw);
 
     //var buf: [5000]u8 = undefined;
     //std.debug.print("{}\n", .{params.cavern.printToBuf(null, null, null, &buf)});

@@ -41,17 +41,13 @@ pub fn main() !void {
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
-    for (alldays) |it, day| {
-        const func = switch (@import("builtin").zig_backend) {
-            .stage1 => it.runFn.*,
-            else => it.runFn,
-        };
-        const answer = try func(it.input, allocator);
+    for (alldays, 0..) |it, day| {
+        const answer = try it.runFn(it.input, allocator);
         defer allocator.free(answer[0]);
         defer allocator.free(answer[1]);
 
         try stdout.print("Day {d:0>2}:\n", .{day + 1});
-        for (answer) |ans, i| {
+        for (answer, 0..) |ans, i| {
             const multiline = (std.mem.indexOfScalar(u8, ans, '\n') != null);
             if (multiline) {
                 try stdout.print("\tPART {d}:\n{s}", .{ i + 1, ans });

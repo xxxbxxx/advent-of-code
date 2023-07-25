@@ -23,7 +23,7 @@ const Grammar = struct {
         };
 
         g.rules = try g.arena.allocator().alloc(Rule, 200);
-        std.mem.set(Rule, g.rules, empty_rule);
+        @memset(g.rules, empty_rule);
 
         return g;
     }
@@ -48,14 +48,14 @@ const Grammar = struct {
         const seq = try self.arena.allocator().alloc(Grammar.Node, 1);
         seq[0] = try self.newLit(lit);
         alts[0].seq = seq;
-        return Rule{ .alts = alts, .min_len = @intCast(u8, lit.len) };
+        return Rule{ .alts = alts, .min_len = @intCast(lit.len) };
     }
 
     fn newRuleSimple(self: *@This(), sub_rules: []const []const u8) !Rule {
         const alts = try self.arena.allocator().alloc(Grammar.Alternative, sub_rules.len);
-        for (sub_rules) |s, i| {
+        for (sub_rules, 0..) |s, i| {
             const seq = try self.arena.allocator().alloc(Grammar.Node, s.len);
-            for (s) |r, j| {
+            for (s, 0..) |r, j| {
                 seq[j] = Node{ .rule = r };
             }
             alts[i].seq = seq;
@@ -65,10 +65,10 @@ const Grammar = struct {
 
     fn debugPrint(self: *const @This()) void {
         std.debug.print("======================================\n", .{});
-        for (self.rules) |r, rule_idx| {
+        for (self.rules, 0..) |r, rule_idx| {
             if (r.alts.len == 0) continue; //empty_rule
             std.debug.print("rule n° {}: (len>={})", .{ rule_idx, r.min_len });
-            for (r.alts) |a, i| {
+            for (r.alts, 0..) |a, i| {
                 if (i > 0) std.debug.print("| ", .{});
                 for (a.seq) |node| {
                     std.debug.print("{} ", .{node});
@@ -91,7 +91,7 @@ fn reduce(grammar: *const Grammar, allocator: std.mem.Allocator) !Grammar {
     var g = try Grammar.init(allocator);
     errdefer g.deinit();
     {
-        for (g.rules) |*r, i| {
+        for (g.rules, 0..) |*r, i| {
             r.alts = try g.arena.allocator().dupe(Grammar.Alternative, grammar.rules[i].alts);
             r.min_len = 0;
             for (r.alts) |*alt| {
@@ -114,10 +114,10 @@ fn reduce(grammar: *const Grammar, allocator: std.mem.Allocator) !Grammar {
         dirty = false;
 
         if (false) {
-            for (g.rules[0..max_rule]) |r, rule_idx| {
+            for (g.rules[0..max_rule], 0..) |r, rule_idx| {
                 if (r.alts.len == 0) continue; //empty_rule
                 std.debug.print("rule n° {}: ", .{rule_idx});
-                for (r.alts) |a, i| {
+                for (r.alts, 0..) |a, i| {
                     if (i > 0) std.debug.print("| ", .{});
                     for (a.seq) |node| {
                         std.debug.print("{} ", .{node});
@@ -138,9 +138,9 @@ fn reduce(grammar: *const Grammar, allocator: std.mem.Allocator) !Grammar {
                 }
             }
 
-            for (rule.alts) |*alt, alt_idx| {
+            for (rule.alts, 0..) |*alt, alt_idx| {
                 if (do_constprop) { // constant prop:
-                    next_node: for (alt.seq) |*node, node_idx| {
+                    next_node: for (alt.seq, 0..) |*node, node_idx| {
                         if (node.* == .rule) {
                             const sub_rule = g.rules[node.rule];
                             assert(sub_rule.alts.len > 0);
@@ -241,7 +241,7 @@ fn reduce(grammar: *const Grammar, allocator: std.mem.Allocator) !Grammar {
                         seq_len += if (n == .rule) g.rules[n.rule].min_len else n.lit.len;
                     }
                     if (seq_len < min_len) {
-                        min_len = @intCast(u8, seq_len);
+                        min_len = @intCast(seq_len);
                     }
                 }
                 if (r.min_len < min_len) {
@@ -263,7 +263,7 @@ fn reduce(grammar: *const Grammar, allocator: std.mem.Allocator) !Grammar {
                 }
             }
 
-            for (g.rules) |*r, i| {
+            for (g.rules, 0..) |*r, i| {
                 if (!used[i]) {
                     r.* = Grammar.empty_rule;
                 } else {
@@ -324,7 +324,7 @@ fn match(text: []const u8, r: u8, g: *Grammar) bool {
     }
 
     if (g.memoize_cache) |*memo| {
-        if (memo.get(.{ .ptr = @ptrToInt(text.ptr), .len = @intCast(u8, text.len), .r = r })) |v|
+        if (memo.get(.{ .ptr = @intFromPtr(text.ptr), .len = @intCast(text.len), .r = r })) |v|
             return v;
     }
 
@@ -334,7 +334,7 @@ fn match(text: []const u8, r: u8, g: *Grammar) bool {
     } else false;
 
     if (g.memoize_cache) |*memo| {
-        memo.put(.{ .ptr = @ptrToInt(text.ptr), .len = @intCast(u8, text.len), .r = r }, ok) catch unreachable;
+        memo.put(.{ .ptr = @intFromPtr(text.ptr), .len = @intCast(text.len), .r = r }, ok) catch unreachable;
     }
     return ok;
 }
@@ -355,36 +355,36 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         var it = std.mem.tokenize(u8, input_text, "\n\r");
         while (it.next()) |line| {
             if (tools.match_pattern("{}: \"{}\"", line)) |fields| { //44: "a"
-                const name = @intCast(u8, fields[0].imm);
+                const name: u8 = @intCast(fields[0].imm);
                 const lit = fields[1].lit;
                 assert(lit.len == 1);
                 assert(rules[name].alts.len == 0);
                 rules[name] = try grammar.newRuleLit(lit);
             } else if (tools.match_pattern("{}: {} {} | {} {}", line)) |fields| { //44: 82 117 | 26 54
-                const name = @intCast(u8, fields[0].imm);
-                const r0 = @intCast(u8, fields[1].imm);
-                const r1 = @intCast(u8, fields[2].imm);
-                const r2 = @intCast(u8, fields[3].imm);
-                const r3 = @intCast(u8, fields[4].imm);
+                const name: u8 = @as(u8, @intCast(fields[0].imm));
+                const r0: u8 = @as(u8, @intCast(fields[1].imm));
+                const r1: u8 = @as(u8, @intCast(fields[2].imm));
+                const r2: u8 = @as(u8, @intCast(fields[3].imm));
+                const r3: u8 = @as(u8, @intCast(fields[4].imm));
                 assert(rules[name].alts.len == 0);
-                rules[name] = try grammar.newRuleSimple(&[_][]u8{ &[_]u8{ r0, r1 }, &[_]u8{ r2, r3 } });
+                rules[name] = try grammar.newRuleSimple(&[_][]const u8{ &[_]u8{ r0, r1 }, &[_]u8{ r2, r3 } });
             } else if (tools.match_pattern("{}: {} | {}", line)) |fields| { //44: 82 | 54
-                const name = @intCast(u8, fields[0].imm);
-                const r0 = @intCast(u8, fields[1].imm);
-                const r1 = @intCast(u8, fields[2].imm);
+                const name: u8 = @intCast(fields[0].imm);
+                const r0: u8 = @intCast(fields[1].imm);
+                const r1: u8 = @intCast(fields[2].imm);
                 assert(rules[name].alts.len == 0);
-                rules[name] = try grammar.newRuleSimple(&[_][]u8{ &[_]u8{r0}, &[_]u8{r1} });
+                rules[name] = try grammar.newRuleSimple(&[_][]const u8{ &[_]u8{r0}, &[_]u8{r1} });
             } else if (tools.match_pattern("{}: {} {}", line)) |fields| { //44: 82 117
-                const name = @intCast(u8, fields[0].imm);
-                const r0 = @intCast(u8, fields[1].imm);
-                const r1 = @intCast(u8, fields[2].imm);
+                const name: u8 = @intCast(fields[0].imm);
+                const r0: u8 = @intCast(fields[1].imm);
+                const r1: u8 = @intCast(fields[2].imm);
                 assert(rules[name].alts.len == 0);
-                rules[name] = try grammar.newRuleSimple(&[_][]u8{&[_]u8{ r0, r1 }});
+                rules[name] = try grammar.newRuleSimple(&[_][]const u8{&[_]u8{ r0, r1 }});
             } else if (tools.match_pattern("{}: {}", line)) |fields| { //44: 82
-                const name = @intCast(u8, fields[0].imm);
-                const r0 = @intCast(u8, fields[1].imm);
+                const name: u8 = @intCast(fields[0].imm);
+                const r0: u8 = @intCast(fields[1].imm);
                 assert(rules[name].alts.len == 0);
-                rules[name] = try grammar.newRuleSimple(&[_][]u8{&[_]u8{r0}});
+                rules[name] = try grammar.newRuleSimple(&[_][]const u8{&[_]u8{r0}});
             } else {
                 assert(std.mem.indexOfScalar(u8, line, ':') == null);
                 try mesgs.append(line);

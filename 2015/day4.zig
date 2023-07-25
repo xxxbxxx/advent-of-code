@@ -29,7 +29,7 @@ pub fn main() anyerror!void {
         answer += 1;
     }
 
-    for (hash) |h, i| {
+    for (hash, 0..) |h, i| {
         _ = std.fmt.bufPrint(hexhash[i * 2 ..], "{x:0>2}", h) catch unreachable;
     }
     const out = std.io.getStdOut().writer();

@@ -74,7 +74,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
             }
         }
 
-        std.sort.sort(u64, scores_complete[0..scores_complete_len], {}, comptime std.sort.asc(u64));
+        std.mem.sort(u64, scores_complete[0..scores_complete_len], {}, comptime std.sort.asc(u64));
 
         break :ans [2]u64{ score_syntax, scores_complete[scores_complete_len / 2] };
     };

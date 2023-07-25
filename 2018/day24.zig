@@ -49,22 +49,22 @@ fn doOneFight(armies: [2][]Group, allocator: std.mem.Allocator) ![2]u32 {
 
     // phase1
     for (armies) |army| {
-        std.sort.sort(Group, army, {}, betterEffectivePower);
+        std.mem.sort(Group, army, {}, betterEffectivePower);
     }
 
     var attacks = std.ArrayList(Attack).init(arena.allocator());
     defer attacks.deinit();
 
-    for (armies) |army, i| {
+    for (armies, 0..) |army, i| {
         var potential_targets = std.ArrayList(?Group).init(arena.allocator());
         defer potential_targets.deinit();
         for (armies[1 - i]) |g| try potential_targets.append(if (g.unit_count > 0) g else null);
 
-        for (army) |att, j| {
+        for (army, 0..) |att, j| {
             //   print("army {}, group {}, units: {}\n", .{ i, j, att.unit_count });
             var best_tgt: ?usize = null;
             var best_potential_damage: u32 = 0;
-            for (potential_targets.items) |tgt, k| {
+            for (potential_targets.items, 0..) |tgt, k| {
                 if (tgt) |t| {
                     const damage = computePotentialDamage(att, t);
                     if (damage > best_potential_damage) {
@@ -75,10 +75,10 @@ fn doOneFight(armies: [2][]Group, allocator: std.mem.Allocator) ![2]u32 {
             }
             if (best_tgt) |idx| {
                 try attacks.append(Attack{
-                    .army = @intCast(u1, i),
-                    .group = @intCast(u8, j),
+                    .army = @as(u1, @intCast(i)),
+                    .group = @as(u8, @intCast(j)),
                     .initiative = att.initiative,
-                    .target = @intCast(u8, idx),
+                    .target = @as(u8, @intCast(idx)),
                 });
                 potential_targets.items[idx] = null;
             }
@@ -86,19 +86,19 @@ fn doOneFight(armies: [2][]Group, allocator: std.mem.Allocator) ![2]u32 {
     }
 
     //phase 2
-    std.sort.sort(Attack, attacks.items, {}, Attack.betterInitiative);
+    std.mem.sort(Attack, attacks.items, {}, Attack.betterInitiative);
 
     for (attacks.items) |attack| {
         const target = &armies[1 - attack.army][attack.target];
         const dmg = computePotentialDamage(armies[attack.army][attack.group], target.*);
-        const kills = @intCast(u16, dmg / target.unit_hp);
+        const kills = @as(u16, @intCast(dmg / target.unit_hp));
         //  print("  attack: {}.{} -> {}, does {} damage: kills {} units\n", .{ attack.army, attack.group, attack.target, dmg, kills });
 
         target.unit_count = if (target.unit_count > kills) target.unit_count - kills else 0;
     }
 
     var finalcounts = [2]u32{ 0, 0 };
-    for (armies) |army, i| {
+    for (armies, 0..) |army, i| {
         for (army) |group| finalcounts[i] += group.unit_count;
     }
 

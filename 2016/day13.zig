@@ -12,10 +12,10 @@ const Vec2 = tools.Vec2;
 
 fn iswall_at(p: Vec2) bool {
     if (p.x < 0 or p.y < 0) return true;
-    const x = @intCast(u32, p.x);
-    const y = @intCast(u32, p.y);
+    const x = @as(u32, @intCast(p.x));
+    const y = @as(u32, @intCast(p.y));
     const v = (x * x + 3 * x + 2 * x * y + y + y * y) + 1362;
-    const bits = @popCount(u32, v);
+    const bits = @popCount(v);
     return (bits % 2) == 1;
 }
 
@@ -27,6 +27,7 @@ pub fn main() anyerror!void {
     const allocator = arena.allocator();
 
     const limit = 1 * 1024 * 1024 * 1024;
+    _ = limit;
     //const text = try std.fs.cwd().readFileAlloc(allocator, "day12.txt", limit);
     //defer allocator.free(text);
 

@@ -6,8 +6,8 @@ const tools = @import("tools");
 const Vec4 = [4]i8;
 fn dist(a: Vec4, b: Vec4) u32 {
     var d: u32 = 0;
-    for (a) |_, i| {
-        d += @intCast(u32, std.math.absInt(@as(i31, a[i]) - b[i]) catch unreachable);
+    for (a, 0..) |_, i| {
+        d += @as(u32, @intCast(std.math.absInt(@as(i31, a[i]) - b[i]) catch unreachable));
     }
     return d;
 }
@@ -24,10 +24,10 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         while (it.next()) |line| {
             if (tools.match_pattern("{},{},{},{}", line)) |fields| {
                 try points.append(Vec4{
-                    @intCast(i8, fields[0].imm),
-                    @intCast(i8, fields[1].imm),
-                    @intCast(i8, fields[2].imm),
-                    @intCast(i8, fields[3].imm),
+                    @as(i8, @intCast(fields[0].imm)),
+                    @as(i8, @intCast(fields[1].imm)),
+                    @as(i8, @intCast(fields[2].imm)),
+                    @as(i8, @intCast(fields[3].imm)),
                 });
             } else unreachable;
         }
@@ -41,10 +41,10 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         var connected = std.ArrayList(Tag).init(arena.allocator());
         defer connected.deinit();
         var next_tag: Tag = 0;
-        for (param.points) |p, i| {
+        for (param.points, 0..) |p, i| {
             try connected.resize(0);
             if (i >= 1) {
-                for (param.points[0 .. i - 1]) |o, j| {
+                for (param.points[0 .. i - 1], 0..) |o, j| {
                     const d = dist(p, o);
                     if (d <= 3) {
                         const t = cluster_tag[j];

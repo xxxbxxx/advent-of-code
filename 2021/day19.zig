@@ -44,9 +44,9 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
                 points = std.ArrayList(Vec3).init(arena);
             } else if (tools.match_pattern("{},{},{}", line)) |val| {
                 const v = Vec3{
-                    @intCast(i32, val[0].imm),
-                    @intCast(i32, val[1].imm),
-                    @intCast(i32, val[2].imm),
+                    @as(i32, @intCast(val[0].imm)),
+                    @as(i32, @intCast(val[1].imm)),
+                    @as(i32, @intCast(val[2].imm)),
                 };
                 try points.append(v);
             } else {
@@ -57,13 +57,13 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
 
         for (scans.items) |*scan| {
             var dists = std.ArrayList(DistIdx).init(arena);
-            for (scan.points) |p0, idx0| {
-                for (scan.points[idx0 + 1 ..]) |p1, offset| {
+            for (scan.points, 0..) |p0, idx0| {
+                for (scan.points[idx0 + 1 ..], 0..) |p1, offset| {
                     const d = norm1(p1 - p0);
-                    try dists.append(.{ .dist = d, .idx1 = @intCast(u16, idx0), .idx2 = @intCast(u16, idx0 + 1 + offset) });
+                    try dists.append(.{ .dist = d, .idx1 = @as(u16, @intCast(idx0)), .idx2 = @as(u16, @intCast(idx0 + 1 + offset)) });
                 }
             }
-            std.sort.sort(DistIdx, dists.items, {}, DistIdx.lessThan);
+            std.mem.sort(DistIdx, dists.items, {}, DistIdx.lessThan);
             scan.pair_dists = dists.items;
         }
 
@@ -87,7 +87,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
         var nb_positionned_scans: u32 = 1;
         var pass_num: u32 = 0;
         while (true) : (pass_num += 1) {
-            nextscan: for (scans) |*scan, scan_idx| {
+            nextscan: for (scans, 0..) |*scan, scan_idx| {
                 if (scan.positionned) continue;
                 trace("try to match scan{}...\n", .{scan_idx});
 
@@ -95,7 +95,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
                 var maybe_ref_point_idx: u32 = 0;
                 var maybe_ref_point_positionned: [2]Vec3 = undefined;
                 var maybe_match = maybe_match: {
-                    for (scans) |s, other_idx| {
+                    for (scans, 0..) |s, other_idx| {
                         if (!s.positionned) continue;
 
                         var i: u32 = 0;
@@ -142,7 +142,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
                             var match_count: u32 = 0;
                             for (scan.points) |orig| {
                                 const p = mul(r, orig) + t;
-                                match_count += @boolToInt(point_set.get(p) != null);
+                                match_count += @intFromBool(point_set.get(p) != null);
                                 if (match_count >= 12) {
                                     trace("Found lucky match for scan{}: t={}, r={any} with {} positionned points\n", .{ scan_idx, t, r, point_set.count() });
                                     break :cur_match .{ .r = r, .t = t };
@@ -163,7 +163,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
                             var match_count: u32 = 0;
                             for (scan.points) |orig| {
                                 const p = mul(r, orig) + t;
-                                match_count += @boolToInt(point_set.get(p) != null);
+                                match_count += @intFromBool(point_set.get(p) != null);
                                 if (match_count >= 12) {
                                     trace("Found match for scan{}: t={}, r={any} with {} positionned points\n", .{ scan_idx, t, r, point_set.count() });
                                     break :cur_match .{ .r = r, .t = t };
@@ -232,7 +232,7 @@ fn dot(a: Vec3, b: Vec3) i32 {
 }
 
 fn norm1(a: Vec3) u32 {
-    return @intCast(u32, @reduce(.Add, @max(a, -a)));
+    return @as(u32, @intCast(@reduce(.Add, @max(a, -a))));
 }
 
 fn mul(m: Mat3, v: Vec3) Vec3 {

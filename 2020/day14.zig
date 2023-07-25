@@ -6,7 +6,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
     const ans1 = ans: {
         var mem = try allocator.alloc(u36, 100000);
         defer allocator.free(mem);
-        std.mem.set(u36, mem, 0);
+        @memset(mem, 0);
         var mask_or: u36 = 0;
         var mask_and: u36 = 0xFFFFFFFFF;
         var it = std.mem.tokenize(u8, input_text, "\n\r");
@@ -15,8 +15,8 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
                 const pattern = fields[0].lit;
                 mask_or = 0;
                 mask_and = 0xFFFFFFFFF;
-                for (pattern) |bit, i| {
-                    const mask = @as(u36, 1) << @intCast(u6, 35 - i);
+                for (pattern, 0..) |bit, i| {
+                    const mask = @as(u36, 1) << @intCast(35 - i);
                     switch (bit) {
                         'X' => {},
                         '1' => mask_or |= mask,
@@ -25,8 +25,8 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
                     }
                 }
             } else if (tools.match_pattern("mem[{}] = {}", line)) |fields| {
-                const adr = @intCast(usize, fields[0].imm);
-                const val = @intCast(u36, fields[1].imm);
+                const adr: usize = @intCast(fields[0].imm);
+                const val: u36 = @intCast(fields[1].imm);
                 mem[adr] = (val | mask_or) & mask_and;
             } else {
                 unreachable;
@@ -56,8 +56,8 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
                 mask_or = 0;
                 mask_and = 0xFFFFFFFFF;
                 mask_nb_mut = 0;
-                for (pattern) |bit, i| {
-                    const mask = @as(u36, 1) << @intCast(u6, 35 - i);
+                for (pattern, 0..) |bit, i| {
+                    const mask = @as(u36, 1) << @intCast(35 - i);
                     switch (bit) {
                         'X' => {
                             mask_and &= ~mask;
@@ -70,14 +70,14 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
                     }
                 }
             } else if (tools.match_pattern("mem[{}] = {}", line)) |fields| {
-                const adr = @intCast(u36, fields[0].imm);
-                const val = @intCast(u36, fields[1].imm);
+                const adr: u36 = @intCast(fields[0].imm);
+                const val: u36 = @intCast(fields[1].imm);
                 const base = (adr | mask_or) & mask_and;
                 var i: u36 = 0;
                 while (i < (@as(u36, 1) << (mask_nb_mut + 1))) : (i += 1) {
                     var a: u36 = base;
-                    for (mask_muts[0..mask_nb_mut]) |mask, j| {
-                        const use = ((i & (@as(u32, 1) << @intCast(u5, j))) != 0);
+                    for (mask_muts[0..mask_nb_mut], 0..) |mask, j| {
+                        const use = ((i & (@as(u32, 1) << @intCast(j))) != 0);
                         if (use) a |= mask;
                     }
                     try mem.put(a, val);

@@ -25,8 +25,8 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         while (it.next()) |line| {
             const fields = tools.match_pattern("{}-{} {}: {}", line) orelse unreachable;
             const policy = Policy{
-                .min = @intCast(u8, fields[0].imm),
-                .max = @intCast(u8, fields[1].imm),
+                .min = @intCast(fields[0].imm),
+                .max = @intCast(fields[1].imm),
                 .letter = fields[2].lit[0],
             };
             const password = fields[3].lit;
@@ -43,8 +43,8 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         while (it.next()) |line| {
             const fields = tools.match_pattern("{}-{} {}: {}", line) orelse unreachable;
             const policy = Policy{
-                .min = @intCast(u8, fields[0].imm),
-                .max = @intCast(u8, fields[1].imm),
+                .min = @intCast(fields[0].imm),
+                .max = @intCast(fields[1].imm),
                 .letter = fields[2].lit[0],
             };
             const password = fields[3].lit;

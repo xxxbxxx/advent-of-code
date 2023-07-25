@@ -44,33 +44,33 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
             var par: [3]u32 = undefined;
 
             if (tools.match_pattern("Before: [{}, {}, {}, {}]", line0)) |fields| {
-                before[0] = @intCast(u32, fields[0].imm);
-                before[1] = @intCast(u32, fields[1].imm);
-                before[2] = @intCast(u32, fields[2].imm);
-                before[3] = @intCast(u32, fields[3].imm);
+                before[0] = @as(u32, @intCast(fields[0].imm));
+                before[1] = @as(u32, @intCast(fields[1].imm));
+                before[2] = @as(u32, @intCast(fields[2].imm));
+                before[3] = @as(u32, @intCast(fields[3].imm));
             } else {
                 break;
             }
 
             const line1 = it.next().?;
             if (tools.match_pattern("{} {} {} {}", line1)) |fields| {
-                op = @intCast(u4, fields[0].imm);
-                par[0] = @intCast(u32, fields[1].imm);
-                par[1] = @intCast(u32, fields[2].imm);
-                par[2] = @intCast(u32, fields[3].imm);
+                op = @as(u4, @intCast(fields[0].imm));
+                par[0] = @as(u32, @intCast(fields[1].imm));
+                par[1] = @as(u32, @intCast(fields[2].imm));
+                par[2] = @as(u32, @intCast(fields[3].imm));
             } else unreachable;
 
             const line2 = it.next().?;
             if (tools.match_pattern("After:  [{}, {}, {}, {}]", line2)) |fields| {
-                after[0] = @intCast(u32, fields[0].imm);
-                after[1] = @intCast(u32, fields[1].imm);
-                after[2] = @intCast(u32, fields[2].imm);
-                after[3] = @intCast(u32, fields[3].imm);
+                after[0] = @as(u32, @intCast(fields[0].imm));
+                after[1] = @as(u32, @intCast(fields[1].imm));
+                after[2] = @as(u32, @intCast(fields[2].imm));
+                after[3] = @as(u32, @intCast(fields[3].imm));
             } else unreachable;
 
             var nb: u32 = 0;
-            for (opcode_table[op]) |*b, i| {
-                const res = eval(@intToEnum(Opcode, @intCast(u4, i)), par, before);
+            for (&opcode_table[op], 0..) |*b, i| {
+                const res = eval(@as(Opcode, @enumFromInt(@as(u4, @intCast(i)))), par, before);
                 if (!std.mem.eql(u32, &res, &after)) {
                     b.* = false;
                 } else {
@@ -91,18 +91,18 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         var done = false;
         while (!done) {
             done = true;
-            for (opcode_table) |table, op| {
+            for (opcode_table, 0..) |table, op| {
                 var code: u4 = undefined;
                 var nb: u32 = 0;
-                for (table) |b, i| {
+                for (table, 0..) |b, i| {
                     if (b) {
                         nb += 1;
-                        code = @intCast(u4, i);
+                        code = @as(u4, @intCast(i));
                     }
                 }
                 if (nb == 1) {
-                    opcodes[op] = @intToEnum(Opcode, code);
-                    for (opcode_table) |*t| {
+                    opcodes[op] = @as(Opcode, @enumFromInt(code));
+                    for (&opcode_table) |*t| {
                         t[code] = false;
                     }
                 } else if (nb > 1) {
@@ -118,11 +118,11 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         var reg: Registers = .{ 0, 0, 0, 0 };
         while (it.next()) |line| {
             if (tools.match_pattern("{} {} {} {}", line)) |fields| {
-                const op = @intCast(u4, fields[0].imm);
+                const op = @as(u4, @intCast(fields[0].imm));
                 const par = [3]u32{
-                    @intCast(u32, fields[1].imm),
-                    @intCast(u32, fields[2].imm),
-                    @intCast(u32, fields[3].imm),
+                    @as(u32, @intCast(fields[1].imm)),
+                    @as(u32, @intCast(fields[2].imm)),
+                    @as(u32, @intCast(fields[3].imm)),
                 };
                 reg = eval(opcodes[op], par, reg);
             } else unreachable;

@@ -16,7 +16,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         {
             const fields = tools.match_pattern("initial state: {}", it.next().?) orelse unreachable;
             const init = fields[0].lit;
-            for (init) |c, i| {
+            for (init, 0..) |c, i| {
                 const pot_index = i + pot_offset;
                 pots[pot_index] = if (c == '#') filled else empty;
                 if (pots[pot_index] != 0) {
@@ -49,7 +49,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         while (gen <= 20) : (gen += 1) {
             var next_min: usize = 10000;
             var next_max: usize = 0;
-            for (next[prev_min - 2 .. prev_max + 2 + 1]) |*it, index| {
+            for (next[prev_min - 2 .. prev_max + 2 + 1], 0..) |*it, index| {
                 const i = index + (prev_min - 2);
                 const p: usize = @as(usize, prev[i - 2]) * 16 + @as(usize, prev[i - 1]) * 8 + @as(usize, prev[i + 0]) * 4 + @as(usize, prev[i + 1]) * 2 + @as(usize, prev[i + 2]) * 1;
                 it.* = rules[p];
@@ -66,9 +66,9 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         }
 
         var score: i32 = 0;
-        for (prev[prev_min .. prev_max + 1]) |p, i| {
+        for (prev[prev_min .. prev_max + 1], 0..) |p, i| {
             if (p != 0)
-                score += (@intCast(i32, i + prev_min) - @intCast(i32, pot_offset));
+                score += (@as(i32, @intCast(i + prev_min)) - @as(i32, @intCast(pot_offset)));
         }
         break :ans score;
     };
@@ -94,7 +94,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
             //std.debug.print("\n", .{});
             var next_min: usize = 10000;
             var next_max: usize = 0;
-            for (next[prev_min - 2 .. prev_max + 2 + 1]) |*it, index| {
+            for (next[prev_min - 2 .. prev_max + 2 + 1], 0..) |*it, index| {
                 const i = index + (prev_min - 2);
                 const p: usize = @as(usize, prev[i - 2]) * 16 + @as(usize, prev[i - 1]) * 8 + @as(usize, prev[i + 0]) * 4 + @as(usize, prev[i + 1]) * 2 + @as(usize, prev[i + 2]) * 1;
                 it.* = rules[p];
@@ -110,15 +110,15 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
             prev_max = next_max;
 
             var score: i32 = 0;
-            for (prev[prev_min .. prev_max + 1]) |p, i| {
+            for (prev[prev_min .. prev_max + 1], 0..) |p, i| {
                 if (p != 0)
-                    score += (@intCast(i32, i + prev_min) - @intCast(i32, pot_offset));
+                    score += (@as(i32, @intCast(i + prev_min)) - @as(i32, @intCast(pot_offset)));
             }
             //std.debug.print("gen={}, score={}, min={}, recentre={}, moy={}\n", .{ gen, score, prev_min, score - @intCast(i32, prev_min), @divTrunc((score - @intCast(i32, (prev_min + prev_max) / 2)), @intCast(i32, prev_max - prev_min)) });
 
             // on constate que le pattern devient fixe après quelques generations (152) et se decale a vitesse constante. -> on doit pouvoir extrapoler
             {
-                const g = @intCast(i32, gen);
+                const g = @as(i32, @intCast(gen));
                 const na = (score - prev_score);
                 const nb = score - g * na;
                 // std.debug.print("gen={}, a={}, b={}, check={}\n", .{ gen, na, nb, na * g + nb });

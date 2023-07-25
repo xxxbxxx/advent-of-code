@@ -30,7 +30,7 @@ pub fn main() anyerror!void {
     while (it.next()) |line| {
         if (tools.match_pattern("{}-{}", line)) |vals| {
             trace("new RANGE {}/{}\n", .{ vals[0], vals[1] });
-            const range0 = Range{ .min = @intCast(u32, vals[0].imm), .max = @intCast(u32, vals[1].imm) };
+            const range0 = Range{ .min = @as(u32, @intCast(vals[0].imm)), .max = @as(u32, @intCast(vals[1].imm)) };
 
             const oldlist = blacklist;
             var depth: u32 = 0;
@@ -71,7 +71,7 @@ pub fn main() anyerror!void {
                 };
 
                 if (nextedge) |e| {
-                    depth = @intCast(u32, @intCast(i32, depth) + e.up);
+                    depth = @as(u32, @intCast(@as(i32, @intCast(depth)) + e.up));
                     if (e.up > 0 and depth == 1) {
                         if (j == null) {
                             j = 0;

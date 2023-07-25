@@ -33,16 +33,16 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         const center_offset = (dim1 / 2) * dim2 + (dim1 / 2) * dim1 + (dim1 / 2);
         const cube = try allocator.alloc(u8, dim2 * dim1);
         defer allocator.free(cube);
-        std.mem.set(u8, cube, '.');
-        for (param.map) |v, i| {
+        @memset(cube, '.');
+        for (param.map, 0..) |v, i| {
             const y = i / param.stride;
             const x = i % param.stride;
             if (x > param.width or y > param.height) continue;
 
-            const x0 = @intCast(i32, x) - @intCast(i32, param.width / 2);
-            const y0 = @intCast(i32, y) - @intCast(i32, param.height / 2);
+            const x0 = @as(i32, @intCast(x)) - @as(i32, @intCast(param.width / 2));
+            const y0 = @as(i32, @intCast(y)) - @as(i32, @intCast(param.height / 2));
 
-            cube[@intCast(usize, center_offset + y0 * dim1 + x0)] = v;
+            cube[@intCast(center_offset + y0 * dim1 + x0)] = v;
         }
         const neighbours = comptime blk: {
             var o: [26]isize = undefined;
@@ -65,16 +65,16 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         // avec deux plans d'espace supplémentaire pour que ça wrappe et eviter les frontieres
         const cube2 = try allocator.alloc(u8, dim2 * dim1 + dim2 * 2 + dim1 * 2 + 2);
         defer allocator.free(cube2);
-        std.mem.set(u8, cube2, '.');
+        @memset(cube2, '.');
         const padding = dim2 + dim1 + 1;
 
         var gen: usize = 0;
         while (gen < 6) : (gen += 1) {
             std.mem.copy(u8, cube2[padding .. padding + cube.len], cube);
-            for (cube) |*v, i| {
+            for (cube, 0..) |*v, i| {
                 var n: usize = 0;
                 inline for (neighbours) |o| {
-                    if (cube2[@intCast(usize, @intCast(isize, padding + i) + o)] == '#') n += 1;
+                    if (cube2[@intCast(@as(isize, @intCast(padding + i)) + o)] == '#') n += 1;
                 }
 
                 if (v.* == '#') {
@@ -99,16 +99,16 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         const center_offset = (dim1 / 2) * dim3 + (dim1 / 2) * dim2 + (dim1 / 2) * dim1 + (dim1 / 2) * 1;
         const cube = try allocator.alloc(u8, dim3 * dim1);
         defer allocator.free(cube);
-        std.mem.set(u8, cube, '.');
-        for (param.map) |v, i| {
+        @memset(cube, '.');
+        for (param.map, 0..) |v, i| {
             const y = i / param.stride;
             const x = i % param.stride;
             if (x > param.width or y > param.height) continue;
 
-            const x0 = @intCast(i32, x) - @intCast(i32, param.width / 2);
-            const y0 = @intCast(i32, y) - @intCast(i32, param.height / 2);
+            const x0 = @as(i32, @intCast(x)) - @as(i32, @intCast(param.width / 2));
+            const y0 = @as(i32, @intCast(y)) - @as(i32, @intCast(param.height / 2));
 
-            cube[@intCast(usize, center_offset + y0 * dim1 + x0)] = v;
+            cube[@intCast(center_offset + y0 * dim1 + x0)] = v;
         }
         const neighbours = comptime blk: {
             var o: [80]isize = undefined;
@@ -134,16 +134,16 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         // avec deux hyper-plans d'espace supplémentaire pour que ça wrappe et eviter les frontieres
         const cube2 = try allocator.alloc(u8, dim2 * dim2 + dim3 * 2 + dim2 * 2 + dim1 * 2 + 2);
         defer allocator.free(cube2);
-        std.mem.set(u8, cube2, '.');
+        @memset(cube2, '.');
         const padding = dim3 + dim2 + dim1 + 1;
 
         var gen: usize = 0;
         while (gen < 6) : (gen += 1) {
             std.mem.copy(u8, cube2[padding .. padding + cube.len], cube);
-            for (cube) |*v, i| {
+            for (cube, 0..) |*v, i| {
                 var n: usize = 0;
                 inline for (neighbours) |o| {
-                    if (cube2[@intCast(usize, @intCast(isize, padding + i) + o)] == '#') n += 1;
+                    if (cube2[@intCast(@as(isize, @intCast(padding + i)) + o)] == '#') n += 1;
                 }
 
                 if (v.* == '#') {

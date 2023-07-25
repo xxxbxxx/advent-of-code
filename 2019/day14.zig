@@ -28,7 +28,7 @@ fn parseChemical(segment: []const u8, chemicals: *Chemicals) !Reaction.Comp {
 
     if (it.next()) |name| {
         var found = false;
-        for (chemicals.items) |c, i| {
+        for (chemicals.items, 0..) |c, i| {
             if (std.mem.eql(u8, c, name)) {
                 comp.chemical = i;
                 found = true;
@@ -80,7 +80,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
 
     var grid = try allocator.alloc(u8, 1000 * 1000);
     defer allocator.free(grid);
-    std.mem.set(u8, grid, 0);
+    @memset(grid, 0);
 
     var chemicals = Chemicals.init(arena.allocator());
     var reactions: [1000]?Reaction = [1]?Reaction{null} ** 1000;
@@ -113,7 +113,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     var chemicals_to_fuel = try allocator.alloc(u32, chemicals.items.len);
     defer allocator.free(chemicals_to_fuel);
     {
-        std.mem.set(u32, chemicals_to_fuel, 0);
+        @memset(chemicals_to_fuel, 0);
         chemicals_to_fuel[1] = 0;
         var changed = true;
         while (changed) {
@@ -130,7 +130,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                 }
             }
         }
-        for (chemicals_to_fuel) |d, i| {
+        for (chemicals_to_fuel, 0..) |d, i| {
             trace("  {}: {}\n", .{ d, chemicals.items[i] });
         }
     }
@@ -144,7 +144,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         while (todo.items.len > 1 or todo.items[0].chemical != 0) {
             var next_products = try allocator.alloc(u64, chemicals.items.len);
             defer allocator.free(next_products);
-            std.mem.set(u64, next_products, 0);
+            @memset(next_products, 0);
             const smallest_dist = blk: {
                 trace("== step: ", .{});
                 var dist: u32 = 9999;
@@ -173,7 +173,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                 }
             }
             try todo.resize(0);
-            for (next_products) |q, c| {
+            for (next_products, 0..) |q, c| {
                 if (q > 0) {
                     try todo.append(Reaction.Comp{ .chemical = c, .quantity = q });
                 }
@@ -198,7 +198,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
             while (todo.items.len > 1 or todo.items[0].chemical != 0) {
                 var next_products = try allocator.alloc(u64, chemicals.items.len);
                 defer allocator.free(next_products);
-                std.mem.set(u64, next_products, 0);
+                @memset(next_products, 0);
                 const smallest_dist = blk: {
                     trace("== step: ", .{});
                     var dist: u32 = 9999;
@@ -226,7 +226,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                     }
                 }
                 try todo.resize(0);
-                for (next_products) |q, c| {
+                for (next_products, 0..) |q, c| {
                     if (q > 0) {
                         try todo.append(Reaction.Comp{ .chemical = c, .quantity = q });
                     }

@@ -43,15 +43,15 @@ pub fn main() anyerror!void {
             len += 1;
 
             if (tools.match_pattern("/dev/grid/node-x{}-y{}", name)) |vals| {
-                d.x = @intCast(u8, vals[0].imm);
-                d.y = @intCast(u8, vals[1].imm);
+                d.x = @as(u8, @intCast(vals[0].imm));
+                d.y = @as(u8, @intCast(vals[1].imm));
             } else {
                 unreachable;
             }
 
-            d.total = @intCast(u16, (tools.match_pattern("{}T", size_total) orelse unreachable)[0].imm);
-            d.used = @intCast(u16, (tools.match_pattern("{}T", size_used) orelse unreachable)[0].imm);
-            const avail = @intCast(u16, (tools.match_pattern("{}T", size_avail) orelse unreachable)[0].imm);
+            d.total = @as(u16, @intCast((tools.match_pattern("{}T", size_total) orelse unreachable)[0].imm));
+            d.used = @as(u16, @intCast((tools.match_pattern("{}T", size_used) orelse unreachable)[0].imm));
+            const avail = @as(u16, @intCast((tools.match_pattern("{}T", size_avail) orelse unreachable)[0].imm));
             assert(d.used + avail == d.total);
         }
         break :blk alldiscs[0..len];
@@ -62,10 +62,10 @@ pub fn main() anyerror!void {
     var h: u32 = 0;
     {
         var count: usize = 0;
-        for (discs) |d1, i| {
+        for (discs, 0..) |d1, i| {
             w = if (w < d1.x) d1.x else w;
             h = if (h < d1.y) d1.y else h;
-            for (discs) |d2, j| {
+            for (discs, 0..) |d2, j| {
                 if (j == i)
                     continue;
                 if (d1.used == 0)
@@ -104,11 +104,11 @@ pub fn main() anyerror!void {
         var cur: State = undefined;
         var trc0: Trace = .{ .text = undefined, .len = 0, .usages = undefined };
         for (discs) |d| {
-            const i = stride * @intCast(usize, d.y) + d.x;
+            const i = stride * @as(usize, @intCast(d.y)) + d.x;
             map0[i] = d;
             const doi = (d.y == 0 and d.x == w - 1);
             trc0.usages[i].doi = if (doi) 1 else 0;
-            trc0.usages[i].used = @intCast(u15, d.used);
+            trc0.usages[i].used = @as(u15, @intCast(d.used));
             if (d.used == 0) {
                 assert(!doi);
                 cur[i] = .empty;
@@ -128,7 +128,7 @@ pub fn main() anyerror!void {
         defer dfs.deinit();
         try dfs.insert(.{
             .steps = 0,
-            .rating = doimoveweight * @intCast(i32, w),
+            .rating = doimoveweight * @as(i32, @intCast(w)),
             .state = cur,
             .trace = trc0,
         });
@@ -152,7 +152,7 @@ pub fn main() anyerror!void {
                 trace("reached depth = {}, with rating {}, visitednodes={}, agendlen={}\n", .{ node.steps, node.rating, dfs.visited.count(), dfs.agenda.items.len });
                 depth = node.steps;
                 {
-                    for (node.state[0 .. w * h]) |s, i| {
+                    for (node.state[0 .. w * h], 0..) |s, i| {
                         if (i != 0 and (i % stride) == 0)
                             trace("\n", .{});
                         const char: u8 = switch (s) {
@@ -171,7 +171,7 @@ pub fn main() anyerror!void {
             var m = node.state;
             var moves: u32 = 0;
             var trc: Trace = node.trace;
-            for (m[0 .. w * h]) |*to, i| {
+            for (m[0 .. w * h], 0..) |*to, i| {
                 if (to.* != .empty)
                     continue;
                 const used = node.trace.usages[i].used;

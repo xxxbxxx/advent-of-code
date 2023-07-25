@@ -7,7 +7,7 @@ const Vec2 = tools.Vec2;
 fn getParens(line: []const u8) []const u8 {
     assert(line[0] == '(');
     var nb: usize = 0;
-    for (line) |c, i| {
+    for (line, 0..) |c, i| {
         if (c == '(') nb += 1;
         if (c == ')') {
             nb -= 1;

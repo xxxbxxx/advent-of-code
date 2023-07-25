@@ -9,7 +9,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     const visited_len = 1_000_000;
     const visited = try allocator.alloc(bool, visited_len * 2);
     defer allocator.free(visited);
-    std.mem.set(bool, visited, false);
+    @memset(visited, false);
 
     var first = true;
     loop: while (true) {
@@ -21,7 +21,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                 total1 += val;
             total2 += val;
 
-            const idx = @intCast(usize, visited_len + total2);
+            const idx = @as(usize, @intCast(visited_len + total2));
             if (visited[idx]) {
                 assert(!first);
                 break :loop;

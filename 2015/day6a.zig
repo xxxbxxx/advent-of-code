@@ -79,7 +79,7 @@ pub fn main() anyerror!void {
     const text = try std.fs.cwd().readFileAlloc(allocator, "day6.txt", limit);
 
     var grid = try allocator.alloc(bool, 1000 * 1000);
-    std.mem.set(bool, grid, false);
+    @memset(grid, false);
 
     var it = std.mem.split(u8, text, "\n");
     while (it.next()) |line_full| {

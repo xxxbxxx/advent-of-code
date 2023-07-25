@@ -21,10 +21,10 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
     const template = it.next().?;
 
     var rules_table: [table_count]u8 = undefined;
-    std.mem.set(u8, &rules_table, 0);
+    @memset(&rules_table, 0);
     while (it.next()) |line| {
         if (tools.match_pattern("{} -> {}", line)) |val| {
-            const pair = @ptrCast(*align(1) const u16, val[0].lit.ptr).*;
+            const pair = @as(*align(1) const u16, @ptrCast(val[0].lit.ptr)).*;
             const insert = val[1].lit;
             rules_table[pair - table_base] = insert[0]; // little endian
         } else {
@@ -54,7 +54,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
             while (i < from.len) : (i += 1) {
                 to[len] = from[i - 1];
                 len += 1;
-                const pair = @ptrCast(*align(1) const u16, &from[i - 1]).*;
+                const pair = @as(*align(1) const u16, @ptrCast(&from[i - 1])).*;
                 const insert = rules_table[pair - table_base];
                 if (insert != 0) {
                     to[len] = insert;
@@ -89,8 +89,8 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
 
         const all_pairs = comptime blk: {
             var p: [26 * 27]u16 = undefined;
-            for ("ABCDEFGHIJKLMNOPQRSTUVWXYZ") |letter1, i| {
-                for ("ABCDEFGHIJKLMNOPQRSTUVWXYZ@") |letter2, j| {
+            for ("ABCDEFGHIJKLMNOPQRSTUVWXYZ", 0..) |letter1, i| {
+                for ("ABCDEFGHIJKLMNOPQRSTUVWXYZ@", 0..) |letter2, j| {
                     p[i * 27 + j] = @as(u16, letter2) << 8 | letter1;
                 }
             }
@@ -101,8 +101,8 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
         for (all_pairs) |pair| {
             const insert = rules_table[pair - table_base];
             if (insert != 0) {
-                const letter1 = @intCast(u8, pair & 0xFF);
-                const letter2 = @intCast(u8, (pair >> 8) & 0xFF);
+                const letter1 = @as(u8, @intCast(pair & 0xFF));
+                const letter2 = @as(u8, @intCast((pair >> 8) & 0xFF));
                 rules_as_pairs[pair - table_base][0] = @as(u16, insert) << 8 | letter1;
                 rules_as_pairs[pair - table_base][1] = @as(u16, letter2) << 8 | insert;
             } else {
@@ -112,17 +112,17 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
         }
 
         var pairs_count: [table_count]u64 = undefined;
-        std.mem.set(u64, &pairs_count, 0);
+        @memset(&pairs_count, 0);
         var i: u32 = 0;
         while (i < template.len) : (i += 1) {
-            const pair = if (i < template.len - 1) @ptrCast(*align(1) const u16, &template[i]).* else (@as(u16, '@') << 8 | template[i]);
+            const pair = if (i < template.len - 1) @as(*align(1) const u16, @ptrCast(&template[i])).* else (@as(u16, '@') << 8 | template[i]);
             pairs_count[pair - table_base] += 1;
         }
 
         var gen: u32 = 0;
         while (gen < 40) : (gen += 1) {
             var count2: [table_count]u64 = undefined;
-            std.mem.set(u64, &count2, 0);
+            @memset(&count2, 0);
             for (all_pairs) |pair| {
                 for (rules_as_pairs[pair - table_base]) |out| {
                     if (out != 0) count2[out - table_base] += pairs_count[pair - table_base];
@@ -134,7 +134,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
         {
             var quantities = [1]u64{0} ** 128;
             for (all_pairs) |pair| {
-                const letter1 = @intCast(u8, pair & 0xFF);
+                const letter1 = @as(u8, @intCast(pair & 0xFF));
                 quantities[letter1] += pairs_count[pair - table_base];
             }
             var min: u64 = 0xFFFFFFFFFFFFFFFF;

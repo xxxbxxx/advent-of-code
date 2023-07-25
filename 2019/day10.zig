@@ -28,12 +28,12 @@ fn pgcd(_a: u32, _b: u32) u32 {
     return a;
 }
 fn abs(a: i32) u32 {
-    return @intCast(u32, std.math.absInt(a) catch unreachable);
+    return @intCast(std.math.absInt(a) catch unreachable);
 }
 
 fn normalize(d: Vec2) Vec2 {
     const div = pgcd(abs(d[0]), abs(d[1]));
-    return @divExact(d, @intCast(Vec2, @splat(2, div)));
+    return @divExact(d, @as(Vec2, @splat(@intCast(div))));
 }
 
 fn includes(list: []Vec2, e: Vec2) bool {
@@ -43,8 +43,8 @@ fn includes(list: []Vec2, e: Vec2) bool {
 }
 
 fn angleLessThan(_: void, a: Vec2, b: Vec2) bool {
-    const angle_a = std.math.atan2(f32, @intToFloat(f32, a[0]), @intToFloat(f32, a[1]));
-    const angle_b = std.math.atan2(f32, @intToFloat(f32, b[0]), @intToFloat(f32, b[1]));
+    const angle_a = std.math.atan2(f32, @as(f32, @floatFromInt(a[0])), @as(f32, @floatFromInt(a[1])));
+    const angle_b = std.math.atan2(f32, @as(f32, @floatFromInt(b[0])), @as(f32, @floatFromInt(b[1])));
     return angle_a > angle_b;
 }
 
@@ -67,10 +67,10 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) ![2][]const u8 {
     // liste des astéroïdes:
     const asteroids = blk: {
         var list = std.ArrayList(Vec2).init(allocator);
-        for (map.tiles) |t, i| {
+        for (map.tiles, 0..) |t, i| {
             if (t != '#') continue;
-            const x0 = @intCast(i32, i % map.stride);
-            const y0 = @intCast(i32, i / map.stride);
+            const x0: i32 = @intCast(i % map.stride);
+            const y0: i32 = @intCast(i / map.stride);
             try list.append(Vec2{ x0, y0 });
         }
         trace("nb astéroïdes: {}\n", .{list.items.len});
@@ -82,10 +82,10 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) ![2][]const u8 {
     var best_dirs: []Vec2 = undefined;
     var best = ans: {
         var best_visibility: usize = 0;
-        for (asteroids) |a, i| {
+        for (asteroids, 0..) |a, i| {
             var dirs = std.ArrayList(Vec2).init(gpa);
             defer dirs.deinit();
-            for (asteroids) |o, j| {
+            for (asteroids, 0..) |o, j| {
                 if (i == j) continue;
                 const d = normalize(o - a);
                 if (!includes(dirs.items, d)) {
@@ -103,30 +103,30 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) ![2][]const u8 {
 
     const asteroid200 = ans: {
         // sort by angle:
-        std.sort.sort(Vec2, best_dirs, {}, angleLessThan);
+        std.mem.sort(Vec2, best_dirs, {}, angleLessThan);
 
         // carte des astéroïdes pas encore détruits:
         const alive = try allocator.alloc(u1, map.width * map.height);
         defer allocator.free(alive);
         {
-            std.mem.set(u1, alive, 0);
+            @memset(alive, 0);
             for (asteroids) |a| {
-                const x = @intCast(usize, a[0]);
-                const y = @intCast(usize, a[1]);
+                const x: usize = @intCast(a[0]);
+                const y: usize = @intCast(a[1]);
                 alive[map.width * y + x] = 1;
             }
         }
 
         const orig = asteroids[best_i];
-        const bound = Vec2{ @intCast(i32, map.width), @intCast(i32, map.height) };
+        const bound = Vec2{ @intCast(map.width), @intCast(map.height) };
 
         var destroy_count: u32 = 0;
         while (true) {
             for (best_dirs) |d| {
                 var p = orig + d;
                 next_dir: while (@reduce(.And, p >= Vec2{ 0, 0 }) and @reduce(.And, p < bound)) : (p += d) {
-                    const x = @intCast(usize, p[0]);
-                    const y = @intCast(usize, p[1]);
+                    const x: usize = @intCast(p[0]);
+                    const y: usize = @intCast(p[1]);
                     if (alive[map.width * y + x] != 0) {
                         alive[map.width * y + x] = 0;
 

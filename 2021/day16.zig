@@ -42,19 +42,19 @@ const BitStream = struct {
     }
 
     pub fn read1(self: *@This()) !u1 {
-        if (readBits(self, 1)) |v| return @intCast(u1, v & 0x01) else return error.UnexpectedEOS;
+        if (readBits(self, 1)) |v| return @as(u1, @intCast(v & 0x01)) else return error.UnexpectedEOS;
     }
     pub fn read3(self: *@This()) !u3 {
-        if (readBits(self, 3)) |v| return @intCast(u3, v & 0x07) else return error.UnexpectedEOS;
+        if (readBits(self, 3)) |v| return @as(u3, @intCast(v & 0x07)) else return error.UnexpectedEOS;
     }
     pub fn read4(self: *@This()) !u4 {
-        if (readBits(self, 4)) |v| return @intCast(u4, v & 0x0F) else return error.UnexpectedEOS;
+        if (readBits(self, 4)) |v| return @as(u4, @intCast(v & 0x0F)) else return error.UnexpectedEOS;
     }
     pub fn read11(self: *@This()) !u11 {
-        if (readBits(self, 11)) |v| return @intCast(u11, v & 0x03FF) else return error.UnexpectedEOS;
+        if (readBits(self, 11)) |v| return @as(u11, @intCast(v & 0x03FF)) else return error.UnexpectedEOS;
     }
     pub fn read15(self: *@This()) !u15 {
-        if (readBits(self, 15)) |v| return @intCast(u15, v & 0x7FFF) else return error.UnexpectedEOS;
+        if (readBits(self, 15)) |v| return @as(u15, @intCast(v & 0x7FFF)) else return error.UnexpectedEOS;
     }
 
     pub fn flushTrailingZeroes(self: *@This()) !void {
@@ -98,7 +98,7 @@ const Packet = struct { // "packed"  -> zig crash  "Assertion failed at zig/src/
 const ParseError = std.mem.Allocator.Error || error{ UnsupportedInput, UnexpectedEOS };
 fn parse(stream: *BitStream, packet_tree: *std.ArrayList(Packet), indexes_table: *std.ArrayList(TreeIndex)) ParseError!TreeIndex {
     const version = try stream.read3();
-    const type_id = @intToEnum(TypeId, try stream.read3());
+    const type_id = @as(TypeId, @enumFromInt(try stream.read3()));
     switch (type_id) {
         .litteral => {
             var lit: u64 = 0;
@@ -107,8 +107,8 @@ fn parse(stream: *BitStream, packet_tree: *std.ArrayList(Packet), indexes_table:
                 continuation = (try stream.read1()) != 0;
                 lit = (lit << 4) | (try stream.read4());
             }
-            try packet_tree.append(Packet{ .version = version, .type_id = type_id, .payload = .{ .litteral = @intCast(u64, lit) } });
-            return @intCast(TreeIndex, packet_tree.items.len - 1);
+            try packet_tree.append(Packet{ .version = version, .type_id = type_id, .payload = .{ .litteral = @as(u64, @intCast(lit)) } });
+            return @as(TreeIndex, @intCast(packet_tree.items.len - 1));
         },
         else => {
             var children = std.BoundedArray(TreeIndex, 128).init(0) catch unreachable; // TODO: is there copy elision?
@@ -147,11 +147,11 @@ fn parse(stream: *BitStream, packet_tree: *std.ArrayList(Packet), indexes_table:
                     try packet_tree.append(Packet{
                         .version = version,
                         .type_id = type_id,
-                        .payload = .{ .list = .{ .len = @intCast(u16, children.len), .entry_in_indexes_table = @intCast(u16, first) } },
+                        .payload = .{ .list = .{ .len = @as(u16, @intCast(children.len)), .entry_in_indexes_table = @as(u16, @intCast(first)) } },
                     });
                 },
             }
-            return @intCast(TreeIndex, packet_tree.items.len - 1);
+            return @as(TreeIndex, @intCast(packet_tree.items.len - 1));
         },
     }
 }
@@ -171,9 +171,9 @@ fn eval(tree: PacketTree, root: TreeIndex) u64 {
             const left = eval(tree, p.payload.pair.idx[0]);
             const right = eval(tree, p.payload.pair.idx[1]);
             return switch (p.type_id) {
-                .gt => @boolToInt(left > right),
-                .lt => @boolToInt(left < right),
-                .eq => @boolToInt(left == right),
+                .gt => @intFromBool(left > right),
+                .lt => @intFromBool(left < right),
+                .eq => @intFromBool(left == right),
                 else => unreachable,
             };
         },

@@ -5,12 +5,11 @@ const fs = @import("std").fs;
 const debug = @import("std").debug;
 
 pub fn build(b: *Builder) void {
-    const mode = b.standardReleaseOptions();
+    const target = b.standardTargetOptions(.{});
+    const optimize = b.standardOptimizeOption(.{});
 
     const tracy = b.option([]const u8, "tracy", "Enable Tracy integration. Supply path to Tracy source");
     const exe_options = b.addOptions();
-
-    if (tracy != null) debug.print("BUG: need to manually edit common/tracy.zig to enable the instrumentation\n", .{});
     exe_options.addOption(bool, "enable_tracy", tracy != null);
 
     const Problem = struct {
@@ -24,7 +23,7 @@ pub fn build(b: *Builder) void {
         .{ .year = "2021", .day = "day04" },
         .{ .year = "2021", .day = "day05" },
         .{ .year = "2021", .day = "day06" },
-        .{ .year = "2021", .day = "day07" },
+        //        .{ .year = "2021", .day = "day07" },  // async
         .{ .year = "2021", .day = "day08" },
         .{ .year = "2021", .day = "day09" },
         .{ .year = "2021", .day = "day10" },
@@ -131,22 +130,29 @@ pub fn build(b: *Builder) void {
 
     const run_step = b.step("run", "Run all the days");
     var runyear_step: [years.len]*Step = undefined;
-    inline for (years) |year, i| {
+    inline for (years, 0..) |year, i| {
         runyear_step[i] = b.step("run" ++ year, "Run days from " ++ year);
     }
+
+    const tools_module_v2 = b.createModule(.{ .source_file = .{ .path = "common/tools_v2.zig" } });
+    const tools_module_v1 = b.createModule(.{ .source_file = .{ .path = "common/tools.zig" } });
 
     for (problems) |pb| {
         const path = b.fmt("{s}/{s}.zig", .{ pb.year, pb.day });
 
-        const exe = b.addExecutable(pb.day, path);
-        exe.use_stage1 = true;
-        exe.setBuildMode(mode);
-        exe.addOptions("build_options", exe_options); // XXX Does not apply to package tools / 'tracy'.  no idea how to make it work
+        const exe = b.addExecutable(.{
+            .name = pb.day,
+            .root_source_file = .{ .path = path },
+            .target = target,
+            .optimize = optimize,
+        });
+        exe.addOptions("build_options", exe_options);
+        //exe.use_llvm = false;
 
-        if (mem.eql(u8, pb.year, "2021")) {
-            exe.addPackagePath("tools", "common/tools_v2.zig");
+        if (mem.eql(u8, pb.year, "2021") or mem.eql(u8, pb.year, "2022")) {
+            exe.addModule("tools", tools_module_v2);
         } else {
-            exe.addPackagePath("tools", "common/tools.zig");
+            exe.addModule("tools", tools_module_v1);
         }
 
         if (tracy) |tracy_path| {
@@ -159,16 +165,14 @@ pub fn build(b: *Builder) void {
             exe.linkLibCpp();
         }
 
-        //exe.install();
-        const installstep = &b.addInstallArtifact(exe).step;
+        b.installArtifact(exe);
 
-        const run_cmd = exe.run();
-        run_cmd.step.dependOn(installstep);
+        const run_cmd = b.addRunArtifact(exe);
 
         if (!mem.eql(u8, pb.year, "synacor")) {
             run_step.dependOn(&run_cmd.step);
         }
-        for (runyear_step) |s, i| {
+        for (runyear_step, 0..) |s, i| {
             if (mem.eql(u8, years[i], pb.year))
                 s.dependOn(&run_cmd.step);
         }
@@ -176,22 +180,26 @@ pub fn build(b: *Builder) void {
 
     const test_step = b.step("test", "Test all days of 2021");
     {
-        const test_cmd = b.addTest("2021/alldays.zig");
-        test_cmd.addPackagePath("tools", "common/tools_v2.zig");
-        test_step.dependOn(&test_cmd.step);
+        const test_cmd21 = b.addTest(.{
+            .root_source_file = .{ .path = "2021/alldays.zig" },
+            .target = target,
+            .optimize = optimize,
+        });
+        test_cmd21.addModule("tools", tools_module_v2);
+        test_step.dependOn(&test_cmd21.step);
     }
 
-    const info_step = b.step("info", "Additional info");
-    {
-        const log = b.addLog(
-            \\ to run a single day:
-            \\   for 2021:    `zig run 2021/day03.zig  --pkg-begin "tools" "common/tools_v2.zig" --pkg-end'
-            \\   older years: `zig run 2018/day10.zig  --pkg-begin "tools" "common/tools.zig" --pkg-end'
-            \\
-            \\ 2019 intcode bench: (best year by far! ) 
-            \\    `zig run 2019/intcode_bench.zig  --pkg-begin "tools" "common/tools.zig" --pkg-end -OReleaseFast'
-            \\
-        , .{});
-        info_step.dependOn(&log.step);
-    }
+    // const info_step = b.step("info", "Additional info");
+    // {
+    //     const log = b.addLog(
+    //         \\ to run a single day:
+    //         \\   for 2021:    `zig run 2021/day03.zig  --pkg-begin "tools" "common/tools_v2.zig" --pkg-end'
+    //         \\   older years: `zig run 2018/day10.zig  --pkg-begin "tools" "common/tools.zig" --pkg-end'
+    //         \\
+    //         \\ 2019 intcode bench: (best year by far! )
+    //         \\    `zig run 2019/intcode_bench.zig  --pkg-begin "tools" "common/tools.zig" --pkg-end -OReleaseFast'
+    //         \\
+    //     , .{});
+    //     info_step.dependOn(&log.step);
+    // }
 }

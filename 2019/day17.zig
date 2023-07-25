@@ -152,7 +152,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                     robot_dir = Dir.right;
                 },
                 else => {
-                    trace("{c}", .{@intCast(u8, cpu.io_port)});
+                    trace("{c}", .{@as(u8, @intCast(cpu.io_port))});
 
                     //                    unreachable,
                 },
@@ -326,7 +326,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         if (cpu.io_mode == .output) {
             trace("{s} outputs {}\n", .{ cpu.name, cpu.io_port });
             if (cpu.io_port < 127) {
-                trace("{c}", .{@intCast(u8, cpu.io_port)});
+                trace("{c}", .{@as(u8, @intCast(cpu.io_port))});
             } else {
                 trace("\nans = {}\n", .{cpu.io_port});
                 answer2 = cpu.io_port;

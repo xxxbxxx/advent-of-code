@@ -22,7 +22,7 @@ const Maze = struct {
 };
 
 fn countRoutes(maze: *const Maze, smallroom_visit_bits: u32, cur_idx: u8, bonus_visit_used: bool) @Vector(2, u32) {
-    if (cur_idx == maze.end) return .{ @boolToInt(!bonus_visit_used), 1 };
+    if (cur_idx == maze.end) return .{ @intFromBool(!bonus_visit_used), 1 };
 
     const room = &maze.rooms[cur_idx];
 
@@ -33,7 +33,7 @@ fn countRoutes(maze: *const Maze, smallroom_visit_bits: u32, cur_idx: u8, bonus_
         }
         return total;
     } else {
-        const mask = @as(u32, 1) << @intCast(u5, cur_idx);
+        const mask = @as(u32, 1) << @as(u5, @intCast(cur_idx));
         var bonus = bonus_visit_used;
         if (smallroom_visit_bits & mask != 0) {
             if (!bonus_visit_used and cur_idx != maze.start and cur_idx != maze.end) {
@@ -59,7 +59,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
     const maze: Maze = blk: {
         var room_names = std.StringArrayHashMap(void).init(arena);
         var rooms = try arena.alloc(Room, 32);
-        std.mem.set(Room, rooms, Room{});
+        @memset(rooms, Room{});
         var start: ?u8 = null;
         var end: ?u8 = null;
 
@@ -68,19 +68,19 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
             if (tools.match_pattern("{}-{}", line)) |val| {
                 const entrya = try room_names.getOrPut(val[0].lit);
                 const entryb = try room_names.getOrPut(val[1].lit);
-                const ia = @intCast(u8, entrya.index);
-                const ib = @intCast(u8, entryb.index);
+                const ia = @as(u8, @intCast(entrya.index));
+                const ib = @as(u8, @intCast(entryb.index));
 
                 const ra = &rooms[ia];
                 ra.is_large = (val[0].lit[0] >= 'A' and val[0].lit[0] <= 'Z');
-                ra.links[ra.nb_links] = @intCast(u8, ib);
+                ra.links[ra.nb_links] = @as(u8, @intCast(ib));
                 ra.nb_links += 1;
                 if (std.mem.eql(u8, val[0].lit, "start")) start = ia;
                 if (std.mem.eql(u8, val[0].lit, "end")) end = ia;
 
                 const rb = &rooms[ib];
                 rb.is_large = (val[1].lit[0] >= 'A' and val[1].lit[0] <= 'Z');
-                rb.links[rb.nb_links] = @intCast(u8, ia);
+                rb.links[rb.nb_links] = @as(u8, @intCast(ia));
                 rb.nb_links += 1;
                 if (std.mem.eql(u8, val[1].lit, "start")) start = ib;
                 if (std.mem.eql(u8, val[1].lit, "end")) end = ib;

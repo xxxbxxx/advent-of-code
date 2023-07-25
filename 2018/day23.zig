@@ -6,12 +6,12 @@ const Vec3 = struct { x: i32, y: i32, z: i32 };
 const zero3 = Vec3{ .x = 0, .y = 0, .z = 0 };
 const Bot = struct { p: Vec3, r: u31 };
 fn dist(a: Vec3, b: Vec3) u32 {
-    return @intCast(u32, (std.math.absInt(a.x - b.x) catch unreachable) + (std.math.absInt(a.y - b.y) catch unreachable) + (std.math.absInt(a.z - b.z) catch unreachable));
+    return @as(u32, @intCast((std.math.absInt(a.x - b.x) catch unreachable) + (std.math.absInt(a.y - b.y) catch unreachable) + (std.math.absInt(a.z - b.z) catch unreachable)));
 }
 
 fn axisRangeDist(p: i32, min: i32, max: i32) u32 {
-    if (p > max) return @intCast(u32, p - max);
-    if (p < min) return @intCast(u32, min - p);
+    if (p > max) return @as(u32, @intCast(p - max));
+    if (p < min) return @as(u32, @intCast(min - p));
     return 0;
 }
 
@@ -63,8 +63,8 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         while (it.next()) |line| {
             if (tools.match_pattern("pos=<{},{},{}>, r={}", line)) |fields| {
                 const b = Bot{
-                    .p = Vec3{ .x = @intCast(i32, fields[0].imm), .y = @intCast(i32, fields[1].imm), .z = @intCast(i32, fields[2].imm) },
-                    .r = @intCast(u31, fields[3].imm),
+                    .p = Vec3{ .x = @as(i32, @intCast(fields[0].imm)), .y = @as(i32, @intCast(fields[1].imm)), .z = @as(i32, @intCast(fields[2].imm)) },
+                    .r = @as(u31, @intCast(fields[3].imm)),
                 };
                 if (b.r > large_radius) {
                     large_radius = b.r;
@@ -114,7 +114,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
                 var x = subcell_idx % 2;
                 var y = (subcell_idx / 2) % 2;
                 var z = (subcell_idx / 4) % 2;
-                const corner = Vec3{ .x = cell.corner.x + @intCast(i32, x * step), .y = cell.corner.y + @intCast(i32, y * step), .z = cell.corner.z + @intCast(i32, z * step) };
+                const corner = Vec3{ .x = cell.corner.x + @as(i32, @intCast(x * step)), .y = cell.corner.y + @as(i32, @intCast(y * step)), .z = cell.corner.z + @as(i32, @intCast(z * step)) };
                 const count = countBots(corner, step, param.bots);
                 try workqueue.add(Cell{ .size = step, .corner = corner, .population = count });
             }

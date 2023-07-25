@@ -87,7 +87,7 @@ pub fn main() anyerror!void {
         objects[0] = w;
         for (armors) |a| {
             objects[1] = a;
-            for (rings) |r1, i| {
+            for (rings, 0..) |r1, i| {
                 objects[2] = r1;
                 for (rings[i + 1 ..]) |r2| {
                     objects[3] = r2;

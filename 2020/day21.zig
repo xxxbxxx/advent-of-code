@@ -35,7 +35,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
                             if (kv.found_existing)
                                 break :blk kv.value_ptr.*;
 
-                            kv.value_ptr.* = @intCast(u16, ingredients.items.len);
+                            kv.value_ptr.* = @intCast(ingredients.items.len);
                             try ingredients.append(word);
                             break :blk kv.value_ptr.*;
                         };
@@ -54,7 +54,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
                             if (kv.found_existing)
                                 break :blk kv.value_ptr.*;
 
-                            kv.value_ptr.* = @intCast(u16, allergens.items.len);
+                            kv.value_ptr.* = @intCast(allergens.items.len);
                             try allergens.append(word);
                             break :blk kv.value_ptr.*;
                         };
@@ -85,18 +85,18 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
     defer inert_ings.deinit();
     const ans1 = ans: {
         var total: u32 = 0;
-        next_ing: for (param.ingredients) |_, i| {
-            for (param.allergens) |_, a| {
+        next_ing: for (param.ingredients, 0..) |_, i| {
+            for (param.allergens, 0..) |_, a| {
                 const can_contain_allegen = for (param.foods) |f| {
-                    const has_allergen = std.mem.indexOfScalar(u16, f.alg, @intCast(u16, a)) != null;
+                    const has_allergen = std.mem.indexOfScalar(u16, f.alg, @as(u16, @intCast(a))) != null;
                     if (!has_allergen) continue;
-                    const in_food = std.mem.indexOfScalar(u16, f.ing, @intCast(u16, i)) != null;
+                    const in_food = std.mem.indexOfScalar(u16, f.ing, @as(u16, @intCast(i))) != null;
                     if (!in_food) break false;
                 } else true;
                 if (can_contain_allegen) continue :next_ing;
             }
 
-            try inert_ings.append(@intCast(u16, i));
+            try inert_ings.append(@as(u16, @intCast(i)));
 
             var nb: u32 = 0;
             for (param.foods) |f| {
@@ -117,20 +117,20 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         const active_ingredients = try allocator.alloc(u16, param.allergens.len);
         defer allocator.free(active_ingredients);
         var idx: u32 = 0;
-        for (param.ingredients) |_, i| {
-            if (std.mem.indexOfScalar(u16, inert_ings.items, @intCast(u16, i))) |_| continue;
-            active_ingredients[idx] = @intCast(u16, i);
+        for (param.ingredients, 0..) |_, i| {
+            if (std.mem.indexOfScalar(u16, inert_ings.items, @as(u16, @intCast(i)))) |_| continue;
+            active_ingredients[idx] = @as(u16, @intCast(i));
             idx += 1;
         }
 
         var buf: [50]u16 = undefined;
         var it = tools.generate_permutations(u16, active_ingredients);
         next_perm: while (it.next(&buf)) |perm| {
-            for (perm) |i, a| {
+            for (perm, 0..) |i, a| {
                 const possible = for (param.foods) |f| {
-                    const has_allergen = std.mem.indexOfScalar(u16, f.alg, @intCast(u16, a)) != null;
+                    const has_allergen = std.mem.indexOfScalar(u16, f.alg, @as(u16, @intCast(a))) != null;
                     if (!has_allergen) continue;
-                    const in_food = std.mem.indexOfScalar(u16, f.ing, @intCast(u16, i)) != null;
+                    const in_food = std.mem.indexOfScalar(u16, f.ing, @as(u16, @intCast(i))) != null;
                     if (!in_food) break false;
                 } else true;
                 if (!possible) continue :next_perm;
@@ -146,17 +146,17 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
             };
 
             var result: [32]Pair = undefined;
-            for (perm) |i, a| {
+            for (perm, 0..) |i, a| {
                 result[a] = .{
                     .ing = param.ingredients[i],
                     .alg = param.allergens[a],
                 };
             }
-            std.sort.sort(Pair, result[0..perm.len], {}, Pair.lessThan);
+            std.mem.sort(Pair, result[0..perm.len], {}, Pair.lessThan);
 
             const result_text = try arena.allocator().alloc(u8, 500);
             var len: usize = 0;
-            for (result[0..perm.len]) |r, index| {
+            for (result[0..perm.len], 0..) |r, index| {
                 std.mem.copy(u8, result_text[len .. len + r.ing.len], r.ing);
                 len += r.ing.len;
                 if (index < perm.len - 1) {

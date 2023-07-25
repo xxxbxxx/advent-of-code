@@ -14,12 +14,12 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         var elf1: usize = 0;
         var elf2: usize = 1;
         while (nb_scores < desired_nb_scores + 10) {
-            const new: u5 = @intCast(u5, scores[elf1]) + scores[elf2];
+            const new: u5 = @as(u5, @intCast(scores[elf1])) + scores[elf2];
             if (new >= 10) {
-                scores[nb_scores] = @intCast(u4, new / 10);
+                scores[nb_scores] = @as(u4, @intCast(new / 10));
                 nb_scores += 1;
             }
-            scores[nb_scores] = @intCast(u4, new % 10);
+            scores[nb_scores] = @as(u4, @intCast(new % 10));
             nb_scores += 1;
 
             elf1 = (elf1 + scores[elf1] + 1) % nb_scores;
@@ -44,12 +44,12 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         var elf1: usize = 0;
         var elf2: usize = 1;
         while (!std.mem.endsWith(u4, scores[0..nb_scores], &desired_final_digits) and !std.mem.endsWith(u4, scores[0 .. nb_scores - 1], &desired_final_digits)) {
-            const new: u5 = @intCast(u5, scores[elf1]) + scores[elf2];
+            const new: u5 = @as(u5, @intCast(scores[elf1])) + scores[elf2];
             if (new >= 10) {
-                scores[nb_scores] = @intCast(u4, new / 10);
+                scores[nb_scores] = @as(u4, @intCast(new / 10));
                 nb_scores += 1; // /!\ le piège est ici!  la sequence peut être un cran avant la fin...
             }
-            scores[nb_scores] = @intCast(u4, new % 10);
+            scores[nb_scores] = @as(u4, @intCast(new % 10));
             nb_scores += 1;
 
             elf1 = (elf1 + scores[elf1] + 1) % nb_scores;

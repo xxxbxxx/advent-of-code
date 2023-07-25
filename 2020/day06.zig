@@ -3,7 +3,7 @@ const assert = std.debug.assert;
 const tools = @import("tools");
 
 fn maskOf(bit: usize) u26 {
-    return @as(u26, 1) << @intCast(u5, bit);
+    return @as(u26, 1) << @intCast(bit);
 }
 
 pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {

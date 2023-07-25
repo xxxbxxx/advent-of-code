@@ -41,7 +41,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
 
         var population: [50]u32 = undefined;
 
-        for (population) |*pop, gen| {
+        for (&population, 0..) |*pop, gen| {
             const cur = flipflop[gen % 2];
             const next = flipflop[1 - gen % 2];
             next.bbox = tools.BBox.empty;
@@ -56,21 +56,21 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
             var popcount: u32 = 0;
             while (it.nextEx()) |sq| {
                 const key = 0 //
-                | @as(u9, @boolToInt((sq.up_left orelse cur.default_tile) != '.')) << 8 //
-                | @as(u9, @boolToInt((sq.up orelse cur.default_tile) != '.')) << 7 //
-                | @as(u9, @boolToInt((sq.up_right orelse cur.default_tile) != '.')) << 6 //
+                | @as(u9, @intFromBool((sq.up_left orelse cur.default_tile) != '.')) << 8 //
+                | @as(u9, @intFromBool((sq.up orelse cur.default_tile) != '.')) << 7 //
+                | @as(u9, @intFromBool((sq.up_right orelse cur.default_tile) != '.')) << 6 //
                 //
-                | @as(u9, @boolToInt((sq.left orelse cur.default_tile) != '.')) << 5 //
-                | @as(u9, @boolToInt(sq.t.* != '.')) << 4 //
-                | @as(u9, @boolToInt((sq.right orelse cur.default_tile) != '.')) << 3 //
+                | @as(u9, @intFromBool((sq.left orelse cur.default_tile) != '.')) << 5 //
+                | @as(u9, @intFromBool(sq.t.* != '.')) << 4 //
+                | @as(u9, @intFromBool((sq.right orelse cur.default_tile) != '.')) << 3 //
                 //
-                | @as(u9, @boolToInt((sq.down_left orelse cur.default_tile) != '.')) << 2 //
-                | @as(u9, @boolToInt((sq.down orelse cur.default_tile) != '.')) << 1 //
-                | @as(u9, @boolToInt((sq.down_right orelse cur.default_tile) != '.')) << 0 //
+                | @as(u9, @intFromBool((sq.down_left orelse cur.default_tile) != '.')) << 2 //
+                | @as(u9, @intFromBool((sq.down orelse cur.default_tile) != '.')) << 1 //
+                | @as(u9, @intFromBool((sq.down_right orelse cur.default_tile) != '.')) << 0 //
                 ;
 
                 next.set(sq.p, dico[key]);
-                popcount += @boolToInt(dico[key] != '.');
+                popcount += @intFromBool(dico[key] != '.');
             }
 
             if (gen % 2 == 1) {

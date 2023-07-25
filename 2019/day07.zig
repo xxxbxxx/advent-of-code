@@ -35,7 +35,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
 
     const names = [_][]const u8{ "Amp A", "Amp B", "Amp C", "Amp D", "Amp E" };
     var computers: [5]Computer = undefined;
-    for (computers) |*c, i| {
+    for (computers, 0..) |*c, i| {
         c.* = Computer{
             .name = names[i],
             .memory = try allocator.alloc(Computer.Data, int_count),
@@ -53,7 +53,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         while (it.next(&buf)) |phases| {
             var bus: Computer.Data = 0;
 
-            for (computers) |*c, i| {
+            for (computers, 0..) |*c, i| {
                 c.boot(boot_image);
 
                 // input the phase:
@@ -93,7 +93,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         var buf: [5]Computer.Data = undefined;
         var it = tools.generate_permutations(Computer.Data, &[_]Computer.Data{ 9, 8, 7, 6, 5 });
         while (it.next(&buf)) |phases| {
-            for (computers) |*c, i| {
+            for (computers, 0..) |*c, i| {
                 c.boot(boot_image);
 
                 // input the phase:
@@ -111,7 +111,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                 var bus: Computer.Data = 0;
                 var halted = false;
                 while (!halted) {
-                    for (computers) |*c, i| {
+                    for (computers, 0..) |*c, i| {
                         if (c.io_mode == .input) {
                             c.io_port = bus;
                             trace("wrting input to {} = {}\n", .{ c.name, c.io_port });

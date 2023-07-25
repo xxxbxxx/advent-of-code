@@ -12,7 +12,7 @@ const Insn = union(enum) {
 fn runProg(prog: []const Insn, mutation: ?usize, allocator: std.mem.Allocator) !isize {
     const visited = try allocator.alloc(bool, prog.len);
     defer allocator.free(visited);
-    std.mem.set(bool, visited, false);
+    @memset(visited, false);
 
     var accu: isize = 0;
     var pc: usize = 0;
@@ -39,7 +39,7 @@ fn runProg(prog: []const Insn, mutation: ?usize, allocator: std.mem.Allocator) !
                 pc += 1;
             },
             .jmp => |arg| {
-                pc = @intCast(usize, @intCast(isize, pc) + arg.arg);
+                pc = @intCast(@as(isize, @intCast(pc)) + arg.arg);
             },
         }
     }
@@ -58,7 +58,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         while (it.next()) |line| {
             const fields = tools.match_pattern("{} {}", line) orelse unreachable;
             const opcode = fields[0].lit;
-            const arg = @intCast(i32, fields[1].imm);
+            const arg: i32 = @intCast(fields[1].imm);
 
             if (std.mem.eql(u8, opcode, "nop")) {
                 prog[prog_len] = .{ .nop = .{ .arg = arg } };

@@ -17,10 +17,10 @@ pub fn match_insn(comptime pattern: []const u8, text: []const u8) ?[2]Arg {
     if (tools.match_pattern(pattern, text)) |vals| {
         var count: usize = 0;
         var values: [2]Arg = undefined;
-        for (values) |*v, i| {
+        for (values, 0..) |*v, i| {
             switch (vals[i]) {
                 .imm => |imm| v.* = .{ .imm = imm },
-                .name => |name| v.* = .{ .reg = @intCast(u2, name[0] - 'a') },
+                .name => |name| v.* = .{ .reg = @as(u2, @intCast(name[0] - 'a')) },
             }
         }
         return values;
@@ -113,7 +113,7 @@ pub fn main() anyerror!void {
                     .reg => |reg| c.regs[reg],
                 };
                 if (val != 0) {
-                    c.pc = @intCast(usize, @intCast(i32, c.pc) + insn.arg[1].imm);
+                    c.pc = @as(usize, @intCast(@as(i32, @intCast(c.pc)) + insn.arg[1].imm));
                 } else {
                     c.pc += 1;
                 }

@@ -17,7 +17,7 @@ fn modpow(base: u64, exp: u64, m: u64) u64 {
 
 fn crypt(subj: u32, loopsz: u32) u32 {
     if (true) {
-        return @intCast(u32, modpow(subj, loopsz, 20201227));
+        return @intCast(modpow(subj, loopsz, 20201227));
     } else {
         var val: u64 = 1;
         var i: u32 = 0;
@@ -27,7 +27,7 @@ fn crypt(subj: u32, loopsz: u32) u32 {
         }
         //std.debug.print("subj:{}, loop:{} = {}\n", .{ subj, loopsz, val });
         assert(val == modpow(subj, loopsz, 20201227));
-        return @intCast(u32, val);
+        return @intCast(val);
     }
 }
 
@@ -62,7 +62,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
 
     const ans1 = ans: {
         if (false) { // pas plus rapide, car les mul + mod sont pas fait en vectoriel, mais il y a le packing / depacking des vecteur en plus..
-            const u64x2 = std.meta.Vector(2, u64);
+            const u64x2 = @Vector(2, u64);
             var pair: u64x2 = .{ 1, 1 };
             const mul: u64x2 = .{ 7, card_pubkey };
             const mod: u64x2 = .{ 20201227, 20201227 };

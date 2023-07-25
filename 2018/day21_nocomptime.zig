@@ -56,14 +56,14 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
             if (tools.match_pattern("{} {} {} {}", line)) |fields| {
                 const op = try tools.nameToEnum(Opcode, fields[0].lit);
                 const par = [3]u32{
-                    @intCast(u32, fields[1].imm),
-                    @intCast(u32, fields[2].imm),
-                    @intCast(u32, fields[3].imm),
+                    @as(u32, @intCast(fields[1].imm)),
+                    @as(u32, @intCast(fields[2].imm)),
+                    @as(u32, @intCast(fields[3].imm)),
                 };
                 try prg.append(Insn{ .op = op, .par = par });
             } else if (tools.match_pattern("#ip {}", line)) |fields| {
                 assert(ip == null);
-                ip = @intCast(u32, fields[0].imm);
+                ip = @as(u32, @intCast(fields[0].imm));
             } else unreachable;
         }
         break :param .{ .ip = ip.?, .prg = prg.items };
@@ -76,12 +76,12 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         };
         var states = try allocator.alloc(State, 1); // 16 * 1024 * 1024);
         defer allocator.free(states);
-        for (states) |*s, i| {
-            s.* = State{ .reg = .{ @intCast(u32, i), 0, 0, 0, 0, 0 } }; // 13443200
+        for (states, 0..) |*s, i| {
+            s.* = State{ .reg = .{ @as(u32, @intCast(i)), 0, 0, 0, 0, 0 } }; // 13443200
         }
         var cycles: u32 = 0;
         while (true) {
-            for (states) |*s, i| {
+            for (states, 0..) |*s, i| {
                 const ip = s.reg[param.ip];
                 s.reg = eval(param.prg[ip].op, param.prg[ip].par, s.reg);
                 s.reg[param.ip] += 1;
@@ -115,7 +115,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         var s = State{ .reg = .{ 0, 0, 0, 0, 0, 0 } };
         const repeats = try allocator.alloc(bool, 16 * 1024 * 1024);
         defer allocator.free(repeats);
-        std.mem.set(bool, repeats, false);
+        @memset(repeats, false);
         var prev: u64 = 0;
         while (true) {
             const ip = s.reg[param.ip];

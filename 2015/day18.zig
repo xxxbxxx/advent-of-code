@@ -13,7 +13,7 @@ const Grid = [gsize * gsize]u1;
 fn readgrid(g: Grid, x: i32, y: i32) u32 {
     if (x < 0 or x >= gsize) return 0;
     if (y < 0 or y >= gsize) return 0;
-    return g[@intCast(usize, y * gsize + x)];
+    return g[@as(usize, @intCast(y * gsize + x))];
 }
 fn compute_next(init: Grid) Grid {
     var g: Grid = undefined;
@@ -23,13 +23,13 @@ fn compute_next(init: Grid) Grid {
         while (x < gsize) : (x += 1) {
             const neib: u32 = readgrid(init, x - 1, y - 1) + readgrid(init, x, y - 1) + readgrid(init, x + 1, y - 1) + readgrid(init, x - 1, y) + readgrid(init, x + 1, y) + readgrid(init, x - 1, y + 1) + readgrid(init, x, y + 1) + readgrid(init, x + 1, y + 1);
             const wason = readgrid(init, x, y) != 0;
-            g[@intCast(usize, y * gsize + x)] = if ((wason and (neib == 2 or neib == 3)) or (!wason and neib == 3)) 1 else 0;
+            g[@as(usize, @intCast(y * gsize + x))] = if ((wason and (neib == 2 or neib == 3)) or (!wason and neib == 3)) 1 else 0;
         }
     }
-    g[@intCast(usize, 0 * gsize + 0)] = 1;
-    g[@intCast(usize, (gsize - 1) * gsize + 0)] = 1;
-    g[@intCast(usize, (gsize - 1) * gsize + (gsize - 1))] = 1;
-    g[@intCast(usize, 0 * gsize + (gsize - 1))] = 1;
+    g[@as(usize, @intCast(0 * gsize + 0))] = 1;
+    g[@as(usize, @intCast((gsize - 1) * gsize + 0))] = 1;
+    g[@as(usize, @intCast((gsize - 1) * gsize + (gsize - 1)))] = 1;
+    g[@as(usize, @intCast(0 * gsize + (gsize - 1)))] = 1;
     return g;
 }
 
@@ -69,7 +69,7 @@ pub fn main() anyerror!void {
     };
 
     var steps: [100]Grid = undefined;
-    for (steps) |s, i| {
+    for (steps, 0..) |s, i| {
         s = compute_next(if (i == 0) init_grid else steps[i - 1]);
     }
 

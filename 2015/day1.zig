@@ -16,7 +16,7 @@ pub fn main() anyerror!void {
     const text = try std.fs.cwd().readFileAlloc(allocator, "day1.txt", limit);
 
     var floor: i32 = 0;
-    for (text) |c, i| {
+    for (text, 0..) |c, i| {
         if (c == '(') floor += 1;
         if (c == ')') floor -= 1;
         if (floor == -1) {

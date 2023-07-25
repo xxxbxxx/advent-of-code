@@ -49,7 +49,7 @@ pub fn main() anyerror!void {
             if (matches(line, "rect ", " x")) |size| {
                 var y: u32 = 0;
                 while (y < size[1]) : (y += 1) {
-                    std.mem.set(u8, screen[y * stride + 0 .. y * stride + size[0]], '#');
+                    @memset(screen[y * stride + 0 .. y * stride + size[0]], '#');
                 }
             } else if (matches(line, "rotate row y=", " by")) |rotrow| {
                 const y = rotrow[0];

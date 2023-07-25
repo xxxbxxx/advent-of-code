@@ -83,8 +83,8 @@ const Computer = struct {
         }
     }
     fn parse_opcode(v: Data, opcode: *u8, modes: []OperandMode) !void {
-        const opcode_and_modes = @intCast(usize, v);
-        opcode.* = @intCast(u8, opcode_and_modes % 100);
+        const opcode_and_modes: usize = @intCast(v);
+        opcode.* = @intCast(opcode_and_modes % 100);
         modes[0] = try parse_mode((opcode_and_modes / 100) % 10);
         modes[1] = try parse_mode((opcode_and_modes / 1000) % 10);
         modes[2] = try parse_mode((opcode_and_modes / 10000) % 10);
@@ -98,9 +98,9 @@ const Computer = struct {
                 .rel => return par + base,
             },
             .any => switch (mode) {
-                .pos => return mem[@intCast(usize, par)],
+                .pos => return mem[@intCast(par)],
                 .imm => return par,
-                .rel => return mem[@intCast(usize, par + base)],
+                .rel => return mem[@intCast(par + base)],
             },
         }
     }
@@ -108,7 +108,7 @@ const Computer = struct {
     fn reboot(c: *Computer, boot_image: []const Data) void {
         trace("[{s}] reboot\n", .{c.name});
         std.mem.copy(Data, c.memory[0..boot_image.len], boot_image);
-        std.mem.set(Data, c.memory[boot_image.len..], 0);
+        @memset(c.memory[boot_image.len..], 0);
         c.pc = 0;
         c.base = 0;
         c.io_port = undefined;
@@ -148,13 +148,13 @@ const Computer = struct {
             // execute insn
             switch (insn.op) {
                 .hlt => c.pc = halted,
-                .jne => c.pc = if (p[0] != 0) @intCast(usize, p[1]) else c.pc,
-                .jeq => c.pc = if (p[0] == 0) @intCast(usize, p[1]) else c.pc,
+                .jne => c.pc = if (p[0] != 0) @intCast(p[1]) else c.pc,
+                .jeq => c.pc = if (p[0] == 0) @intCast(p[1]) else c.pc,
 
-                .add => c.memory[@intCast(usize, p[2])] = p[0] + p[1],
-                .mul => c.memory[@intCast(usize, p[2])] = p[0] * p[1],
-                .slt => c.memory[@intCast(usize, p[2])] = if (p[0] < p[1]) 1 else 0,
-                .seq => c.memory[@intCast(usize, p[2])] = if (p[0] == p[1]) 1 else 0,
+                .add => c.memory[@intCast(p[2])] = p[0] + p[1],
+                .mul => c.memory[@intCast(p[2])] = p[0] * p[1],
+                .slt => c.memory[@intCast(p[2])] = if (p[0] < p[1]) 1 else 0,
+                .seq => c.memory[@intCast(p[2])] = if (p[0] == p[1]) 1 else 0,
                 .arb => c.base += p[0],
 
                 .in => {
@@ -164,7 +164,7 @@ const Computer = struct {
                         c.io_runframe = @frame().*;
                     }
                     trace("[{s}] ...got {s}\n", .{ c.name, c.io_port });
-                    c.memory[@intCast(usize, p[0])] = c.io_port;
+                    c.memory[@intCast(p[0])] = c.io_port;
                 },
                 .out => {
                     c.io_mode = .output;
@@ -191,7 +191,7 @@ const Computer = struct {
         i += insn.name.len;
         std.mem.copy(u8, storage[i..], "\t");
         i += 1;
-        for (insn.operands) |optype, j| {
+        for (insn.operands, 0..) |optype, j| {
             if (j > 0) {
                 std.mem.copy(u8, storage[i..], ", ");
                 i += 2;
@@ -309,7 +309,8 @@ const Map = struct {
     }
 
     fn offsetof(map: *const Map, p: Vec2) usize {
-        return @intCast(usize, p.x) + @intCast(usize, p.y) * stride;
+        _ = map;
+        return @as(usize, @intCast(p.x)) + @as(usize, @intCast(p.y)) * stride;
     }
     fn at(map: *const Map, p: Vec2) Tile {
         assert(p.x >= map.bbox.min.x and p.y >= map.bbox.min.y and p.x <= map.bbox.max.x and p.y <= map.bbox.max.y);
@@ -389,7 +390,7 @@ const BestFirstSearch = struct {
         }
 
         var index: ?usize = null;
-        for (s.agenda.items) |n, i| {
+        for (s.agenda.items, 0..) |n, i| {
             if (n.rating <= node.rating) {
                 index = i;
                 break;
@@ -406,7 +407,7 @@ const BestFirstSearch = struct {
         }
 
         if (try s.visited.put(poolelem.state, poolelem)) |kv| { // overwriten elem?
-            for (s.agenda.items) |v, i| {
+            for (s.agenda.items, 0..) |v, i| {
                 if (v == kv.value) {
                     _ = s.agenda.orderedRemove(i);
                     break;
@@ -461,7 +462,7 @@ fn decode_tp(map: *Map, maplevel: u32, p: Vec2) ?u16 {
         unreachable;
     }
 
-    return (@intCast(u16, firstletter - 'A') * 26 + @intCast(u16, secondletter - 'A')) + (if (is_outer) 0 else maxtp);
+    return (@as(u16, @intCast(firstletter - 'A')) * 26 + @as(u16, @intCast(secondletter - 'A'))) + (if (is_outer) 0 else maxtp);
 }
 
 const maxtp: u16 = 26 * 26;
@@ -536,6 +537,7 @@ pub fn main() anyerror!void {
     const limit = 1 * 1024 * 1024 * 1024;
 
     var random = std.rand.DefaultPrng.init(12).random;
+    _ = random;
     const text = try std.fs.cwd().readFileAlloc(allocator, "day20.txt", limit);
     defer allocator.free(text);
 
@@ -568,6 +570,7 @@ pub fn main() anyerror!void {
     });
 
     var trace_dep: usize = 0;
+    _ = trace_dep;
     var best: u32 = 999999;
     while (searcher.pop()) |node| {
         if (node.cost >= best)
@@ -579,7 +582,7 @@ pub fn main() anyerror!void {
 
         const tpdists = compute_tpdists(&map, node.state.maplevel, node.state.curtp);
 
-        for (tpdists) |dist, tp| {
+        for (tpdists, 0..) |dist, tp| {
             if (dist >= 65534)
                 continue;
             if (tp == (maxtp - 1)) {
@@ -589,12 +592,12 @@ pub fn main() anyerror!void {
                 continue;
             }
             const is_outer = (tp / maxtp == 0);
-            const tpname = @intCast(u16, tp % maxtp);
+            const tpname: u16 = @intCast(tp % maxtp);
             var next: BestFirstSearch.Node = undefined;
             next.cost = node.cost + dist;
             next.state.curtp = tpname + (if (is_outer) maxtp else 0);
             next.state.maplevel = node.state.maplevel;
-            next.rating = @intCast(i32, next.cost); // - @intCast(i32, next.keylistlen * next.keylistlen);
+            next.rating = @intCast(next.cost); // - @intCast(i32, next.keylistlen * next.keylistlen);
             try searcher.insert(next);
         }
     }

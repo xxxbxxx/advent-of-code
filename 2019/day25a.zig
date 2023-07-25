@@ -118,7 +118,7 @@ pub fn main() anyerror!void {
 
             if (cpu.io_mode == .output) {
                 //trace("{s} outputs {s}\n", .{ cpu.name, cpu.io_port });
-                try stdout.writeByte(@intCast(u8, cpu.io_port));
+                try stdout.writeByte(@intCast(cpu.io_port));
             }
             //trace("resuming {s}\n", .{cpu.name});
             resume cpu.io_runframe;
@@ -157,7 +157,7 @@ pub fn main() anyerror!void {
                         break;
                     }
                     if (cpu.io_mode == .output) {
-                        desc[out] = @intCast(u8, cpu.io_port);
+                        desc[out] = @intCast(cpu.io_port);
                         out += 1;
                     }
                     resume cpu.io_runframe;
@@ -243,7 +243,7 @@ pub fn main() anyerror!void {
                 }
                 trace("room= {s}\n", .{room});
 
-                for (rooms.items) |r, i| {
+                for (rooms.items, 0..) |r, i| {
                     if (std.mem.eql(u8, room.name, r.name)) {
                         assert(room.pos.x == r.pos.x and room.pos.y == r.pos.y);
                         assert(std.mem.eql(bool, &room.doors, &r.doors));
@@ -266,7 +266,7 @@ pub fn main() anyerror!void {
                 const room = rooms.at(room_index.?);
                 const p = room.pos;
                 map.set(p, ' ');
-                for (room.doors) |open, d| {
+                for (room.doors, 0..) |open, d| {
                     const np = Vec2{ .x = p.x + dirs[d].x, .y = p.y + dirs[d].y };
                     var prev_val = map.get(np) orelse '#';
 
@@ -287,7 +287,7 @@ pub fn main() anyerror!void {
                 const room = rooms.at(room_index.?);
                 const p = room.pos;
 
-                for (room.doors) |open, d| {
+                for (room.doors, 0..) |open, d| {
                     if (!open)
                         continue;
 
@@ -296,7 +296,7 @@ pub fn main() anyerror!void {
                         .rating = node.rating + 1,
                         .state = State{
                             .room_index = room_index.?,
-                            .door = @intCast(u2, d),
+                            .door = @intCast(d),
                             .next_pos = Vec2{ .x = p.x + dirs[d].x * 2, .y = p.y + dirs[d].y * 2 },
                         },
                         .trace = node.trace,

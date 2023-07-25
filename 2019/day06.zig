@@ -11,13 +11,13 @@ const Hash = std.StringHashMap(Planet);
 pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     var table = Hash.init(allocator);
     defer table.deinit();
-    try table.ensureTotalCapacity(@intCast(u32, input.len) / 7);
+    try table.ensureTotalCapacity(@as(u32, @intCast(input.len)) / 7);
     _ = try table.put("COM", Planet{ .parent = "" });
 
     {
         var it = std.mem.split(u8, input, "\n");
         while (it.next()) |line| {
-            const l = std.mem.trim(u8, line, &std.ascii.spaces);
+            const l = std.mem.trim(u8, line, &std.ascii.whitespace);
             if (l.len == 0) continue;
             const sep = std.mem.indexOf(u8, l, ")");
             if (sep) |s| {
@@ -88,7 +88,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     };
 
     return [_][]const u8{
-        try std.fmt.allocPrint(allocator, "{}", .{solution1}),
+        try std.fmt.allocPrint(allocator, "{?}", .{solution1}),
         try std.fmt.allocPrint(allocator, "{?}", .{solution2}),
     };
 }
