@@ -22,18 +22,19 @@
 *.a
 *.lib
 
-# Executables
+# Executables & IDE
 *.exe
 *.out
 *.app
+*.user
 cimgui/Debug/
 cimgui/cimgui.opensdf
 cimgui/cimgui.sdf
 cimgui/cimgui.v12.suo
 cimgui/Release/
 .idea
+.vscode
 cimgui/.vs/
-cimgui/cimgui.vcxproj.user
 cimgui/x64/
 
 # Test / Build

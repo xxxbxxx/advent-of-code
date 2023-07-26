@@ -14,7 +14,7 @@ const alldays = [_]struct { runFn: RunFn, input: []const u8 }{
     .{ .runFn = @import("day04.zig").run, .input = @embedFile("day04.txt") },
     .{ .runFn = @import("day05.zig").run, .input = @embedFile("day05.txt") },
     .{ .runFn = @import("day06.zig").run, .input = @embedFile("day06.txt") },
-    .{ .runFn = @import("day07.zig").run, .input = @embedFile("day07.txt") },
+    //async   .{ .runFn = @import("day07.zig").run, .input = @embedFile("day07.txt") },
     .{ .runFn = @import("day08.zig").run, .input = @embedFile("day08.txt") },
     .{ .runFn = @import("day09.zig").run, .input = @embedFile("day09.txt") },
     .{ .runFn = @import("day10.zig").run, .input = @embedFile("day10.txt") },
@@ -66,23 +66,16 @@ test {
 pub fn main() !void {
     const stdout = std.io.getStdOut().writer();
 
-    tracy.startup_profiler(); // DTRACY_MANUAL_LIFETIME + DTRACY_DELAYED_INIT because apparently c++ static inits are not called.
-
     var gpa = std.heap.GeneralPurposeAllocator(.{}){};
     defer _ = gpa.deinit();
     const allocator = gpa.allocator();
 
     for (alldays) |it, day| {
-        var buf: [50]u8 = undefined;
-        const day_name = try std.fmt.bufPrintZ(&buf, "Day {d:0>2}", .{day + 1});
-        const zone = tracy.traceEx(@src(), .{ .name = day_name });
-        defer zone.end();
-
         const answer = try it.runFn(it.input, allocator);
         defer allocator.free(answer[0]);
         defer allocator.free(answer[1]);
 
-        try stdout.print("{s}:\n", .{day_name});
+        try stdout.print("Day {d:0>2}:\n", .{day + 1});
         for (answer) |ans, i| {
             const multiline = (std.mem.indexOfScalar(u8, ans, '\n') != null);
             if (multiline) {
@@ -92,6 +85,4 @@ pub fn main() !void {
             }
         }
     }
-
-    tracy.shutdown_profiler();
 }
