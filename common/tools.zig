@@ -69,7 +69,7 @@ pub const Vec2 = struct {
         };
     }
     pub fn dist(a: Vec2, b: Vec2) u32 {
-        return @intCast((std.math.absInt(a.x - b.x) catch unreachable) + (std.math.absInt(a.y - b.y) catch unreachable));
+        return @abs(a.x - b.x) + @abs(a.y - b.y);
     }
 
     pub fn scale(a: i32, v: Vec2) Vec2 {
@@ -145,7 +145,7 @@ fn sqrtRound(v: usize) usize {
 pub fn posFromSpiralIndex(idx: usize) Vec2 {
     const i: i32 = @intCast(idx);
     const j: i32 = @intCast(sqrtRound(idx));
-    const k = (std.math.absInt(j * j - i) catch unreachable) - j;
+    const k = @abs(j * j - i) - j;
     const parity: i32 = @mod(j, 2); // 0 ou 1
     const sign: i32 = if (parity == 0) 1 else -1;
     return Vec2{
@@ -343,7 +343,7 @@ pub fn Map(comptime TileType: type, comptime width: usize, comptime height: usiz
             map.growBBox(p.add(Vec2{ .x = @intCast(t.len - 1), .y = 0 }));
 
             const offset = map.offsetof(p);
-            std.mem.copy(Tile, map.map[offset .. offset + t.len], t);
+            @memcpy(map.map[offset .. offset + t.len], t);
         }
 
         const Iterator = struct {
@@ -397,7 +397,7 @@ pub fn Map(comptime TileType: type, comptime width: usize, comptime height: usiz
                     self.map.get(self.p.add(Vec2{ .x = 0, .y = -1 })),
                 };
 
-                var r = TileAndNeighbours{
+                const r = TileAndNeighbours{
                     .t = t,
                     .p = self.p,
                     .neib = n,
@@ -646,7 +646,7 @@ fn PermutationsIterator(comptime T: type) type {
             var k = self.index;
             self.index += 1;
             const out = buf[0..self.in.len];
-            std.mem.copy(T, out, self.in);
+            @memcpy(out, self.in);
             for (out, 0..) |*e, i| {
                 const t = e.*;
                 e.* = out[i + k % mod];
@@ -732,7 +732,7 @@ fn match_pattern_common(comptime pattern: []const u8, text: []const u8, radix: u
     var values: [9]Arg = undefined;
     var it = std.mem.split(u8, pattern, "{}");
 
-    var firstpart = it.next() orelse return null;
+    const firstpart = it.next() orelse return null;
     if (txt.len < firstpart.len)
         return null;
     if (!std.mem.eql(u8, txt[0..firstpart.len], firstpart))
@@ -1022,7 +1022,7 @@ pub const IntCode_Computer = struct {
 
     pub fn boot(c: *Self, boot_image: []const Data) void {
         if (c.debug_trace) print("[{s}] boot\n", .{c.name});
-        std.mem.copy(Data, c.memory[0..boot_image.len], boot_image);
+        @memcpy(c.memory[0..boot_image.len], boot_image);
         @memset(c.memory[boot_image.len..], 0);
         c.pc = 0;
         c.base = 0;
@@ -1136,17 +1136,17 @@ pub const IntCode_Computer = struct {
 
     fn dissamble_insn(insn: *const Instruction, modes: []const OperandMode, operands: []const Data, storage: []u8) []const u8 {
         var i: usize = 0;
-        std.mem.copy(u8, storage[i..], insn.name);
+        @memcpy(storage[i..], insn.name);
         i += insn.name.len;
-        std.mem.copy(u8, storage[i..], "\t");
+        @memcpy(storage[i..], "\t");
         i += 1;
         for (insn.operands, 0..) |optype, j| {
             if (j > 0) {
-                std.mem.copy(u8, storage[i..], ", ");
+                @memcpy(storage[i..], ", ");
                 i += 2;
             }
             if (j >= operands.len) {
-                std.mem.copy(u8, storage[i..], "ERR");
+                @memcpy(storage[i..], "ERR");
                 i += 3;
             } else {
                 switch (optype) {

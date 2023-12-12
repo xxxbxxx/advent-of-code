@@ -19,12 +19,12 @@ pub fn main() anyerror!void {
     defer allocator.free(disc);
 
     var len: usize = 17;
-    std.mem.copy(u1, disc[0..len], &[_]u1{ 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1 });
+    @memcpy(disc[0..len], &[_]u1{ 0, 1, 1, 1, 1, 0, 1, 0, 1, 1, 0, 0, 1, 0, 0, 1, 1 });
 
     // fill the disc
     {
         while (len < disclen) {
-            std.mem.copy(u1, disc[len + 1 .. len + len + 1], disc[0..len]);
+            @memcpy(disc[len + 1 .. len + len + 1], disc[0..len]);
             std.mem.reverse(u1, disc[len + 1 .. len + len + 1]);
             for (disc[len + 1 .. len + len + 1]) |*d| {
                 d.* = d.* ^ 1;

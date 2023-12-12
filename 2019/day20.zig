@@ -197,7 +197,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
     // TODO? on pourrait completer la table en accumulant les chemin composites. mais c'est probablement pas rentable?
     // TODO? bon évidement le gros du temps est passé dans les hashtables ci dessous, inutiles car on a que des ptits indexs et des states super simples...
 
-    var part1: u64 = part1: {
+    const part1: u64 = part1: {
         const BestFirstSearch = tools.BestFirstSearch(u8, void);
         var bfs = BestFirstSearch.init(allocator);
         defer bfs.deinit();
@@ -253,7 +253,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
         break :part1 best;
     };
 
-    var part2: u64 = part2: {
+    const part2: u64 = part2: {
         const BestFirstSearch = tools.BestFirstSearch(struct { tp: u8, level: u8 }, void);
         var bfs = BestFirstSearch.init(allocator);
         defer bfs.deinit();

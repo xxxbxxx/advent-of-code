@@ -157,7 +157,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
             const result_text = try arena.allocator().alloc(u8, 500);
             var len: usize = 0;
             for (result[0..perm.len], 0..) |r, index| {
-                std.mem.copy(u8, result_text[len .. len + r.ing.len], r.ing);
+                @memcpy(result_text[len .. len + r.ing.len], r.ing);
                 len += r.ing.len;
                 if (index < perm.len - 1) {
                     result_text[len] = ',';

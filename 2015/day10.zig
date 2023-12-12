@@ -39,7 +39,7 @@ pub fn main() anyerror!void {
 
     var bufs = [_][]u8{ try allocator.alloc(u8, 100000000), try allocator.alloc(u8, 100000000) };
     var next: []u8 = undefined;
-    std.mem.copy(u8, bufs[0], "1113222113");
+    @memcpy(bufs[0], "1113222113");
     var cur = bufs[0][0..10];
     var count: u32 = 0;
     while (count < 50) : (count += 1) {

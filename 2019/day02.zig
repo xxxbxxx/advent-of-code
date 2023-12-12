@@ -3,7 +3,7 @@ const tools = @import("tools");
 
 fn run_program(prg: []const u32, verb: u32, noun: u32) u32 {
     var mem: [512]u32 = undefined;
-    std.mem.copy(u32, &mem, prg);
+    @memcpy(&mem, prg);
     mem[1] = noun;
     mem[2] = verb;
 

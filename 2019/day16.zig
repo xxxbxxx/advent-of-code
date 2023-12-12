@@ -29,7 +29,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                 allocator.free(s);
             }
         }
-        std.mem.copy(u4, signals[0], input_signal);
+        @memcpy(signals[0], input_signal);
 
         var phase: u32 = 0;
         while (phase < 100) : (phase += 1) {
@@ -68,7 +68,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         }
         var repeat: u32 = 0;
         while (repeat < repeats) : (repeat += 1) {
-            std.mem.copy(u4, signals[0][repeat * input_signal.len .. (repeat + 1) * input_signal.len], input_signal);
+            @memcpy(signals[0][repeat * input_signal.len .. (repeat + 1) * input_signal.len], input_signal);
         }
 
         const offset = 5976277;

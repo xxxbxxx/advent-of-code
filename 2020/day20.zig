@@ -290,7 +290,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
             var j: usize = 0;
             while (j < height - 2) : (j += 1) {
                 const o = ((@as(u32, @intCast(big_p.y)) * (height - 2) + j) * w + @as(u32, @intCast(big_p.x)) * (width - 2));
-                std.mem.copy(u8, big[o .. o + (width - 2)], m.map[(j + 1) * stride + 1 .. (j + 1) * stride + 1 + (width - 2)]);
+                @memcpy(big[o .. o + (width - 2)], m.map[(j + 1) * stride + 1 .. (j + 1) * stride + 1 + (width - 2)]);
             }
         }
 

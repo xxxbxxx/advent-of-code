@@ -107,7 +107,7 @@ const Computer = struct {
 
     fn reboot(c: *Computer, boot_image: []const Data) void {
         trace("[{s}] reboot\n", .{c.name});
-        std.mem.copy(Data, c.memory[0..boot_image.len], boot_image);
+        @memcpy(c.memory[0..boot_image.len], boot_image);
         @memset(c.memory[boot_image.len..], 0);
         c.pc = 0;
         c.base = 0;
@@ -187,17 +187,17 @@ const Computer = struct {
     }
     fn dissamble_insn(insn: Instruction, modes: []const OperandMode, operands: []const Data, storage: []u8) []const u8 {
         var i: usize = 0;
-        std.mem.copy(u8, storage[i..], insn.name);
+        @memcpy(storage[i..], insn.name);
         i += insn.name.len;
-        std.mem.copy(u8, storage[i..], "\t");
+        @memcpy(storage[i..], "\t");
         i += 1;
         for (insn.operands, 0..) |optype, j| {
             if (j > 0) {
-                std.mem.copy(u8, storage[i..], ", ");
+                @memcpy(storage[i..], ", ");
                 i += 2;
             }
             if (j >= operands.len) {
-                std.mem.copy(u8, storage[i..], "ERR");
+                @memcpy(storage[i..], "ERR");
                 i += 3;
             } else {
                 switch (optype) {

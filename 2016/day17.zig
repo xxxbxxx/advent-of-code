@@ -66,7 +66,7 @@ pub fn main() anyerror!void {
                 continue;
 
             const seq = try allocator.alloc(u8, node.state.len + 1);
-            std.mem.copy(u8, seq[0 .. seq.len - 1], node.state);
+            @memcpy(seq[0 .. seq.len - 1], node.state);
             seq[seq.len - 1] = letters[i];
             try bfs.insert(.{
                 .rating = node.rating + 1,

@@ -27,7 +27,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     const ans1 = ans: {
         var len: u32 = 0;
         var done: u26 = 0;
-        var todo = allSteps;
+        const todo = allSteps;
         while (done != todo) {
             const nextStep = ns: {
                 for (table, 0..) |deps, s| {

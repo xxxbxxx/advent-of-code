@@ -94,7 +94,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
                 // on regarde si on a un scan qui matche parmis ceux déjà positionnés
                 var maybe_ref_point_idx: u32 = 0;
                 var maybe_ref_point_positionned: [2]Vec3 = undefined;
-                var maybe_match = maybe_match: {
+                const maybe_match = maybe_match: {
                     for (scans, 0..) |s, other_idx| {
                         if (!s.positionned) continue;
 

@@ -37,7 +37,7 @@ pub const Vec = struct {
     }
 
     pub fn dist(a: Vec2, b: Vec2) u32 {
-        return @reduce(.Add, std.math.absInt(a - b) catch unreachable);
+        return @reduce(.Add, @abs(a - b));
     }
 
     pub fn scale(a: i32, v: Vec2) Vec2 {
@@ -122,7 +122,7 @@ fn sqrtRound(v: usize) usize {
 pub fn posFromSpiralIndex(idx: usize) Vec2 {
     const i: i32 = @intCast(idx);
     const j: i32 = @intCast(sqrtRound(idx));
-    const k = (std.math.absInt(j * j - i) catch unreachable) - j;
+    const k = @abs(j * j - i) - j;
     const parity: i32 = @mod(j, 2); // 0 ou 1
     const sign: i32 = if (parity == 0) 1 else -1;
     return Vec2{
@@ -308,7 +308,7 @@ pub fn Map(comptime TileType: type, comptime width: usize, comptime height: usiz
             map.growBBox(p + Vec2{ @intCast(t.len - 1), 0 });
 
             const offset = map.offsetof(p);
-            std.mem.copy(Tile, map.map[offset .. offset + t.len], t);
+            @memcpy(map.map[offset .. offset + t.len], t);
         }
 
         const Iterator = struct {
@@ -368,7 +368,7 @@ pub fn Map(comptime TileType: type, comptime width: usize, comptime height: usiz
                     self.map.get(self.p + Vec2{ -1, -1 }), self.map.get(self.p + Vec2{ 1, -1 }), self.map.get(self.p + Vec2{ -1, 1 }), self.map.get(self.p + Vec2{ 1, 1 }),
                 };
 
-                var r = TileAndNeighbours{
+                const r = TileAndNeighbours{
                     .t = t,
                     .p = self.p,
                     .neib4 = n4,

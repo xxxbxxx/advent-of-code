@@ -19,7 +19,7 @@ fn pgcd(_a: u64, _b: u64) u64 {
     var a = _a;
     var b = _b;
     while (b != 0) {
-        var t = b;
+        const t = b;
         b = a % b;
         a = t;
     }

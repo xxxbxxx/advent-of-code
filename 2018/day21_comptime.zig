@@ -9,8 +9,7 @@ const State = struct {
     reg: Registers = Registers{ 0, 0, 0, 0, 0, 0 },
 };
 
-fn peekState1(ip: u48, s: State, _: void) bool {
-    _ = s;
+fn peekState1(ip: u48, _: *const State, _: void) bool {
     return (ip == 28); // eqrr 4 0 1
 }
 
@@ -18,7 +17,7 @@ const PeekCtx2 = struct {
     visited: []bool,
     prev: u48,
 };
-fn peekState2(ip: u48, state: State, ctx: *PeekCtx2) bool {
+fn peekState2(ip: u48, state: *const State, ctx: *PeekCtx2) bool {
     if (ip == 28) {
         const val = state.reg[4];
         if (ctx.visited[val])
@@ -31,18 +30,15 @@ fn peekState2(ip: u48, state: State, ctx: *PeekCtx2) bool {
 
 fn compile(comptime prg: []Insn, comptime ip_reg: u8) type {
     return struct {
-        fn run(init_state: State, peekCtx: anytype, comptime peekFn: ?fn (ip: u48, s: State, ctx: @TypeOf(peekCtx)) bool) State {
+        fn run(init_state: State, peekCtx: anytype, comptime peekFn: fn (ip: u48, s: *const State, ctx: @TypeOf(peekCtx)) bool) State {
             var state = init_state;
             while (true) {
                 const ip = state.reg[ip_reg];
-                if (peekFn) |f| {
-                    if (f(ip, state, peekCtx)) return state;
-                } else {
-                    if (ip >= prg.len) return state;
-                }
+                if (peekFn(ip, &state, peekCtx)) return state;
 
-                inline for (prg, 0..) |insn, i| {
-                    if (ip == i) comptime_eval(insn.op, insn.par, &state.reg);
+                switch (ip) {
+                    inline 0...prg.len - 1 => |i| comptime_eval(prg[i].op, prg[i].par, &state.reg),
+                    else => unreachable,
                 }
                 state.reg[ip_reg] += 1;
             }
@@ -50,7 +46,7 @@ fn compile(comptime prg: []Insn, comptime ip_reg: u8) type {
     };
 }
 
-fn comptime_eval(comptime op: Opcode, comptime par: [3]u32, r: *Registers) void {
+inline fn comptime_eval(comptime op: Opcode, comptime par: [3]u32, r: *Registers) void {
     switch (op) {
         .addi => r[par[2]] = r[par[0]] + par[1],
         .addr => r[par[2]] = r[par[0]] + r[par[1]],

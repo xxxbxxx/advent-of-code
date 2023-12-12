@@ -59,7 +59,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         .name = "Robot",
         .memory = try arena.allocator().alloc(Computer.Data, 2048),
     };
-    var robot_pos = Vec2{ .x = 0, .y = 0 };
+    const robot_pos = Vec2{ .x = 0, .y = 0 };
 
     robot_cpu.boot(boot_image);
     trace("starting {}\n", .{robot_cpu.name});
@@ -114,7 +114,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
             const cpu = &robot_cpu;
             cpu.* = node.state;
             cpu.memory = try arena.allocator().alloc(Computer.Data, 2048);
-            std.mem.copy(Computer.Data, cpu.memory, node.state.memory);
+            @memcpy(cpu.memory, node.state.memory);
 
             assert(!cpu.is_halted() and cpu.io_mode == .input);
             cpu.io_port = m.cmd;
@@ -159,7 +159,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     var changed = true;
     while (changed) {
         changed = false;
-        var map_init = map;
+        const map_init = map;
         var pos = map.bbox.min;
         while (pos.y < map.bbox.max.y) : (pos.y += 1) {
             pos.x = map.bbox.min.x;

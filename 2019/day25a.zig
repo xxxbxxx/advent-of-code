@@ -301,7 +301,7 @@ pub fn main() anyerror!void {
                         },
                         .trace = node.trace,
                     };
-                    std.mem.copy(u8, new.trace.commands[new.trace.len .. new.trace.len + cmds[d].len], cmds[d]);
+                    @memcpy(new.trace.commands[new.trace.len .. new.trace.len + cmds[d].len], cmds[d]);
                     new.trace.commands[new.trace.len + cmds[d].len] = '\n';
                     new.trace.len += cmds[d].len + 1;
 

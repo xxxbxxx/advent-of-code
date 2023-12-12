@@ -25,7 +25,7 @@ pub fn main() anyerror!void {
     var p: u32 = 0;
     while (p < permuts) : (p += 1) {
         {
-            std.mem.copy(u8, &string, "abcdefgh");
+            @memcpy(&string, "abcdefgh");
             var mod: u32 = 8;
             var k = p;
             for (string, 0..) |*c, i| {
@@ -36,7 +36,7 @@ pub fn main() anyerror!void {
                 mod -= 1;
             }
         }
-        std.mem.copy(u8, &orig, &string);
+        @memcpy(&orig, &string);
 
         var it = std.mem.tokenize(u8, text, "\n");
         while (it.next()) |line| {
@@ -70,7 +70,7 @@ pub fn main() anyerror!void {
                 const to = @as(usize, @intCast(vals[1].imm));
                 const t = string[from];
                 if (from < to) {
-                    std.mem.copy(u8, string[from..to], string[from + 1 .. to + 1]);
+                    @memcpy(string[from..to], string[from + 1 .. to + 1]);
                 } else {
                     std.mem.copyBackwards(u8, string[to + 1 .. from + 1], string[to..from]);
                 }

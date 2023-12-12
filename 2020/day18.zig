@@ -74,8 +74,8 @@ fn compute(line: []const u8, prio: enum { left, add }) usize {
             while (i > 0) : (i -= 1) {
                 if (ops[i - 1] == '+') {
                     terms[i - 1] += terms[i];
-                    std.mem.copy(usize, terms[i .. nb - 1], terms[i + 1 .. nb]);
-                    std.mem.copy(u8, ops[i - 1 .. nb - 2], ops[i .. nb - 1]);
+                    std.mem.copyForwards(usize, terms[i .. nb - 1], terms[i + 1 .. nb]);
+                    std.mem.copyForwards(u8, ops[i - 1 .. nb - 2], ops[i .. nb - 1]);
                     nb -= 1;
                 }
             }
@@ -85,8 +85,8 @@ fn compute(line: []const u8, prio: enum { left, add }) usize {
             while (i > 0) : (i -= 1) {
                 if (ops[i - 1] == '*') {
                     terms[i - 1] *= terms[i];
-                    std.mem.copy(usize, terms[i .. nb - 1], terms[i + 1 .. nb]);
-                    std.mem.copy(u8, ops[i - 1 .. nb - 2], ops[i .. nb - 1]);
+                    std.mem.copyForwards(usize, terms[i .. nb - 1], terms[i + 1 .. nb]);
+                    std.mem.copyForwards(u8, ops[i - 1 .. nb - 2], ops[i .. nb - 1]);
                     nb -= 1;
                 }
             }

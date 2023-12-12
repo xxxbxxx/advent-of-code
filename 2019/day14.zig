@@ -52,7 +52,7 @@ fn parseline(line: []const u8, chemicals: *Chemicals, reactions: []?Reaction, al
     var reaction: Reaction = undefined;
     reaction.product = try parseChemical(line[sep + 4 ..], chemicals);
 
-    var reactives_count = blk: {
+    const reactives_count = blk: {
         var count: u32 = 0;
         var it = std.mem.tokenize(u8, line[0..sep], "\n,");
         while (it.next()) |_| {
@@ -78,7 +78,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     var arena = std.heap.ArenaAllocator.init(allocator);
     defer arena.deinit();
 
-    var grid = try allocator.alloc(u8, 1000 * 1000);
+    const grid = try allocator.alloc(u8, 1000 * 1000);
     defer allocator.free(grid);
     @memset(grid, 0);
 

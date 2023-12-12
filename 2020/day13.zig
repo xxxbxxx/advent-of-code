@@ -16,8 +16,8 @@ fn pgcd(val1: BigInt, val2: BigInt) BigInt {
 }
 
 fn ppcm(val1: BigInt, val2: BigInt) BigInt {
-    var div = pgcd(val1, val2);
-    var num = val1 * val2;
+    const div = pgcd(val1, val2);
+    const num = val1 * val2;
     return num / div;
 }
 

@@ -86,7 +86,7 @@ pub fn main() anyerror!void {
     //  const text = try std.fs.cwd().readFileAlloc(allocator, "day9.txt", limit);
 
     var password: [8]u8 = undefined;
-    std.mem.copy(u8, &password, "vzbxkghb");
+    @memcpy(&password, "vzbxkghb");
     add_one(&password);
     while (!is_valid1(&password)) {
         add_one(&password);

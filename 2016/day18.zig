@@ -18,7 +18,7 @@ pub fn main() anyerror!void {
     const initvector = "." ++ ".^^.^^^..^.^..^.^^.^^^^.^^.^^...^..^...^^^..^^...^..^^^^^^..^.^^^..^.^^^^.^^^.^...^^^.^^.^^^.^.^^.^." ++ ".";
     const len = initvector.len;
     var prevline: [len]u8 = undefined;
-    std.mem.copy(u8, &prevline, initvector);
+    @memcpy(&prevline, initvector);
 
     var numsafe: u32 = blk: {
         var c: u32 = 0;

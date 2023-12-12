@@ -7,7 +7,7 @@ const Vec4 = [4]i8;
 fn dist(a: Vec4, b: Vec4) u32 {
     var d: u32 = 0;
     for (a, 0..) |_, i| {
-        d += @as(u32, @intCast(std.math.absInt(@as(i31, a[i]) - b[i]) catch unreachable));
+        d += @abs(@as(i31, a[i]) - b[i]);
     }
     return d;
 }

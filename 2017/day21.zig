@@ -157,7 +157,7 @@ pub fn main() anyerror!void {
     defer for (maps) |m| allocator.free(m);
 
     var size: u32 = 3;
-    std.mem.copy(u1, maps[0][0 .. size * size], &[_]u1{ 0, 1, 0, 0, 0, 1, 1, 1, 1 });
+    @memcpy(maps[0][0 .. size * size], &[_]u1{ 0, 1, 0, 0, 0, 1, 1, 1, 1 });
 
     var iter: u32 = 0;
     while (iter < 18) : (iter += 1) {

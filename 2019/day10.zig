@@ -21,18 +21,15 @@ fn pgcd(_a: u32, _b: u32) u32 {
     var a = _a;
     var b = _b;
     while (b != 0) {
-        var t = b;
+        const t = b;
         b = a % b;
         a = t;
     }
     return a;
 }
-fn abs(a: i32) u32 {
-    return @intCast(std.math.absInt(a) catch unreachable);
-}
 
 fn normalize(d: Vec2) Vec2 {
-    const div = pgcd(abs(d[0]), abs(d[1]));
+    const div = pgcd(@abs(d[0]), @abs(d[1]));
     return @divExact(d, @as(Vec2, @splat(@intCast(div))));
 }
 
@@ -80,7 +77,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) ![2][]const u8 {
     // part1
     var best_i: usize = undefined;
     var best_dirs: []Vec2 = undefined;
-    var best = ans: {
+    const best = ans: {
         var best_visibility: usize = 0;
         for (asteroids, 0..) |a, i| {
             var dirs = std.ArrayList(Vec2).init(gpa);

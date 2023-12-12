@@ -34,7 +34,7 @@ const Computer = struct {
     }
 
     fn run(c: *Computer, input: Data) Data {
-        std.mem.copy(Data, c.memory_bank, c.boot_image);
+        @memcpy(c.memory_bank, c.boot_image);
 
         const mem = c.memory_bank;
         var param_registers: [3]Data = undefined;

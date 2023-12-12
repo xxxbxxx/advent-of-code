@@ -94,8 +94,8 @@ fn dfs(packets: []const u8, groups: [3][]const u8, best: *Result) void {
         const newpackets = storage[0 .. packets.len - 1];
 
         for (packets, 0..) |p, i| {
-            std.mem.copy(u8, newpackets[0..i], packets[0..i]);
-            std.mem.copy(u8, newpackets[i..], packets[i + 1 ..]);
+            @memcpy(newpackets[0..i], packets[0..i]);
+            @memcpy(newpackets[i..], packets[i + 1 ..]);
 
             if (groups[0].len > best.s0)
                 break;
@@ -111,7 +111,7 @@ fn dfs(packets: []const u8, groups: [3][]const u8, best: *Result) void {
                 for (newgroups, 0..) |*ng, k| {
                     if (k == j) {
                         const newgroup = storage[packets.len .. packets.len + g.len + 1];
-                        std.mem.copy(u8, newgroup, g);
+                        @memcpy(newgroup, g);
                         newgroup[g.len] = p;
                         ng.* = newgroup;
                     } else {

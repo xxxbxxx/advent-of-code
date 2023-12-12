@@ -158,8 +158,8 @@ fn bfs(a: *Agenda, curbest: *Result) void {
                 newcandidate.groups[3] = candidate.groups[3];
 
                 const newpackets = newcandidate.storage[0..newcandidate.packets];
-                std.mem.copy(u8, newpackets[0..i], packets[0..i]);
-                std.mem.copy(u8, newpackets[i..], packets[i + 1 ..]);
+                @memcpy(newpackets[0..i], packets[0..i]);
+                @memcpy(newpackets[i..], packets[i + 1 ..]);
 
                 const newgroups = [4][]u8{
                     newcandidate.storage[newcandidate.packets .. newcandidate.packets + newcandidate.groups[0]],
@@ -167,12 +167,12 @@ fn bfs(a: *Agenda, curbest: *Result) void {
                     newcandidate.storage[newcandidate.packets + newcandidate.groups[0] + newcandidate.groups[1] .. newcandidate.packets + newcandidate.groups[0] + newcandidate.groups[1] + newcandidate.groups[2]],
                     newcandidate.storage[newcandidate.packets + newcandidate.groups[0] + newcandidate.groups[1] + newcandidate.groups[2] .. newcandidate.packets + newcandidate.groups[0] + newcandidate.groups[1] + newcandidate.groups[2] + newcandidate.groups[3]],
                 };
-                std.mem.copy(u8, newgroups[0][1 .. g.len + 1], g);
+                @memcpy(newgroups[0][1 .. g.len + 1], g);
                 newgroups[0][0] = p;
 
-                std.mem.copy(u8, newgroups[1], groups[1]);
-                std.mem.copy(u8, newgroups[2], groups[2]);
-                std.mem.copy(u8, newgroups[3], groups[3]);
+                @memcpy(newgroups[1], groups[1]);
+                @memcpy(newgroups[2], groups[2]);
+                @memcpy(newgroups[3], groups[3]);
 
                 agenda_insert(a, newcandidate);
             }
@@ -196,8 +196,8 @@ fn bfs(a: *Agenda, curbest: *Result) void {
                 newcandidate.groups[3] = candidate.groups[3];
 
                 const newpackets = newcandidate.storage[0..newcandidate.packets];
-                std.mem.copy(u8, newpackets[0..i], packets[0..i]);
-                std.mem.copy(u8, newpackets[i..], packets[i + 1 ..]);
+                @memcpy(newpackets[0..i], packets[0..i]);
+                @memcpy(newpackets[i..], packets[i + 1 ..]);
 
                 const newgroups = [4][]u8{
                     newcandidate.storage[newcandidate.packets .. newcandidate.packets + newcandidate.groups[0]],
@@ -205,13 +205,13 @@ fn bfs(a: *Agenda, curbest: *Result) void {
                     newcandidate.storage[newcandidate.packets + newcandidate.groups[0] + newcandidate.groups[1] .. newcandidate.packets + newcandidate.groups[0] + newcandidate.groups[1] + newcandidate.groups[2]],
                     newcandidate.storage[newcandidate.packets + newcandidate.groups[0] + newcandidate.groups[1] + newcandidate.groups[2] .. newcandidate.packets + newcandidate.groups[0] + newcandidate.groups[1] + newcandidate.groups[2] + newcandidate.groups[3]],
                 };
-                std.mem.copy(u8, newgroups[0], groups[0]);
+                @memcpy(newgroups[0], groups[0]);
 
-                std.mem.copy(u8, newgroups[1][1 .. g.len + 1], g);
+                @memcpy(newgroups[1][1 .. g.len + 1], g);
                 newgroups[1][0] = p;
 
-                std.mem.copy(u8, newgroups[2], groups[2]);
-                std.mem.copy(u8, newgroups[3], groups[3]);
+                @memcpy(newgroups[2], groups[2]);
+                @memcpy(newgroups[3], groups[3]);
 
                 agenda_insert(a, newcandidate);
             }
@@ -235,8 +235,8 @@ fn bfs(a: *Agenda, curbest: *Result) void {
                 newcandidate.groups[3] = candidate.groups[3];
 
                 const newpackets = newcandidate.storage[0..newcandidate.packets];
-                std.mem.copy(u8, newpackets[0..i], packets[0..i]);
-                std.mem.copy(u8, newpackets[i..], packets[i + 1 ..]);
+                @memcpy(newpackets[0..i], packets[0..i]);
+                @memcpy(newpackets[i..], packets[i + 1 ..]);
 
                 const newgroups = [4][]u8{
                     newcandidate.storage[newcandidate.packets .. newcandidate.packets + newcandidate.groups[0]],
@@ -244,13 +244,13 @@ fn bfs(a: *Agenda, curbest: *Result) void {
                     newcandidate.storage[newcandidate.packets + newcandidate.groups[0] + newcandidate.groups[1] .. newcandidate.packets + newcandidate.groups[0] + newcandidate.groups[1] + newcandidate.groups[2]],
                     newcandidate.storage[newcandidate.packets + newcandidate.groups[0] + newcandidate.groups[1] + newcandidate.groups[2] .. newcandidate.packets + newcandidate.groups[0] + newcandidate.groups[1] + newcandidate.groups[2] + newcandidate.groups[3]],
                 };
-                std.mem.copy(u8, newgroups[0], groups[0]);
-                std.mem.copy(u8, newgroups[1], groups[1]);
+                @memcpy(newgroups[0], groups[0]);
+                @memcpy(newgroups[1], groups[1]);
 
-                std.mem.copy(u8, newgroups[2][1 .. g.len + 1], g);
+                @memcpy(newgroups[2][1 .. g.len + 1], g);
                 newgroups[2][0] = p;
 
-                std.mem.copy(u8, newgroups[3], groups[3]);
+                @memcpy(newgroups[3], groups[3]);
 
                 agenda_insert(a, newcandidate);
             }

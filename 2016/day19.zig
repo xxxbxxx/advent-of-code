@@ -57,7 +57,7 @@ pub fn main() anyerror!void {
 
             assert(victim == ((i + (i + len)) / 2) % len);
 
-            std.mem.copy(u22, elves[len - 1 - eliminated .. len - 1], elves[len - eliminated .. len]);
+            @memcpy(elves[len - 1 - eliminated .. len - 1], elves[len - eliminated .. len]);
 
             len -= 1;
             if (victim >= i) {

@@ -56,7 +56,7 @@ pub fn main() anyerror!void {
                 const r = rotrow[1];
                 const row = screen[y * stride + 0 .. y * stride + width];
                 var oldrow: [width]u8 = undefined;
-                std.mem.copy(u8, &oldrow, row);
+                @memcpy(&oldrow, row);
                 var x: u32 = 0;
                 while (x < width) : (x += 1) {
                     row[x] = oldrow[(x + width - r) % width];

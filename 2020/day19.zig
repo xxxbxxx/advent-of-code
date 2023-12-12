@@ -38,8 +38,8 @@ const Grammar = struct {
     }
     fn newLitJoined(self: *@This(), lit1: []const u8, lit2: []const u8) !Node {
         const lit = self.arena.allocator().alloc(u8, lit1.len + lit2.len);
-        std.mem.copy(u8, lit[0..lit1.len], lit1);
-        std.mem.copy(u8, lit[lit1.len..], lit2);
+        @memcpy(lit[0..lit1.len], lit1);
+        @memcpy(lit[lit1.len..], lit2);
         return Node{ .lit = lit };
     }
 
@@ -150,9 +150,9 @@ fn reduce(grammar: *const Grammar, allocator: std.mem.Allocator) !Grammar {
                             } else if (sub_rule.alts.len == 1) {
                                 const sub_seq = sub_rule.alts[0].seq;
                                 const new_seq = try g.arena.allocator().alloc(Grammar.Node, alt.seq.len + sub_seq.len - 1);
-                                std.mem.copy(Grammar.Node, new_seq[0..node_idx], alt.seq[0..node_idx]);
-                                std.mem.copy(Grammar.Node, new_seq[node_idx .. node_idx + sub_seq.len], sub_seq);
-                                std.mem.copy(Grammar.Node, new_seq[node_idx + sub_seq.len ..], alt.seq[node_idx + 1 ..]);
+                                @memcpy(new_seq[0..node_idx], alt.seq[0..node_idx]);
+                                @memcpy(new_seq[node_idx .. node_idx + sub_seq.len], sub_seq);
+                                @memcpy(new_seq[node_idx + sub_seq.len ..], alt.seq[node_idx + 1 ..]);
                                 alt.seq = new_seq;
                                 dirty = true;
                                 break :next_node;
@@ -168,10 +168,10 @@ fn reduce(grammar: *const Grammar, allocator: std.mem.Allocator) !Grammar {
                         const rhs = alt.seq[i];
                         if (lhs == .lit and rhs == .lit) {
                             const new_lit = try g.arena.allocator().alloc(u8, lhs.lit.len + rhs.lit.len);
-                            std.mem.copy(u8, new_lit[0..lhs.lit.len], lhs.lit);
-                            std.mem.copy(u8, new_lit[lhs.lit.len..], rhs.lit);
+                            @memcpy(new_lit[0..lhs.lit.len], lhs.lit);
+                            @memcpy(new_lit[lhs.lit.len..], rhs.lit);
                             alt.seq[i - 1] = Grammar.Node{ .lit = new_lit };
-                            std.mem.copy(Grammar.Node, alt.seq[i .. alt.seq.len - 1], alt.seq[i + 1 ..]);
+                            std.mem.copyForwards(Grammar.Node, alt.seq[i .. alt.seq.len - 1], alt.seq[i + 1 ..]);
                             alt.seq.len -= 1;
                             dirty = true;
                         }
@@ -188,15 +188,15 @@ fn reduce(grammar: *const Grammar, allocator: std.mem.Allocator) !Grammar {
                             const nb = g.rules[lhs.rule].alts.len;
 
                             const new_alts = try g.arena.allocator().alloc(Grammar.Alternative, rule.alts.len + nb - 1);
-                            std.mem.copy(Grammar.Alternative, new_alts[0..alt_idx], rule.alts[0..alt_idx]);
-                            std.mem.copy(Grammar.Alternative, new_alts[alt_idx .. rule.alts.len - 1], rule.alts[alt_idx + 1 ..]);
+                            @memcpy(new_alts[0..alt_idx], rule.alts[0..alt_idx]);
+                            @memcpy(new_alts[alt_idx .. rule.alts.len - 1], rule.alts[alt_idx + 1 ..]);
                             var new_idx = rule.alts.len - 1;
 
                             for (g.rules[lhs.rule].alts) |sub| {
                                 const new_seq = try g.arena.allocator().alloc(Grammar.Node, alt.seq.len + sub.seq.len - 1);
-                                std.mem.copy(Grammar.Node, new_seq[0 .. i - 1], alt.seq[0 .. i - 1]);
-                                std.mem.copy(Grammar.Node, new_seq[i - 1 .. i - 1 + sub.seq.len], sub.seq);
-                                std.mem.copy(Grammar.Node, new_seq[i - 1 + sub.seq.len ..], alt.seq[i..]);
+                                @memcpy(new_seq[0 .. i - 1], alt.seq[0 .. i - 1]);
+                                @memcpy(new_seq[i - 1 .. i - 1 + sub.seq.len], sub.seq);
+                                @memcpy(new_seq[i - 1 + sub.seq.len ..], alt.seq[i..]);
                                 new_alts[new_idx].seq = new_seq;
                                 new_idx += 1;
                             }
@@ -209,15 +209,15 @@ fn reduce(grammar: *const Grammar, allocator: std.mem.Allocator) !Grammar {
                             const nb = g.rules[rhs.rule].alts.len;
 
                             const new_alts = try g.arena.allocator().alloc(Grammar.Alternative, rule.alts.len + nb - 1);
-                            std.mem.copy(Grammar.Alternative, new_alts[0..alt_idx], rule.alts[0..alt_idx]);
-                            std.mem.copy(Grammar.Alternative, new_alts[alt_idx .. rule.alts.len - 1], rule.alts[alt_idx + 1 ..]);
+                            @memcpy(new_alts[0..alt_idx], rule.alts[0..alt_idx]);
+                            @memcpy(new_alts[alt_idx .. rule.alts.len - 1], rule.alts[alt_idx + 1 ..]);
                             var new_idx = rule.alts.len - 1;
 
                             for (g.rules[rhs.rule].alts) |sub| {
                                 const new_seq = try g.arena.allocator().alloc(Grammar.Node, alt.seq.len + sub.seq.len - 1);
-                                std.mem.copy(Grammar.Node, new_seq[0..i], alt.seq[0..i]);
-                                std.mem.copy(Grammar.Node, new_seq[i .. i + sub.seq.len], sub.seq);
-                                std.mem.copy(Grammar.Node, new_seq[i + sub.seq.len ..], alt.seq[i + 1 ..]);
+                                @memcpy(new_seq[0..i], alt.seq[0..i]);
+                                @memcpy(new_seq[i .. i + sub.seq.len], sub.seq);
+                                @memcpy(new_seq[i + sub.seq.len ..], alt.seq[i + 1 ..]);
                                 new_alts[new_idx].seq = new_seq;
                                 new_idx += 1;
                             }

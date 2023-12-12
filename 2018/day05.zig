@@ -44,7 +44,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     defer arena.deinit();
     const ans1 = ans: {
         const bufs = [_][]u8{ try arena.allocator().alloc(u8, input.len), try arena.allocator().alloc(u8, input.len) };
-        std.mem.copy(u8, bufs[0], input);
+        @memcpy(bufs[0], input);
         const len = collapse(bufs[0], bufs[1]);
         break :ans len;
     };

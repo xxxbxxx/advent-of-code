@@ -28,9 +28,9 @@ fn compute_mutation(molecule: []const u8, rule: Replacement, startindex: *usize,
     if (idx) |i| {
         startindex.* = i + 1;
         const m = try allocator.alloc(u8, molecule.len + rule.to.len - rule.from.len);
-        std.mem.copy(u8, m[0..i], molecule[0..i]);
-        std.mem.copy(u8, m[i .. i + rule.to.len], rule.to);
-        std.mem.copy(u8, m[i + rule.to.len ..], molecule[i + rule.from.len ..]);
+        @memcpy(m[0..i], molecule[0..i]);
+        @memcpy(m[i .. i + rule.to.len], rule.to);
+        @memcpy(m[i + rule.to.len ..], molecule[i + rule.from.len ..]);
         return m;
     } else {
         return null;
@@ -42,9 +42,9 @@ fn compute_reversemutation(molecule: []const u8, rule: Replacement, startindex: 
     if (idx) |i| {
         startindex.* = i + 1;
         const m = memory[0 .. molecule.len + rule.from.len - rule.to.len];
-        std.mem.copy(u8, m[0..i], molecule[0..i]);
-        std.mem.copy(u8, m[i .. i + rule.from.len], rule.from);
-        std.mem.copy(u8, m[i + rule.from.len ..], molecule[i + rule.to.len ..]);
+        @memcpy(m[0..i], molecule[0..i]);
+        @memcpy(m[i .. i + rule.from.len], rule.from);
+        @memcpy(m[i + rule.from.len ..], molecule[i + rule.to.len ..]);
         return m;
     } else {
         return null;
@@ -141,7 +141,7 @@ pub fn main() anyerror!void {
                             }
                             if (!dup) {
                                 const newmol = try allocator.alloc(u8, m.len);
-                                std.mem.copy(u8, newmol, m);
+                                @memcpy(newmol, m);
                                 _ = try set.put(newmol, true);
                             }
                         }

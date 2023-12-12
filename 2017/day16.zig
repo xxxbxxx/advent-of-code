@@ -57,7 +57,7 @@ pub fn main() anyerror!void {
     trace("the dance is {} moves long\n", .{dance.len});
 
     var dancers: [16]u8 = undefined;
-    std.mem.copy(u8, &dancers, "abcdefghijklmnop");
+    @memcpy(&dancers, "abcdefghijklmnop");
 
     var positions = [16]u4{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
     var positions1 = [16]u4{ 0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15 };
@@ -112,7 +112,7 @@ pub fn main() anyerror!void {
                 },
             }
             if (round == 1) {
-                std.mem.copy(u4, &positions1, &positions);
+                @memcpy(&positions1, &positions);
             }
             assert(dancers[positions['a' - 'a']] == 'a' and dancers[positions['b' - 'a']] == 'b');
         }

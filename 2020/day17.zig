@@ -70,7 +70,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
 
         var gen: usize = 0;
         while (gen < 6) : (gen += 1) {
-            std.mem.copy(u8, cube2[padding .. padding + cube.len], cube);
+            @memcpy(cube2[padding .. padding + cube.len], cube);
             for (cube, 0..) |*v, i| {
                 var n: usize = 0;
                 inline for (neighbours) |o| {
@@ -139,7 +139,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
 
         var gen: usize = 0;
         while (gen < 6) : (gen += 1) {
-            std.mem.copy(u8, cube2[padding .. padding + cube.len], cube);
+            @memcpy(cube2[padding .. padding + cube.len], cube);
             for (cube, 0..) |*v, i| {
                 var n: usize = 0;
                 inline for (neighbours) |o| {

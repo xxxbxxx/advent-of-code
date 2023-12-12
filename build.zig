@@ -71,25 +71,25 @@ pub fn build(b: *Builder) void {
         .{ .year = "2020", .day = "day01" },
         .{ .year = "2020", .day = "alldays" }, // alldays in one exe
 
-        .{ .year = "2019", .day = "day25" },
+        //async .{ .year = "2019", .day = "day25" },
         .{ .year = "2019", .day = "day24" },
-        .{ .year = "2019", .day = "day23" },
+        //async .{ .year = "2019", .day = "day23" },
         .{ .year = "2019", .day = "day22" },
-        .{ .year = "2019", .day = "day21" },
+        //async .{ .year = "2019", .day = "day21" },
         .{ .year = "2019", .day = "day20" },
-        .{ .year = "2019", .day = "day19" },
+        //async .{ .year = "2019", .day = "day19" },
         .{ .year = "2019", .day = "day18" },
-        .{ .year = "2019", .day = "day17" },
+        //async .{ .year = "2019", .day = "day17" },
         .{ .year = "2019", .day = "day16" },
-        .{ .year = "2019", .day = "day15" },
+        //async .{ .year = "2019", .day = "day15" },
         .{ .year = "2019", .day = "day14" },
-        .{ .year = "2019", .day = "day13" },
+        //async .{ .year = "2019", .day = "day13" },
         .{ .year = "2019", .day = "day12" },
-        .{ .year = "2019", .day = "day11" },
+        //async .{ .year = "2019", .day = "day11" },
         .{ .year = "2019", .day = "day10" },
-        .{ .year = "2019", .day = "day09" },
+        //async .{ .year = "2019", .day = "day09" },
         .{ .year = "2019", .day = "day08" },
-        .{ .year = "2019", .day = "day07" },
+        //async .{ .year = "2019", .day = "day07" },
         .{ .year = "2019", .day = "day06" },
         .{ .year = "2019", .day = "day05" },
         .{ .year = "2019", .day = "day04" },
@@ -148,6 +148,7 @@ pub fn build(b: *Builder) void {
         });
         exe.addOptions("build_options", exe_options);
         //exe.use_llvm = false;
+        //exe.use_lld = false;
 
         if (mem.eql(u8, pb.year, "2021") or mem.eql(u8, pb.year, "2022")) {
             exe.addModule("tools", tools_module_v2);
@@ -160,8 +161,8 @@ pub fn build(b: *Builder) void {
                 b.allocator,
                 &[_][]const u8{ tracy_path, "TracyClient.cpp" },
             ) catch unreachable;
-            exe.addIncludePath(tracy_path);
-            exe.addCSourceFile(client_cpp, &[_][]const u8{ "-DTRACY_ENABLE=1", "-fno-sanitize=undefined" });
+            exe.addIncludePath(.{ .path = tracy_path });
+            exe.addCSourceFile(.{ .file = .{ .path = client_cpp }, .flags = &[_][]const u8{ "-DTRACY_ENABLE=1", "-fno-sanitize=undefined" } });
             exe.linkLibCpp();
         }
 
@@ -184,9 +185,13 @@ pub fn build(b: *Builder) void {
             .root_source_file = .{ .path = "2021/alldays.zig" },
             .target = target,
             .optimize = optimize,
+            // .use_lld = false,
+            // .use_llvm = false,
         });
         test_cmd21.addModule("tools", tools_module_v2);
-        test_step.dependOn(&test_cmd21.step);
+        const run_cmd21 = b.addRunArtifact(test_cmd21);
+
+        test_step.dependOn(&run_cmd21.step);
     }
 
     // const info_step = b.step("info", "Additional info");

@@ -58,7 +58,7 @@ pub fn main() anyerror!void {
         var offset = center - (w / 2) - stride * (h / 2);
         var i: usize = 0;
         while (i < h) : (i += 1) {
-            std.mem.copy(u2, map[offset .. offset + w], m[i * w .. i * w + w]);
+            @memcpy(map[offset .. offset + w], m[i * w .. i * w + w]);
             offset += stride;
         }
     }

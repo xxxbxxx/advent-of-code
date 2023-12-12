@@ -40,7 +40,7 @@ const VM = struct {
 
     const State = struct {
         ip: ?u15,
-        sp: u6,
+        sp: u8,
         regs: [8]u15,
         stack: [64]u15, // doc: "unbounded"
         mem: [32768]u16,
@@ -73,27 +73,28 @@ const VM = struct {
         var bufA: [16]u8 = undefined;
         var bufB: [16]u8 = undefined;
         var bufC: [16]u8 = undefined;
+
         switch (insn) {
             .halt, .ret, .noop => return std.fmt.bufPrint(buf, "{s}", .{@tagName(insn)}),
-            .set => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}", .{ @tagName(insn), dumpArg(arg.a, &bufA) }),
-            .push => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}", .{ @tagName(insn), dumpArg(arg.a, &bufA) }),
-            .pop => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}", .{ @tagName(insn), dumpArg(arg.a, &bufA) }),
-            .jmp => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}", .{ @tagName(insn), dumpArg(arg.a, &bufA) }),
-            .call => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}", .{ @tagName(insn), dumpArg(arg.a, &bufA) }),
-            .out => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}", .{ @tagName(insn), dumpArg(arg.a, &bufA) }),
-            .in => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}", .{ @tagName(insn), dumpArg(arg.a, &bufA) }),
-            .eq => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}, {s}", .{ @tagName(insn), dumpArg(arg.a, &bufA), dumpArg(arg.b, &bufB), dumpArg(arg.c, &bufC) }),
-            .gt => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}, {s}", .{ @tagName(insn), dumpArg(arg.a, &bufA), dumpArg(arg.b, &bufB), dumpArg(arg.c, &bufC) }),
-            .jt => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}", .{ @tagName(insn), dumpArg(arg.a, &bufA), dumpArg(arg.b, &bufB) }),
-            .jf => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}", .{ @tagName(insn), dumpArg(arg.a, &bufA), dumpArg(arg.b, &bufB) }),
-            .not => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}", .{ @tagName(insn), dumpArg(arg.a, &bufA), dumpArg(arg.b, &bufB) }),
-            .wmem => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}", .{ @tagName(insn), dumpArg(arg.a, &bufA), dumpArg(arg.b, &bufB) }),
-            .rmem => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}", .{ @tagName(insn), dumpArg(arg.a, &bufA), dumpArg(arg.b, &bufB) }),
-            .add => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}, {s}", .{ @tagName(insn), dumpArg(arg.a, &bufA), dumpArg(arg.b, &bufB), dumpArg(arg.c, &bufC) }),
-            .mult => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}, {s}", .{ @tagName(insn), dumpArg(arg.a, &bufA), dumpArg(arg.b, &bufB), dumpArg(arg.c, &bufC) }),
-            .mod => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}, {s}", .{ @tagName(insn), dumpArg(arg.a, &bufA), dumpArg(arg.b, &bufB), dumpArg(arg.c, &bufC) }),
-            .band => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}, {s}", .{ @tagName(insn), dumpArg(arg.a, &bufA), dumpArg(arg.b, &bufB), dumpArg(arg.c, &bufC) }),
-            .bor => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}, {s}", .{ @tagName(insn), dumpArg(arg.a, &bufA), dumpArg(arg.b, &bufB), dumpArg(arg.c, &bufC) }),
+            .set => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}", .{ @tagName(insn), try dumpArg(arg.a, &bufA) }),
+            .push => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}", .{ @tagName(insn), try dumpArg(arg.a, &bufA) }),
+            .pop => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}", .{ @tagName(insn), try dumpArg(arg.a, &bufA) }),
+            .jmp => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}", .{ @tagName(insn), try dumpArg(arg.a, &bufA) }),
+            .call => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}", .{ @tagName(insn), try dumpArg(arg.a, &bufA) }),
+            .out => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}", .{ @tagName(insn), try dumpArg(arg.a, &bufA) }),
+            .in => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}", .{ @tagName(insn), try dumpArg(arg.a, &bufA) }),
+            .eq => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}, {s}", .{ @tagName(insn), try dumpArg(arg.a, &bufA), try dumpArg(arg.b, &bufB), try dumpArg(arg.c, &bufC) }),
+            .gt => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}, {s}", .{ @tagName(insn), try dumpArg(arg.a, &bufA), try dumpArg(arg.b, &bufB), try dumpArg(arg.c, &bufC) }),
+            .jt => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}", .{ @tagName(insn), try dumpArg(arg.a, &bufA), try dumpArg(arg.b, &bufB) }),
+            .jf => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}", .{ @tagName(insn), try dumpArg(arg.a, &bufA), try dumpArg(arg.b, &bufB) }),
+            .not => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}", .{ @tagName(insn), try dumpArg(arg.a, &bufA), try dumpArg(arg.b, &bufB) }),
+            .wmem => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}", .{ @tagName(insn), try dumpArg(arg.a, &bufA), try dumpArg(arg.b, &bufB) }),
+            .rmem => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}", .{ @tagName(insn), try dumpArg(arg.a, &bufA), try dumpArg(arg.b, &bufB) }),
+            .add => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}, {s}", .{ @tagName(insn), try dumpArg(arg.a, &bufA), try dumpArg(arg.b, &bufB), try dumpArg(arg.c, &bufC) }),
+            .mult => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}, {s}", .{ @tagName(insn), try dumpArg(arg.a, &bufA), try dumpArg(arg.b, &bufB), try dumpArg(arg.c, &bufC) }),
+            .mod => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}, {s}", .{ @tagName(insn), try dumpArg(arg.a, &bufA), try dumpArg(arg.b, &bufB), try dumpArg(arg.c, &bufC) }),
+            .band => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}, {s}", .{ @tagName(insn), try dumpArg(arg.a, &bufA), try dumpArg(arg.b, &bufB), try dumpArg(arg.c, &bufC) }),
+            .bor => |arg| return std.fmt.bufPrint(buf, "{s}\t{s}, {s}, {s}", .{ @tagName(insn), try dumpArg(arg.a, &bufA), try dumpArg(arg.b, &bufB), try dumpArg(arg.c, &bufC) }),
         }
     }
 
@@ -376,7 +377,7 @@ fn maybeQueueNewRoomToExplore(vms: *VM.State, node: BFS.Node, t: TraceStep, room
     entry.entry.value = room;
 
     const trace = try arena.alloc(TraceStep, node.trace.len + 1);
-    std.mem.copy(TraceStep, trace[0..node.trace.len], node.trace);
+    @memcpy(trace[0..node.trace.len], node.trace);
     trace[node.trace.len] = t;
 
     try agenda.insert(BFS.Node{
@@ -457,7 +458,7 @@ pub fn main() !void {
             try stdout.writeAll(out);
 
             while (true) {
-                print("[DEBUG] ip={}, sp={} regs={d}\n", .{ vm_state.ip, vm_state.sp, vm_state.regs });
+                print("[DEBUG] ip={?}, sp={} regs={d}\n", .{ vm_state.ip, vm_state.sp, vm_state.regs });
 
                 in = (try stdin.readUntilDelimiterOrEof(&buf_in, '\n')) orelse break;
                 buf_in[in.len] = '\n';
@@ -474,7 +475,7 @@ pub fn main() !void {
                     vm_state.mem[adr] = @as(u15, @intCast(fields[1].imm));
                 } else if (tools.match_pattern("m{}", in)) |fields| {
                     const adr = @as(u15, @intCast(fields[0].imm));
-                    print("[DEBUG] @{} = {s}\n", .{ adr, VM.dumpArg(vm_state.mem[adr], &buf_out) });
+                    print("[DEBUG] @{} = {s}\n", .{ adr, try VM.dumpArg(vm_state.mem[adr], &buf_out) });
                 } else if (tools.match_pattern("set bp {}", in)) |fields| {
                     const adr = @as(u15, @intCast(fields[0].imm));
                     try breakpoints.append(adr);
@@ -485,14 +486,14 @@ pub fn main() !void {
                     }
                 } else if (tools.match_pattern("stack", in)) |_| {
                     for (vm_state.stack[0..vm_state.sp]) |v| {
-                        print("[DEBUG] stack = {s}\n", .{VM.dumpArg(v, &buf_out)});
+                        print("[DEBUG] stack = {s}\n", .{try VM.dumpArg(v, &buf_out)});
                     }
                 } else if (tools.match_pattern("asm {}", in)) |fields| {
                     var ip = if (fields[0] == .imm) @as(u15, @intCast(fields[0].imm)) else vm_state.ip.?;
                     var nb: u32 = 0;
                     while (nb < 30) : (nb += 1) {
                         const insn = VM.fetchInsn(ip, &vm_state.mem);
-                        try stdout.print("[{}]\t{s}\n", .{ ip, VM.dumpInsn(insn.insn, &buf_out) });
+                        try stdout.print("[{}]\t{s}\n", .{ ip, try VM.dumpInsn(insn.insn, &buf_out) });
                         ip += @as(u15, 1) + insn.sz;
                     }
                 }

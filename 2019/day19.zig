@@ -119,7 +119,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
     map.default_tile = ' ';
     map.bbox = tools.BBox.empty;
 
-    var affected = blk: {
+    const affected = blk: {
         var affected: u32 = 0;
         var cursor = Vec2{ .x = 0, .y = 0 };
         cursor.y = 0;

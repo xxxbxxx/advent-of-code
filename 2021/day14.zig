@@ -43,7 +43,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
             gpa.free(bufs[1]);
         }
         var state = [2]usize{ template.len, 0 };
-        std.mem.copy(u8, bufs[0][0..state[0]], template);
+        @memcpy(bufs[0][0..state[0]], template);
 
         var gen: u32 = 0;
         while (gen < 10) : (gen += 1) {
@@ -128,7 +128,7 @@ pub fn run(input: []const u8, gpa: std.mem.Allocator) tools.RunError![2][]const 
                     if (out != 0) count2[out - table_base] += pairs_count[pair - table_base];
                 }
             }
-            std.mem.copy(u64, &pairs_count, &count2);
+            @memcpy(&pairs_count, &count2);
         }
 
         {

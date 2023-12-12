@@ -76,7 +76,7 @@ pub fn main() anyerror!void {
 
     {
         var parts: [1000]Part = undefined;
-        std.mem.copy(Part, parts[0..len], parts0[0..len]);
+        @memcpy(parts[0..len], parts0[0..len]);
 
         var steps: u32 = 0;
         var stabilised = false;
@@ -106,7 +106,7 @@ pub fn main() anyerror!void {
     {
         var parts: [1000]Part = undefined;
         var tmp: [1000]Part = undefined;
-        std.mem.copy(Part, parts[0..len], parts0[0..len]);
+        @memcpy(parts[0..len], parts0[0..len]);
 
         var steps: u32 = 0;
         var stabilised = false;

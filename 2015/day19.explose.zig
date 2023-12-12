@@ -28,9 +28,9 @@ fn compute_mutation(molecule: []const u8, rule: Replacement, startindex: *usize,
     if (idx) |i| {
         startindex.* = i + 1;
         const m = try allocator.alloc(u8, molecule.len + rule.to.len - rule.from.len);
-        std.mem.copy(u8, m[0..i], molecule[0..i]);
-        std.mem.copy(u8, m[i .. i + rule.to.len], rule.to);
-        std.mem.copy(u8, m[i + rule.to.len ..], molecule[i + rule.from.len ..]);
+        @memcpy(m[0..i], molecule[0..i]);
+        @memcpy(m[i .. i + rule.to.len], rule.to);
+        @memcpy(m[i + rule.to.len ..], molecule[i + rule.from.len ..]);
         return m;
     } else {
         return null;

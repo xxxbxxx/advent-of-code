@@ -34,7 +34,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         Computer.disassemble(boot_image);
 
     const names = [_][]const u8{ "Tester", "Sensor" }; // part 1 and 2.
-    var computers: [names.len]Computer = undefined;
+    const computers: [names.len]Computer = undefined;
     for (computers, 0..) |*c, i| {
         c.* = Computer{
             .name = names[i],

@@ -281,7 +281,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                 // si on fait directement "for (graph[cur].list) |l|" ça marche, mais ya trops de combinaisons d'etats inutiles:
                 // -> on ne génère que des etats où une nouvelle clef est capturée
                 var capturepool: [50]PoiDist = undefined;
-                var capturelist = enumerate_capturables(cur, &node.state.keys, &graph, &capturepool);
+                const capturelist = enumerate_capturables(cur, &node.state.keys, &graph, &capturepool);
 
                 for (capturelist) |l| {
                     const p = l.poi;

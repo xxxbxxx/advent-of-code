@@ -52,10 +52,10 @@ fn reduce(string: []const u8, pattern: []const u8, replace: []const u8, storage:
     var it = std.mem.split(u8, string, pattern);
     while (it.next()) |str| {
         if (!first) {
-            std.mem.copy(u8, storage[cursor .. cursor + replace.len], replace);
+            @memcpy(storage[cursor .. cursor + replace.len], replace);
             cursor += replace.len;
         }
-        std.mem.copy(u8, storage[cursor .. cursor + str.len], str);
+        @memcpy(storage[cursor .. cursor + str.len], str);
         first = false;
         cursor += str.len;
     }
@@ -281,20 +281,20 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
             const patternA = commandstring[0..l1];
             if (patternA[0] == ',' or patternA[patternA.len - 1] == ',')
                 continue;
-            var reduceA = reduce(commandstring, patternA, "A", &storage_1);
+            const reduceA = reduce(commandstring, patternA, "A", &storage_1);
 
             var l2: usize = 1;
             while (l2 <= 20) : (l2 += 1) {
                 const patternB = std.mem.trim(u8, reduceA, ",ABC")[0..l2];
                 if (patternB[0] == ',' or patternB[patternB.len - 1] == ',')
                     continue;
-                var reduceB = reduce(reduceA, patternB, "B", &storage_2);
+                const reduceB = reduce(reduceA, patternB, "B", &storage_2);
                 var l3: usize = 1;
                 while (l3 <= 20) : (l3 += 1) {
                     const patternC = std.mem.trim(u8, reduceB, ",ABC")[0..l3];
                     if (patternC[0] == ',' or patternC[patternC.len - 1] == ',')
                         continue;
-                    var reduceC = reduce(reduceB, patternC, "C", &storage_3);
+                    const reduceC = reduce(reduceB, patternC, "C", &storage_3);
 
                     if (reduceC.len < 20) {
                         break :blk .{ reduceC, patternA, patternB, patternC };

@@ -49,7 +49,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
             }
             //std.debug.print("p={}, d={}\n", .{ p, d });
         }
-        break :ans (try std.math.absInt(p.x)) + (try std.math.absInt(p.y));
+        break :ans @abs(p.x) + @abs(p.y);
     };
 
     const ans2 = ans: {
@@ -96,7 +96,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
             }
             //std.debug.print("p={}, d={}\n", .{ p, d });
         }
-        break :ans (try std.math.absInt(p.x)) + (try std.math.absInt(p.y));
+        break :ans @abs(p.x) + @abs(p.y);
     };
 
     return [_][]const u8{

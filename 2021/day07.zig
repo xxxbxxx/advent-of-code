@@ -20,7 +20,7 @@ fn fuelCost_part2(dist: u32) u32 {
 fn computeTotalFuel(list: []i16, t: i16, fuelcostFn: fn (u32) u32) u64 {
     var total: u64 = 0;
     for (list) |p| {
-        total += fuelcostFn(@as(u32, @intCast(std.math.absInt(t - p) catch unreachable)));
+        total += fuelcostFn(@abs(t - p));
     }
     return total;
 }

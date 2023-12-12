@@ -41,7 +41,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     const ans1 = ans: {
         var prev = [_]u1{0} ** 1000;
         var next = [_]u1{0} ** 1000;
-        std.mem.copy(u1, &prev, &pots);
+        @memcpy(&prev, &pots);
         var prev_min = pot_min;
         var prev_max = pot_max;
 
@@ -60,7 +60,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                 }
             }
 
-            std.mem.copy(u1, &prev, &next);
+            @memcpy(&prev, &next);
             prev_min = next_min;
             prev_max = next_max;
         }
@@ -77,7 +77,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     const ans2 = ans: {
         var prev = [_]u1{0} ** 1000;
         var next = [_]u1{0} ** 1000;
-        std.mem.copy(u1, &prev, &pots);
+        @memcpy(&prev, &pots);
         var prev_min = pot_min;
         var prev_max = pot_max;
 
@@ -105,7 +105,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                 }
             }
 
-            std.mem.copy(u1, &prev, &next);
+            @memcpy(&prev, &next);
             prev_min = next_min;
             prev_max = next_max;
 

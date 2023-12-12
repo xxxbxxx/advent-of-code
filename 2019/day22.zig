@@ -31,7 +31,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
 
         var it = std.mem.tokenize(u8, input, "\n");
         while (it.next()) |line| {
-            var step = blk: {
+            const step = blk: {
                 if (tools.match_pattern("deal with increment {}", line)) |vals| {
                     const inc: i32 = @intCast(vals[0].imm);
                     break :blk AffineFunc{ .a = inc, .b = 0 };
@@ -67,7 +67,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
 
         var it = std.mem.tokenize(u8, input, "\n");
         while (it.next()) |line| {
-            var step = blk: {
+            const step = blk: {
                 if (tools.match_pattern("deal with increment {}", line)) |vals| {
                     const inc: i32 = @intCast(vals[0].imm);
                     break :blk AffineFunc{ .a = inc, .b = 0 };

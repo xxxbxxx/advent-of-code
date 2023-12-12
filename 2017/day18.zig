@@ -141,7 +141,7 @@ pub fn main() anyerror!void {
                             trace("{}: rcv <- {}\n", .{ icpu, c.rcv_queue[0] });
 
                             c.regs[insn.arg[0].reg] = c.rcv_queue[0];
-                            std.mem.copy(i64, c.rcv_queue[0 .. c.rcv_len - 1], c.rcv_queue[1..c.rcv_len]);
+                            @memcpy(c.rcv_queue[0 .. c.rcv_len - 1], c.rcv_queue[1..c.rcv_len]);
                             c.rcv_len -= 1;
                         } else if (is_output) {
                             other.rcv_queue[other.rcv_len] = switch (insn.arg[1]) {

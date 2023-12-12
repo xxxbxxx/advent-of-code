@@ -160,7 +160,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
 
                 // parse desc
                 var found_new_room = false;
-                var room_index: ?usize = blk: {
+                const room_index: ?usize = blk: {
                     var room: Room = undefined;
                     var desc: [1000]u8 = undefined;
                     var out: usize = 0;
@@ -308,7 +308,7 @@ pub fn run(input: []const u8, allocator: std.mem.Allocator) tools.RunError![2][]
                     map.set(p, ' ');
                     for (room.doors, 0..) |open, d| {
                         const np = Vec2{ .x = p.x + dirs[d].x, .y = p.y + dirs[d].y };
-                        var prev_val = map.get(np) orelse '#';
+                        const prev_val = map.get(np) orelse '#';
 
                         const new_val: u8 = if (open) '.' else '#';
                         if (prev_val == '#' or prev_val == new_val) {

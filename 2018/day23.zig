@@ -6,7 +6,7 @@ const Vec3 = struct { x: i32, y: i32, z: i32 };
 const zero3 = Vec3{ .x = 0, .y = 0, .z = 0 };
 const Bot = struct { p: Vec3, r: u31 };
 fn dist(a: Vec3, b: Vec3) u32 {
-    return @as(u32, @intCast((std.math.absInt(a.x - b.x) catch unreachable) + (std.math.absInt(a.y - b.y) catch unreachable) + (std.math.absInt(a.z - b.z) catch unreachable)));
+    return @abs(a.x - b.x) + @abs(a.y - b.y) + @abs(a.z - b.z);
 }
 
 fn axisRangeDist(p: i32, min: i32, max: i32) u32 {
@@ -111,9 +111,9 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
             const step = (cell.size + 1) / 2;
             var subcell_idx: u32 = 0;
             while (subcell_idx < 8) : (subcell_idx += 1) {
-                var x = subcell_idx % 2;
-                var y = (subcell_idx / 2) % 2;
-                var z = (subcell_idx / 4) % 2;
+                const x = subcell_idx % 2;
+                const y = (subcell_idx / 2) % 2;
+                const z = (subcell_idx / 4) % 2;
                 const corner = Vec3{ .x = cell.corner.x + @as(i32, @intCast(x * step)), .y = cell.corner.y + @as(i32, @intCast(y * step)), .z = cell.corner.z + @as(i32, @intCast(z * step)) };
                 const count = countBots(corner, step, param.bots);
                 try workqueue.add(Cell{ .size = step, .corner = corner, .population = count });

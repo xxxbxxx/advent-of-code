@@ -25,7 +25,7 @@ pub fn run(input_text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 
         var y: usize = 1;
         var it = std.mem.tokenize(u8, input_text, "\n\r");
         while (it.next()) |line| {
-            std.mem.copy(u8, input[y * stride + 1 .. y * stride + 1 + width], line[0..width]);
+            @memcpy(input[y * stride + 1 .. y * stride + 1 + width], line[0..width]);
             input[y * stride + 0] = '.';
             input[y * stride + width + 1] = '.';
             input[y * stride + width + 2] = '\n';
