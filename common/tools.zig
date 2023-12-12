@@ -811,8 +811,6 @@ pub fn ModArith(comptime T: type) type {
             // Sortie : r[0] = pgcd(base, m) et r[0] = base*r[1]+m*r[2] -> si r[0] = 1, r[1] est l'inverse de base % m
             var r: @Vector(2, T) = [_]T{ base, 1 };
             var r1: @Vector(2, T) = [_]T{ m, 0 };
-            r[1] = 1;
-            r1[1] = 0; // work around bug.
 
             while (r1[0] != 0) {
                 const q: @Vector(2, T) = @splat(@divFloor(r[0], r1[0]));

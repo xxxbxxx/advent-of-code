@@ -1,4 +1,7 @@
 # Compiled Object files
+#aoc inputs:
+*.txt
+
 *.slo
 *.lo
 *.o
