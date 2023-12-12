@@ -17,6 +17,20 @@ pub fn build(b: *Builder) void {
         day: []const u8,
     };
     const problems = [_]Problem{
+        .{ .year = "2023", .day = "day01" },
+        .{ .year = "2023", .day = "day02" },
+        .{ .year = "2023", .day = "day03" },
+        .{ .year = "2023", .day = "day04" },
+        .{ .year = "2023", .day = "day05" },
+        .{ .year = "2023", .day = "day06" },
+        .{ .year = "2023", .day = "day07" },
+        .{ .year = "2023", .day = "day08" },
+        .{ .year = "2023", .day = "day09" },
+        .{ .year = "2023", .day = "day10" },
+        .{ .year = "2023", .day = "day11" },
+        .{ .year = "2023", .day = "day12" },
+        .{ .year = "2023", .day = "alldays" }, // alldays in one exe
+
         .{ .year = "2021", .day = "day01" },
         .{ .year = "2021", .day = "day02" },
         .{ .year = "2021", .day = "day03" },
@@ -126,7 +140,7 @@ pub fn build(b: *Builder) void {
 
         .{ .year = "synacor", .day = "main" },
     };
-    const years = [_][]const u8{ "2018", "2019", "2020", "2021", "synacor" };
+    const years = [_][]const u8{ "2018", "2019", "2020", "2021", "2023", "synacor" };
 
     const run_step = b.step("run", "Run all the days");
     var runyear_step: [years.len]*Step = undefined;
@@ -150,7 +164,7 @@ pub fn build(b: *Builder) void {
         //exe.use_llvm = false;
         //exe.use_lld = false;
 
-        if (mem.eql(u8, pb.year, "2021") or mem.eql(u8, pb.year, "2022")) {
+        if (mem.eql(u8, pb.year, "2021") or mem.eql(u8, pb.year, "2023")) {
             exe.addModule("tools", tools_module_v2);
         } else {
             exe.addModule("tools", tools_module_v1);
@@ -179,7 +193,7 @@ pub fn build(b: *Builder) void {
         }
     }
 
-    const test_step = b.step("test", "Test all days of 2021");
+    const test_step = b.step("test", "Test all days of 2023");
     {
         const test_cmd21 = b.addTest(.{
             .root_source_file = .{ .path = "2021/alldays.zig" },
@@ -190,8 +204,20 @@ pub fn build(b: *Builder) void {
         });
         test_cmd21.addModule("tools", tools_module_v2);
         const run_cmd21 = b.addRunArtifact(test_cmd21);
+        _ = run_cmd21;
 
-        test_step.dependOn(&run_cmd21.step);
+        const test_cmd23 = b.addTest(.{
+            .root_source_file = .{ .path = "2023/alldays.zig" },
+            .target = target,
+            .optimize = optimize,
+            //.use_lld = false,
+            //.use_llvm = false,
+        });
+        test_cmd23.addModule("tools", tools_module_v2);
+        const run_cmd23 = b.addRunArtifact(test_cmd23);
+
+        //test_step.dependOn(&run_cmd21.step);
+        test_step.dependOn(&run_cmd23.step);
     }
 
     // const info_step = b.step("info", "Additional info");

@@ -172,6 +172,27 @@ pub fn Map(comptime TileType: type, comptime width: usize, comptime height: usiz
                 return t;
             unreachable;
         }
+
+        pub fn initFromText(map: *Self, text: []const u8) void {
+            var p: Vec2 = .{ 0, 0 };
+            var it = std.mem.tokenize(u8, text, "\n\r\t");
+            while (it.next()) |line| {
+                const trimmed = std.mem.trim(u8, line, " \t");
+                if (trimmed.len == 0) continue;
+                map.setLine(p, trimmed);
+                p += .{ 0, 1 };
+            }
+        }
+
+        pub fn find(map: *Self, needle: Tile) ?Vec2 {
+            var it = map.iter(null);
+            while (it.nextPos()) |p| {
+                const t = map.at(p);
+                if (t == needle) return p;
+            }
+            return null;
+        }
+
         pub fn printToBuf(map: *const Self, buf: []u8, comptime opt: struct { pos: ?Vec2 = null, clip: ?BBox = null, tileToCharFn: fn (m: Tile) u8 = defaultTileToChar }) []const u8 {
             var i: usize = 0;
             const b = if (opt.clip) |box|
@@ -404,4 +425,19 @@ pub fn Map(comptime TileType: type, comptime width: usize, comptime height: usiz
             return Iterator{ .map = map, .b = b, .p = b.min };
         }
     };
+}
+
+pub fn pgcd(_a: anytype, _b: anytype) @TypeOf(_a) {
+    var a: @TypeOf(_a) = _a;
+    var b: @TypeOf(_a) = _b;
+    while (b != 0) {
+        const t = b;
+        b = a % b;
+        a = t;
+    }
+    return a;
+}
+
+pub fn ppcm(a: anytype, b: anytype) @TypeOf(a) {
+    return (a * b) / pgcd(a, b);
 }
