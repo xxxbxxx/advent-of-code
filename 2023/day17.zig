@@ -15,15 +15,16 @@ pub fn run(text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     var map: Map = .{ .default_tile = '.' };
     map.initFromText(text);
     const goal = map.bbox.max;
+    const start = map.bbox.min;
 
     const State = struct {
-        p: Vec2,
+        pos: Vec2,
         dir: Vec2,
         total_loss: u32,
         consecutive: u8,
         fn lessThan(g: Vec2, a: @This(), b: @This()) std.math.Order {
-            const da = @reduce(.Add, @abs(g - a.p)) + a.total_loss;
-            const db = @reduce(.Add, @abs(g - b.p)) + b.total_loss;
+            const da = @reduce(.Add, @abs(g - a.pos)) + a.total_loss;
+            const db = @reduce(.Add, @abs(g - b.pos)) + b.total_loss;
             return std.math.order(da, db);
         }
     };
@@ -33,15 +34,15 @@ pub fn run(text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     defer visited.deinit();
 
     const ans1 = ans: {
-        try agenda.add(State{ .p = .{ 0, 0 }, .dir = .{ 1, 0 }, .total_loss = 0, .consecutive = 0 });
-        try agenda.add(State{ .p = .{ 0, 0 }, .dir = .{ 0, 1 }, .total_loss = 0, .consecutive = 0 });
+        try agenda.add(State{ .pos = start, .dir = .{ 1, 0 }, .total_loss = 0, .consecutive = 0 });
+        try agenda.add(State{ .pos = start, .dir = .{ 0, 1 }, .total_loss = 0, .consecutive = 0 });
 
         while (agenda.removeOrNull()) |s| {
-            if (@reduce(.And, s.p == goal)) break :ans s.total_loss;
-            if (visited.get(.{ s.p, s.dir, s.consecutive })) |value| {
+            if (@reduce(.And, s.pos == goal)) break :ans s.total_loss;
+            if (visited.get(.{ s.pos, s.dir, s.consecutive })) |value| {
                 if (value <= s.total_loss) continue;
             }
-            try visited.put(.{ s.p, s.dir, s.consecutive }, s.total_loss);
+            try visited.put(.{ s.pos, s.dir, s.consecutive }, s.total_loss);
 
             //std.debug.print("pop state:{}\n", .{s});
             const dir_straight: Vec2 = s.dir;
@@ -49,9 +50,9 @@ pub fn run(text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
             const dir_right: Vec2 = .{ s.dir[1], -s.dir[0] };
             inline for (.{ .{ dir_straight, s.consecutive + 1 }, .{ dir_left, 1 }, .{ dir_right, 1 } }) |step| {
                 if (step[1] < 4) {
-                    const p1 = s.p + step[0];
+                    const p1 = s.pos + step[0];
                     if (map.get(p1)) |loss| {
-                        const s1: State = .{ .p = p1, .dir = step[0], .total_loss = s.total_loss + (loss - '0'), .consecutive = step[1] };
+                        const s1: State = .{ .pos = p1, .dir = step[0], .total_loss = s.total_loss + (loss - '0'), .consecutive = step[1] };
                         //std.debug.print("push state:{}\n", .{s1});
                         try agenda.add(s1);
                     }
@@ -64,19 +65,19 @@ pub fn run(text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     agenda.len = 0;
     visited.clearRetainingCapacity();
     const ans2 = ans: {
-        try agenda.add(State{ .p = .{ 0, 0 }, .dir = .{ 1, 0 }, .total_loss = 0, .consecutive = 0 });
-        try agenda.add(State{ .p = .{ 0, 0 }, .dir = .{ 0, 1 }, .total_loss = 0, .consecutive = 0 });
+        try agenda.add(State{ .pos = start, .dir = .{ 1, 0 }, .total_loss = 0, .consecutive = 0 });
+        try agenda.add(State{ .pos = start, .dir = .{ 0, 1 }, .total_loss = 0, .consecutive = 0 });
 
         while (agenda.removeOrNull()) |s| {
-            if (@reduce(.And, s.p == goal)) {
+            if (@reduce(.And, s.pos == goal)) {
                 if (s.consecutive >= 4) break :ans s.total_loss;
                 continue;
             }
 
-            if (visited.get(.{ s.p, s.dir, s.consecutive })) |value| {
+            if (visited.get(.{ s.pos, s.dir, s.consecutive })) |value| {
                 if (value <= s.total_loss) continue;
             }
-            try visited.put(.{ s.p, s.dir, s.consecutive }, s.total_loss);
+            try visited.put(.{ s.pos, s.dir, s.consecutive }, s.total_loss);
 
             const dir_straight: Vec2 = s.dir;
             const dir_left: Vec2 = .{ -s.dir[1], s.dir[0] };
@@ -88,14 +89,14 @@ pub fn run(text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                 else => unreachable,
             };
             for (moves) |step| {
-                const p1 = s.p + step[0];
+                const p1 = s.pos + step[0];
                 if (map.get(p1)) |loss| {
                     const l = s.total_loss + (loss - '0');
                     if (visited.get(.{ p1, step[0], step[1] })) |value| {
                         if (value <= l) continue;
                     }
 
-                    try agenda.add(.{ .p = p1, .dir = step[0], .total_loss = l, .consecutive = step[1] });
+                    try agenda.add(.{ .pos = p1, .dir = step[0], .total_loss = l, .consecutive = step[1] });
                 }
             }
         }
