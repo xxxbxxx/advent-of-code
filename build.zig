@@ -34,6 +34,11 @@ pub fn build(b: *std.Build) void {
         .{ .year = "2023", .day = "day18" },
         .{ .year = "2023", .day = "day19" },
         .{ .year = "2023", .day = "day20" },
+        .{ .year = "2023", .day = "day21" },
+        .{ .year = "2023", .day = "day22" },
+        .{ .year = "2023", .day = "day23" },
+        .{ .year = "2023", .day = "day24" },
+        .{ .year = "2023", .day = "day25" },
         .{ .year = "2023", .day = "alldays" }, // alldays in one exe
 
         .{ .year = "2021", .day = "day01" },
