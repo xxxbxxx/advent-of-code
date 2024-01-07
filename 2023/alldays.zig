@@ -28,11 +28,11 @@ const alldays = [_]struct { runFn: RunFn, input: []const u8 }{
     .{ .runFn = &@import("day18.zig").run, .input = @embedFile("day18.txt") },
     .{ .runFn = &@import("day19.zig").run, .input = @embedFile("day19.txt") },
     .{ .runFn = &@import("day20.zig").run, .input = @embedFile("day20.txt") },
-    //.{ .runFn = &@import("day21.zig").run, .input = @embedFile("day21.txt") },
-    //.{ .runFn = &@import("day22.zig").run, .input = @embedFile("day22.txt") },
-    //.{ .runFn = &@import("day23.zig").run, .input = @embedFile("day23.txt") },
-    //.{ .runFn = &@import("day24.zig").run, .input = @embedFile("day24.txt") },
-    //.{ .runFn = &@import("day25.zig").run, .input = @embedFile("day25.txt") },
+    .{ .runFn = &@import("day21.zig").run, .input = @embedFile("day21.txt") },
+    .{ .runFn = &@import("day22.zig").run, .input = @embedFile("day22.txt") },
+    .{ .runFn = &@import("day23.zig").run, .input = @embedFile("day23.txt") },
+    .{ .runFn = &@import("day24.zig").run, .input = @embedFile("day24.txt") },
+    .{ .runFn = &@import("day25.zig").run, .input = @embedFile("day25.txt") },
 };
 
 test {
@@ -56,11 +56,11 @@ test {
     _ = @import("day18.zig");
     _ = @import("day19.zig");
     _ = @import("day20.zig");
-    //_ = @import("day21.zig");
-    //_ = @import("day22.zig");
-    //_ = @import("day23.zig");
-    //_ = @import("day24.zig");
-    //_ = @import("day25.zig");
+    _ = @import("day21.zig");
+    _ = @import("day22.zig");
+    _ = @import("day23.zig");
+    _ = @import("day24.zig");
+    _ = @import("day25.zig");
 }
 
 pub fn main() !void {

@@ -1,9 +1,7 @@
 const std = @import("std");
 const builtin = @import("builtin");
 
-// XXX TODO "build_options" doesn't reach here from build.zig.
-// pub const enable = if (builtin.is_test) false else @import("build_options").enable_tracy;
-pub const enable = false;
+pub const enable = if (builtin.is_test) false else @import("build_options").enable_tracy;
 
 extern fn ___tracy_emit_frame_mark_start(name: ?[*:0]const u8) void;
 extern fn ___tracy_emit_frame_mark_end(name: ?[*:0]const u8) void;

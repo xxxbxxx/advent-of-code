@@ -13,7 +13,9 @@ const Computer = tools.IntCode_Computer;
 
 pub fn main() anyerror!void {
     const stdout = std.io.getStdOut().writer();
-    const allocator = std.heap.ArenaAllocator.init(std.heap.page_allocator).allocator();
+    var arena = std.heap.ArenaAllocator.init(std.heap.page_allocator);
+    defer arena.deinit();
+    const allocator = arena.allocator();
 
     const Test = struct {
         name: []const u8,

@@ -1,10 +1,7 @@
-const Builder = @import("std").build.Builder;
-const Step = @import("std").build.Step;
-const mem = @import("std").mem;
-const fs = @import("std").fs;
-const debug = @import("std").debug;
+const std = @import("std");
+const Step = std.Build.Step;
 
-pub fn build(b: *Builder) void {
+pub fn build(b: *std.Build) void {
     const target = b.standardTargetOptions(.{});
     const optimize = b.standardOptimizeOption(.{});
 
@@ -156,8 +153,9 @@ pub fn build(b: *Builder) void {
         runyear_step[i] = b.step("run" ++ year, "Run days from " ++ year);
     }
 
-    const tools_module_v2 = b.createModule(.{ .source_file = .{ .path = "common/tools_v2.zig" } });
-    const tools_module_v1 = b.createModule(.{ .source_file = .{ .path = "common/tools.zig" } });
+    const tools_module_v2 = b.createModule(.{ .root_source_file = .{ .path = "common/tools_v2.zig" } });
+    const tools_module_v1 = b.createModule(.{ .root_source_file = .{ .path = "common/tools.zig" } });
+    tools_module_v2.addOptions("build_options", exe_options);
 
     for (problems) |pb| {
         const path = b.fmt("{s}/{s}.zig", .{ pb.year, pb.day });
@@ -168,20 +166,20 @@ pub fn build(b: *Builder) void {
             .target = target,
             .optimize = optimize,
         });
-        exe.addOptions("build_options", exe_options);
+        exe.root_module.addOptions("build_options", exe_options);
         //exe.use_llvm = false;
         //exe.use_lld = false;
 
-        if (mem.eql(u8, pb.year, "2021") or mem.eql(u8, pb.year, "2023")) {
-            exe.addModule("tools", tools_module_v2);
+        if (std.mem.eql(u8, pb.year, "2021") or std.mem.eql(u8, pb.year, "2023")) {
+            exe.root_module.addImport("tools", tools_module_v2);
         } else {
-            exe.addModule("tools", tools_module_v1);
+            exe.root_module.addImport("tools", tools_module_v1);
         }
 
         if (tracy) |tracy_path| {
-            const client_cpp = fs.path.join(
+            const client_cpp = std.fs.path.join(
                 b.allocator,
-                &[_][]const u8{ tracy_path, "TracyClient.cpp" },
+                &[_][]const u8{ tracy_path, "public/TracyClient.cpp" },
             ) catch unreachable;
             exe.addIncludePath(.{ .path = tracy_path });
             exe.addCSourceFile(.{ .file = .{ .path = client_cpp }, .flags = &[_][]const u8{ "-DTRACY_ENABLE=1", "-fno-sanitize=undefined" } });
@@ -192,11 +190,11 @@ pub fn build(b: *Builder) void {
 
         const run_cmd = b.addRunArtifact(exe);
 
-        if (!mem.eql(u8, pb.year, "synacor")) {
+        if (!std.mem.eql(u8, pb.year, "synacor")) {
             run_step.dependOn(&run_cmd.step);
         }
         for (runyear_step, 0..) |s, i| {
-            if (mem.eql(u8, years[i], pb.year))
+            if (std.mem.eql(u8, years[i], pb.year))
                 s.dependOn(&run_cmd.step);
         }
     }
@@ -210,7 +208,7 @@ pub fn build(b: *Builder) void {
             // .use_lld = false,
             // .use_llvm = false,
         });
-        test_cmd21.addModule("tools", tools_module_v2);
+        test_cmd21.root_module.addImport("tools", tools_module_v2);
         const run_cmd21 = b.addRunArtifact(test_cmd21);
         _ = run_cmd21;
 
@@ -221,7 +219,7 @@ pub fn build(b: *Builder) void {
             //.use_lld = false,
             //.use_llvm = false,
         });
-        test_cmd23.addModule("tools", tools_module_v2);
+        test_cmd23.root_module.addImport("tools", tools_module_v2);
         const run_cmd23 = b.addRunArtifact(test_cmd23);
 
         //test_step.dependOn(&run_cmd21.step);
@@ -232,11 +230,11 @@ pub fn build(b: *Builder) void {
     // {
     //     const log = b.addLog(
     //         \\ to run a single day:
-    //         \\   for 2021:    `zig run 2021/day03.zig  --pkg-begin "tools" "common/tools_v2.zig" --pkg-end'
-    //         \\   older years: `zig run 2018/day10.zig  --pkg-begin "tools" "common/tools.zig" --pkg-end'
+    //         \\   for 2021:    `zig run --dep tools --mod root 2021/day03.zig --mod tools common/tools_v2.zig'
+    //         \\   older years: `zig run --dep tools --mod root 2018/day10.zig --mod tools common/tools.zig'
     //         \\
     //         \\ 2019 intcode bench: (best year by far! )
-    //         \\    `zig run 2019/intcode_bench.zig  --pkg-begin "tools" "common/tools.zig" --pkg-end -OReleaseFast'
+    //         \\    `zig run --dep tools --mod root 2019/intcode_bench.zig --mod tools common/tools.zig -OReleaseFast'
     //         \\
     //     , .{});
     //     info_step.dependOn(&log.step);
