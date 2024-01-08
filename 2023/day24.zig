@@ -5,6 +5,7 @@ const tools = @import("tools");
 pub const main = tools.defaultMain("2023/day24.txt", run);
 
 const T = i128; //f64;
+const T2 = i256; //f64;
 const Vec3 = @Vector(3, T);
 const BBox = struct { min: Vec3, max: Vec3 };
 const fixed_point: T = 2;
@@ -126,65 +127,88 @@ pub fn run(text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     };
 
     const ans2 = ans: {
-        const s0 = stones[0];
-        const s1 = stones[1];
-        const s2 = stones[2];
-        //var min:Vec3 = .{0,0,0};
-        //var max:Vec3 = .{0,0,0};
-        var bit_mask: u32 = 0;
-        next_v: while (true) : (bit_mask += 1) {
-            const v: Vec3 = vel: {
-                // enumere toutes les vitesses croissantes en commençant par les plus petites
-                var xyz: [3]u32 = .{ 0, 0, 0 };
-                inline for (0..3 * 10) |bit| {
-                    xyz[bit % 3] |= ((bit_mask >> @intCast(bit)) & 1) << @intCast(bit / 3);
-                }
-                break :vel .{
-                    @intCast(if (xyz[0] % 2 == 0) @as(i64, xyz[0] / 2) else -@as(i64, xyz[0] / 2)),
-                    @intCast(if (xyz[1] % 2 == 0) @as(i64, xyz[1] / 2) else -@as(i64, xyz[1] / 2)),
-                    @intCast(if (xyz[2] % 2 == 0) @as(i64, xyz[2] / 2) else -@as(i64, xyz[2] / 2)),
-                };
-            };
-            //min = @min(min, v);
-            //max = @max(max, v);
-            //if (bit_mask%0xFFFFF == 0) {
-            //    std.debug.print(" {} -> {} [{}, {}]\n", .{ bit_mask, v, min, max });
-            //}
+        //const s0 = stones[0];
+        //const s1 = stones[1];
+        //const s2 = stones[2];
+        for (stones, 0..) |s0, idx0| {
+            for (stones[idx0 + 1 ..], 0..) |s1, idx1| {
+                next_s: for (stones[idx0 + 1 ..][idx1 + 1 ..]) |s2| {
 
-            const equation: LinearSystem6x6 = .{ .a = .{
-                .{ 1, 0, 0, (v[0] - s0.v[0]), 0, 0 },
-                .{ 0, 1, 0, (v[1] - s0.v[1]), 0, 0 },
-                .{ 0, 0, 1, (v[2] - s0.v[2]), 0, 0 },
-                .{ 1, 0, 0, 0, (v[0] - s1.v[0]), 0 },
-                .{ 0, 1, 0, 0, (v[1] - s1.v[1]), 0 },
-                .{ 0, 0, 1, 0, 0, (v[2] - s2.v[2]) },
-            }, .b = .{
-                s0.p[0],
-                s0.p[1],
-                s0.p[2],
-                s1.p[0],
-                s1.p[1],
-                s2.p[2],
-            } };
-            if (equation.solve()) |sol| {
-                const o = Vec3{ sol[0], sol[1], sol[2] };
-                //std.debug.print("v: <{}>  : sol? {}\n", .{ v, o });
-                for (stones) |s| {
-                    if (v[0] - s.v[0] != 0) {
-                        const t0 = std.math.divExact(T, s.p[0] - o[0], v[0] - s.v[0]) catch continue :next_v;
-                        if (t0 <= 0) continue :next_v;
-                    }
-                    if (v[1] - s.v[1] != 0) {
-                        const t1 = std.math.divExact(T, s.p[1] - o[1], v[1] - s.v[1]) catch continue :next_v;
-                        if (t1 <= 0) continue :next_v;
-                    }
-                    if (v[2] - s.v[2] != 0) {
-                        const t2 = std.math.divExact(T, s.p[2] - o[2], v[2] - s.v[2]) catch continue :next_v;
-                        if (t2 <= 0) continue :next_v;
+                    // o.p+o.v*t = s0.p+s0.v*t
+                    //
+                    // o.p.x+o.v.x*t = s0.p.x+s0.v.x*t
+                    // o.p.y+o.v.y*t = s0.p.y+s0.v.y*t
+                    // o.p.z+o.v.z*t = s0.p.z+s0.v.z*t
+                    //
+                    // #1*o.v.y - #2*o.v.x
+                    // o.p.x*o.v.y - o.p.y*o.v.x + o.v.x*o.v.y*t - o.v.y*o.v.x*t = s0.p.x*o.v.y - s0.p.y*o.v.x + s0.v.x*o.v.y*t - s0.v.y*o.v.x*t
+                    // t = ((o.p.x-s0.p.x)*o.v.y - (o.p.y-s0.p.y)*o.v.x) / (s0.v.x*o.v.y - s0.v.y*o.v.x)
+
+                    //
+                    // (o.p.x-s0.p.x) = (s0.v.x-o.v.x)*t
+                    // (o.p.y-s0.p.y) = (s0.v.y-o.v.y)*t
+                    //
+                    // (o.p.x-s0.p.x) * (s0.v.y-o.v.y) = (o.p.y-s0.p.y) * (s0.v.x-o.v.x)
+                    //
+                    // o.p.x*s0.v.y - s0.p.x*s0.v.y - o.p.x*o.v.y + s0.p.x*o.v.y = o.p.y*s0.v.x - s0.p.y*s0.v.x - o.p.y*o.v.x + s0.p.y*o.v.x
+                    //
+                    // o.p.x * (s0.v.y) + o.p.y * (-s0.v.x) + o.v.y * (s0.p.x) + o.v.x * (-s0.p.y) + (s0.p.y*s0.v.x - s0.p.x*s0.v.y) = o.p.x*o.v.y - o.p.y*o.v.x
+                    //
+                    // idem avec s1:
+                    // o.p.x * (s0.v.y) + o.p.y * (-s0.v.x) + o.v.x * (-s0.p.y) + o.v.y * (s0.p.x) + (s0.p.y*s0.v.x - s0.p.x*s0.v.y) = o.p.x*o.v.y - o.p.y*o.v.x
+                    // o.p.x * (s1.v.y) + o.p.y * (-s1.v.x) + o.v.x * (-s1.p.y) + o.v.y * (s1.p.x) + (s1.p.y*s1.v.x - s1.p.x*s1.v.y) = o.p.x*o.v.y - o.p.y*o.v.x
+                    //
+                    // o.p.x * (s0.v.y-s1.v.y) + o.p.y * (s1.v.x-s0.v.x) + o.v.x * (s1.p.y-s0.p.y) + o.v.y * (s0.p.x-s1.p.x) + (s0.p.y*s0.v.x - s0.p.x*s0.v.y - s1.p.y*s1.v.x + s1.p.x*s1.v.y) = 0
+                    //
+                    // et avec x,z.
+                    // o.p.x * (s0.v.z-s1.v.z) + o.p.z * (s1.v.x-s0.v.x) + o.v.x * (s1.p.z-s0.p.z) + o.v.z * (s0.p.x-s1.p.x) = -s0.p.z*s0.v.x + s0.p.x*s0.v.z + s1.p.z*s1.v.x - s1.p.x*s1.v.z
+                    // et avec y,z.
+                    // o.p.y * (s0.v.z-s1.v.z) + o.p.z * (s1.v.y-s0.v.y) + o.v.y * (s1.p.z-s0.p.z) + o.v.z * (s0.p.y-s1.p.y) = -s0.p.z*s0.v.y + s0.p.y*s0.v.z + s1.p.z*s1.v.y - s1.p.y*s1.v.z
+                    // idem avec s2:
+                    // o.p.x * (s0.v.y-s1.v.y) + o.p.y * (s1.v.x-s0.v.x) + o.v.x * (s1.p.y-s0.p.y) + o.v.y * (s0.p.x-s1.p.x) = -s0.p.y*s0.v.x + s0.p.x*s0.v.y + s1.p.y*s1.v.x - s1.p.x*s1.v.y
+                    // o.p.x * (s0.v.y-s2.v.y) + o.p.y * (s2.v.x-s0.v.x) + o.v.x * (s2.p.y-s0.p.y) + o.v.y * (s0.p.x-s2.p.x) = -s0.p.y*s0.v.x + s0.p.x*s0.v.y + s2.p.y*s2.v.x - s2.p.x*s2.v.y
+
+                    const equation: LinearSystem6x6 = .{ .a = .{
+                        .{ (s0.v[1] - s1.v[1]), (s1.v[0] - s0.v[0]), 0, (s1.p[1] - s0.p[1]), (s0.p[0] - s1.p[0]), 0 },
+                        .{ (s0.v[2] - s1.v[2]), 0, (s1.v[0] - s0.v[0]), (s1.p[2] - s0.p[2]), 0, (s0.p[0] - s1.p[0]) },
+                        .{ 0, (s0.v[2] - s1.v[2]), (s1.v[1] - s0.v[1]), 0, (s1.p[2] - s0.p[2]), (s0.p[1] - s1.p[1]) },
+                        .{ (s0.v[1] - s2.v[1]), (s2.v[0] - s0.v[0]), 0, (s2.p[1] - s0.p[1]), (s0.p[0] - s2.p[0]), 0 },
+                        .{ (s0.v[2] - s2.v[2]), 0, (s2.v[0] - s0.v[0]), (s2.p[2] - s0.p[2]), 0, (s0.p[0] - s2.p[0]) },
+                        .{ 0, (s0.v[2] - s2.v[2]), (s2.v[1] - s0.v[1]), 0, (s2.p[2] - s0.p[2]), (s0.p[1] - s2.p[1]) },
+                    }, .b = .{
+                        -s0.p[1] * s0.v[0] + s0.p[0] * s0.v[1] + s1.p[1] * s1.v[0] - s1.p[0] * s1.v[1],
+                        -s0.p[2] * s0.v[0] + s0.p[0] * s0.v[2] + s1.p[2] * s1.v[0] - s1.p[0] * s1.v[2],
+                        -s0.p[2] * s0.v[1] + s0.p[1] * s0.v[2] + s1.p[2] * s1.v[1] - s1.p[1] * s1.v[2],
+                        -s0.p[1] * s0.v[0] + s0.p[0] * s0.v[1] + s2.p[1] * s2.v[0] - s2.p[0] * s2.v[1],
+                        -s0.p[2] * s0.v[0] + s0.p[0] * s0.v[2] + s2.p[2] * s2.v[0] - s2.p[0] * s2.v[2],
+                        -s0.p[2] * s0.v[1] + s0.p[1] * s0.v[2] + s2.p[2] * s2.v[1] - s2.p[1] * s2.v[2],
+                    } };
+
+                    //std.debug.print("stones: = {}, {}, {}\n", .{s0,s1,s2});
+                    //std.debug.print("eq = {}\n", .{equation});
+
+                    if (equation.solve()) |sol| {
+                        const o = Vec3{ @intCast(sol[0]), @intCast(sol[1]), @intCast(sol[2]) };
+                        const v = Vec3{ @intCast(sol[3]), @intCast(sol[4]), @intCast(sol[5]) };
+                        //std.debug.print("v: <{}>  : sol? {}\n", .{ v, o });
+                        for (stones) |s| {
+                            if (v[0] - s.v[0] != 0) {
+                                const t0 = std.math.divExact(T, s.p[0] - o[0], v[0] - s.v[0]) catch continue :next_s;
+                                if (t0 <= 0) unreachable; //continue :next_v;
+                            }
+                            if (v[1] - s.v[1] != 0) {
+                                const t1 = std.math.divExact(T, s.p[1] - o[1], v[1] - s.v[1]) catch continue :next_s;
+                                if (t1 <= 0) continue :next_s;
+                            }
+                            if (v[2] - s.v[2] != 0) {
+                                const t2 = std.math.divExact(T, s.p[2] - o[2], v[2] - s.v[2]) catch continue :next_s;
+                                if (t2 <= 0) continue :next_s;
+                            }
+                        }
+                        const solution = offset + o;
+                        break :ans @reduce(.Add, solution);
                     }
                 }
-                const solution = offset + o;
-                break :ans @reduce(.Add, solution);
             }
         }
         unreachable;
@@ -197,17 +221,17 @@ pub fn run(text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
 }
 
 const LinearSystem6x6 = struct {
-    a: [6][6]T,
-    b: [6]T,
+    a: [6][6]T2,
+    b: [6]T2,
 
     // solution système linéarie avec le pivot de gauss
-    fn solve(self: @This()) ?[6]T {
+    fn solve(self: @This()) ?[6]T2 {
         var eqs = self;
 
         // forme échelonnée
         var order = [_]u8{ 0, 1, 2, 3, 4, 5 };
         for (0..6) |i| {
-            //std.mem.sort(u8, &order, eqs, rowGreaterThan);
+            std.mem.sort(u8, &order, eqs, rowGreaterThan);
             //std.debug.print("order={any}\n", .{ order });
 
             const row_a0 = eqs.a[order[i]];
@@ -227,7 +251,7 @@ const LinearSystem6x6 = struct {
             //           std.debug.print("a={any}, b={any}\n", .{ eqs.a, eqs.b });
         }
 
-        var sol: [6]T = .{ 0, 0, 0, 0, 0, 0 };
+        var sol: [6]T2 = .{ 0, 0, 0, 0, 0, 0 };
         //std.mem.sort(u8, &order, eqs, rowLessThan);
         //std.debug.print("order={any}\n", .{ order });
         //std.debug.print("a={any}, b={any}\n", .{ eqs.a, eqs.b });
@@ -238,7 +262,7 @@ const LinearSystem6x6 = struct {
             for (row[1 + 5 - i ..], sol[1 + 5 - i ..]) |ai, si| {
                 b -= ai * si;
             }
-            sol[5 - i] = std.math.divExact(T, b, row[5 - i]) catch return null;
+            sol[5 - i] = std.math.divExact(T2, b, row[5 - i]) catch return null;
             //std.debug.print("row = {any}, b={}, sol={any}\n", .{ row, b, sol });
         }
         return sol;
@@ -262,7 +286,7 @@ test "LinearSolver" {
         .{ 5, 11, 13, 17, 19, 5 },
         .{ 6, 13, 17, 19, 23, 3 },
     }, .b = .{ 0, 0, 0, 0, 0, 0 } };
-    try std.testing.expectEqual([6]T{ 0, 0, 0, 0, 0, 0 }, eq00.solve().?);
+    try std.testing.expectEqual([6]T2{ 0, 0, 0, 0, 0, 0 }, eq00.solve().?);
 
     const eq01 = LinearSystem6x6{ .a = .{
         .{ 1, 2, 3, 5, 7, 17 },
@@ -272,7 +296,7 @@ test "LinearSolver" {
         .{ 5, 11, 13, 17, 19, 5 },
         .{ 6, 13, 17, 19, 23, 3 },
     }, .b = .{ 1, 2, 3, 4, 5, 6 } };
-    try std.testing.expectEqual([6]T{ 1, 0, 0, 0, 0, 0 }, eq01.solve().?);
+    try std.testing.expectEqual([6]T2{ 1, 0, 0, 0, 0, 0 }, eq01.solve().?);
 
     const eq02 = LinearSystem6x6{ .a = .{
         .{ 1, 2, 3, 5, 7, 17 },
@@ -282,7 +306,7 @@ test "LinearSolver" {
         .{ 5, 11, 13, 17, 19, 5 },
         .{ 6, 13, 17, 19, 23, 3 },
     }, .b = .{ 6 * 6, 5 * 6, 4 * 6, 3 * 6, 2 * 6, 1 * 6 } };
-    try std.testing.expectEqual([6]T{ -8 * 6, 0, 0, 7, 7, 0 }, eq02.solve().?);
+    try std.testing.expectEqual([6]T2{ -8 * 6, 0, 0, 7, 7, 0 }, eq02.solve().?);
 }
 
 test {

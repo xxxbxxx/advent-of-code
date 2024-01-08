@@ -30,6 +30,9 @@ pub fn run(text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         break :blk .{ Vec2{ xs.?, map.bbox.min[1] }, Vec2{ xe.?, map.bbox.max[1] } };
     };
 
+    const path_work_buf = try allocator.alloc(u16, @intCast(map.bbox.max[0] * map.bbox.max[1]));
+    defer allocator.free(path_work_buf);
+
     const ans1 = ans: {
         var graph = std.AutoArrayHashMap(Vec2, []Entry).init(allocator);
         defer graph.deinit();
@@ -101,7 +104,7 @@ pub fn run(text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         //     std.debug.print("\n", .{});
         // }
 
-        break :ans try longestChain(arena, graph.values(), 0, 1, &[0]u16{});
+        break :ans longestChain(path_work_buf, graph.values(), 0, 1, 0);
     };
 
     const ans2 = ans: {
@@ -180,7 +183,7 @@ pub fn run(text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
         //    std.debug.print("\n", .{});
         //}
 
-        const steps = try longestChain(arena, graph.values(), 0, 1, &[0]u16{});
+        const steps = longestChain(path_work_buf, graph.values(), 0, 1, 0);
         break :ans steps;
     };
 
@@ -190,19 +193,16 @@ pub fn run(text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     };
 }
 
-fn longestChain(allocator: std.mem.Allocator, graph: []const []const Entry, len: u64, cur: u16, path: []const u16) !u64 {
+fn longestChain(path: []u16, graph: []const []const Entry, len: u64, cur: u16, path_len: u32) u64 {
     if (cur == 0) return len;
 
     const entries = graph[cur];
-    const new_path = try allocator.alloc(u16, path.len + 1);
-    defer allocator.free(new_path);
-    @memcpy(new_path[0..path.len], path);
-    new_path[path.len] = cur;
+    path[path_len] = cur;
 
     var max: ?u64 = 0;
     for (entries) |n| {
-        if (std.mem.indexOfScalar(u16, path, n.from) == null) {
-            const steps = try longestChain(allocator, graph, len + n.steps.len, n.from, new_path);
+        if (std.mem.indexOfScalar(u16, path[0..path_len], n.from) == null) {
+            const steps = longestChain(path, graph, len + n.steps.len, n.from, path_len + 1);
             if (steps > (max orelse 0)) {
                 max = steps;
             }

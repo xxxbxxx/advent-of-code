@@ -3,7 +3,7 @@ const assert = std.debug.assert;
 const tools = @import("tools");
 
 pub const main = tools.defaultMain("2023/day21.txt", run);
-const Map = tools.Map(u8, 2048, 2048, true);
+const Map = tools.Map(u8, 512, 512, true);
 const Vec2 = tools.Vec2;
 
 const debug = false;
@@ -12,27 +12,29 @@ fn computeReachableTiles(allocator: std.mem.Allocator, map: *const Map, comptime
     // optimisation: pour éviter l'explosion combinatoire, on sait que si on a visité un endroit, on peut y revenir à volonté en deux pas. (retour + aller)
     // donc pas la peine de revisiter les cases pour savoir qu'on peu les atteindre avec le nombre exact de pas, on fait un floodfill.
 
-    if (infinite_tiling) {
-        assert(map.bbox.min[0] == 0 and map.bbox.min[1] == 0);
-    }
+    assert(map.bbox.min[0] == 0 and map.bbox.min[1] == 0);
 
     const Entry = struct {
         p: Vec2,
-        steps_todo: u32,
+        steps: u32,
         fn order(_: void, a: @This(), b: @This()) std.math.Order {
-            return std.math.order(b.steps_todo, a.steps_todo); // bfs
+            return std.math.order(a.steps, b.steps); // bfs
         }
     };
 
-    var visited = std.AutoHashMap(Vec2, if (debug) u8 else void).init(allocator); // TODO: un tableau 2D (Map), on caonnait la borne sup de la taille nb_steps*nb_steps*4
-    defer visited.deinit();
+    const nb_steps_signed: i32 = @intCast(nb_steps);
+    var visited = try allocator.alloc(if (debug) u8 else bool, @intCast((nb_steps_signed + map.bbox.max[0]) * (nb_steps_signed + map.bbox.max[1]) * 4));
+    defer allocator.free(visited);
+    @memset(visited, false);
+
     var agenda = std.PriorityQueue(Entry, void, Entry.order).init(allocator, {});
     defer agenda.deinit();
+    try agenda.ensureTotalCapacity(nb_steps * nb_steps);
 
-    try agenda.add(.{ .p = start, .steps_todo = nb_steps });
+    try agenda.add(.{ .p = start, .steps = 0 });
     var count: u32 = 0;
     while (agenda.removeOrNull()) |it| {
-        const ns = it.steps_todo - 1;
+        const ns = it.steps + 1;
         for (tools.Vec.cardinal4_dirs) |dir| {
             const p = it.p + dir;
             if (infinite_tiling) {
@@ -44,17 +46,18 @@ fn computeReachableTiles(allocator: std.mem.Allocator, map: *const Map, comptime
                 if (map.at(p) == '#')
                     continue;
             }
-            const visit = try visited.getOrPut(p);
-            if (visit.found_existing) {
-                if (debug) assert(visit.value_ptr.* % 2 == ns % 2);
+            const visited_idx = @as(u32, @intCast(p[0] + nb_steps_signed)) + @as(u32, @intCast(p[1] + nb_steps_signed)) * (2 * nb_steps);
+            if (visited[visited_idx]) {
+                if (debug) assert(visited[visited_idx] % 2 == ns % 2);
                 continue;
             }
-            if (debug) visit.value_ptr.* = @intCast(ns);
+            visited[visited_idx] = true;
+            if (debug) visited[visited_idx] = @intCast(ns);
 
             if (ns % 2 == 0)
                 count += 1; // on compte au fur et à mesure, en se basant sur le fait que n'importe quel endroit visité reste bon pour le nombre de pas voulu si on fait un aller retour.
-            if (ns >= 1)
-                try agenda.add(.{ .p = p, .steps_todo = ns });
+            if (ns < nb_steps)
+                try agenda.add(.{ .p = p, .steps = ns });
         }
     }
 

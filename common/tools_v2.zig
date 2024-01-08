@@ -428,8 +428,8 @@ pub fn Map(comptime TileType: type, comptime width: usize, comptime height: usiz
 }
 
 pub fn pgcd(_a: anytype, _b: anytype) @TypeOf(_a) {
-    var a: @TypeOf(_a) = @max(_a, _b);
-    var b: @TypeOf(_a) = @min(_a, _b);
+    var a: @TypeOf(_a) = @intCast(@max(@abs(_a), @abs(_b)));
+    var b: @TypeOf(_a) = @intCast(@min(@abs(_a), @abs(_b)));
     while (b != 0) {
         const t = b;
         b = @mod(a, b);
@@ -438,7 +438,10 @@ pub fn pgcd(_a: anytype, _b: anytype) @TypeOf(_a) {
     return a;
 }
 
-pub fn ppcm(a: anytype, b: anytype) @TypeOf(a) {
-    if (a == 0 or b == 0) return 0;
-    return @divExact(a * b, pgcd(a, b));
+pub fn ppcm(_a: anytype, _b: anytype) @TypeOf(_a) {
+    const a = @abs(_a);
+    const b = @abs(_b);
+    if (a * b == 0) return 0;
+    const div = pgcd(a, b);
+    return @intCast(@divExact(a * b, div));
 }
