@@ -40,8 +40,8 @@ fn includes(list: []Vec2, e: Vec2) bool {
 }
 
 fn angleLessThan(_: void, a: Vec2, b: Vec2) bool {
-    const angle_a = std.math.atan2(f32, @as(f32, @floatFromInt(a[0])), @as(f32, @floatFromInt(a[1])));
-    const angle_b = std.math.atan2(f32, @as(f32, @floatFromInt(b[0])), @as(f32, @floatFromInt(b[1])));
+    const angle_a = std.math.atan2(@as(f32, @floatFromInt(a[0])), @as(f32, @floatFromInt(a[1])));
+    const angle_b = std.math.atan2(@as(f32, @floatFromInt(b[0])), @as(f32, @floatFromInt(b[1])));
     return angle_a > angle_b;
 }
 

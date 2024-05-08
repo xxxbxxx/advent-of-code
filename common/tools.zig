@@ -3,7 +3,7 @@ const assert = std.debug.assert;
 const print = std.debug.print;
 
 pub const RunError = std.mem.Allocator.Error || std.fmt.ParseIntError || error{ UnsupportedInput, InvalidEnumName, UnexpectedEOS };
-const MainError = RunError || std.fs.File.OpenError || std.os.ReadError || std.os.SeekError || std.os.WriteError;
+const MainError = RunError || std.fs.File.OpenError || std.fs.File.ReadError || std.fs.File.SeekError || std.fs.File.WriteError;
 
 pub fn defaultMain(comptime input_fname: []const u8, comptime runFn: fn (input: []const u8, allocator: std.mem.Allocator) RunError![2][]const u8) fn () MainError!void {
     const T = struct {

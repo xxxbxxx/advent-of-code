@@ -3,15 +3,12 @@ const assert = std.debug.assert;
 const tools = @import("tools");
 
 pub const main = tools.defaultMain("2023/day13.txt", run);
-//const Map = tools.Map(u8, 150, 150, false);
-//const Vec2 = tools.Vec2;
 
 pub fn run(text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
     var arena_alloc = std.heap.ArenaAllocator.init(allocator);
     defer arena_alloc.deinit();
     const arena = arena_alloc.allocator();
 
-    //const map: Map = .{ .default_tile = '.' };
     const Pattern = struct {
         pat: []const u8,
         width: usize,
@@ -85,6 +82,7 @@ pub fn run(text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
             const width = pattern.width;
             const height = pattern.height;
             const stride = pattern.stride;
+
             for (pattern.pat, 0..) |c, idx| {
                 if (c != '#' and c != '.') continue;
                 const pat = try allocator.dupe(u8, pattern.pat);
@@ -96,7 +94,7 @@ pub fn run(text: []const u8, allocator: std.mem.Allocator) ![2][]const u8 {
                         const l1 = y - i - 1;
                         const l2 = y + i;
                         if (l2 >= height) break true;
-                        //                        std.debug.print("{} {}: '{s}'=='{s}'\n", .{l1, l2, pat[l1 * stride .. l1 * stride + width], pat[l2 * stride .. l2 * stride + width]});
+                        //std.debug.print("{} {}: '{s}'=='{s}'\n", .{l1, l2, pat[l1 * stride .. l1 * stride + width], pat[l2 * stride .. l2 * stride + width]});
                         if (!std.mem.eql(u8, pat[l1 * stride .. l1 * stride + width], pat[l2 * stride .. l2 * stride + width])) break false;
                     } else true;
 
